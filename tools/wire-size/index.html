@@ -81,8 +81,39 @@
                         </div>
                     </div>
 
-                    <!-- Row 4: Temp Rating + VD Limit -->
+                    <!-- Row 4: OCPD + Termination Rating -->
                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="ocpd">OCPD / Breaker Size <span class="nec-ref">110.14(C)</span></label>
+                            <select id="ocpd" onchange="updateTempInfo()">
+                                <option value="">— Not specified —</option>
+                                <option value="15">15A</option>
+                                <option value="20" selected>20A</option>
+                                <option value="25">25A</option>
+                                <option value="30">30A</option>
+                                <option value="35">35A</option>
+                                <option value="40">40A</option>
+                                <option value="50">50A</option>
+                                <option value="60">60A</option>
+                                <option value="70">70A</option>
+                                <option value="80">80A</option>
+                                <option value="100">100A</option>
+                                <option value="125">125A</option>
+                                <option value="150">150A</option>
+                                <option value="200">200A</option>
+                                <option value="225">225A</option>
+                                <option value="250">250A</option>
+                                <option value="300">300A</option>
+                                <option value="350">350A</option>
+                                <option value="400">400A</option>
+                                <option value="500">500A</option>
+                                <option value="600">600A</option>
+                                <option value="800">800A</option>
+                                <option value="1000">1000A</option>
+                                <option value="1200">1200A</option>
+                            </select>
+                            <p class="field-note">Determines circuit rating for 110.14(C) and EGC sizing per 250.122</p>
+                        </div>
                         <div class="form-group">
                             <label for="tempRating">Termination Temperature Rating <span class="nec-ref">110.14(C)</span></label>
                             <select id="tempRating" onchange="updateTempInfo()">
@@ -92,6 +123,13 @@
                                 <option value="90">90°C (derating start point only)</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Temperature Info Box -->
+                    <div id="tempInfo"></div>
+
+                    <!-- Row 5: VD Limit -->
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="vdLimit">Voltage Drop Limit</label>
                             <select id="vdLimit">
@@ -105,41 +143,6 @@
                     <div class="form-group" id="customVDGroup" style="display:none;">
                         <label for="customVD">Custom VD Limit (%)</label>
                         <input type="number" id="customVD" placeholder="e.g. 4" min="0.5" max="10" step="0.5">
-                    </div>
-
-                    <!-- Temperature Info Box -->
-                    <div id="tempInfo"></div>
-
-                    <!-- Row 5: OCPD (optional) -->
-                    <div class="form-group">
-                        <label for="ocpd">OCPD / Breaker Size <span style="font-weight:400;color:var(--text-muted);">(optional — enables EGC sizing)</span></label>
-                        <select id="ocpd">
-                            <option value="">-- Skip EGC calc --</option>
-                            <option value="15">15A</option>
-                            <option value="20">20A</option>
-                            <option value="25">25A</option>
-                            <option value="30">30A</option>
-                            <option value="35">35A</option>
-                            <option value="40">40A</option>
-                            <option value="50">50A</option>
-                            <option value="60">60A</option>
-                            <option value="70">70A</option>
-                            <option value="80">80A</option>
-                            <option value="100">100A</option>
-                            <option value="125">125A</option>
-                            <option value="150">150A</option>
-                            <option value="200">200A</option>
-                            <option value="225">225A</option>
-                            <option value="250">250A</option>
-                            <option value="300">300A</option>
-                            <option value="350">350A</option>
-                            <option value="400">400A</option>
-                            <option value="500">500A</option>
-                            <option value="600">600A</option>
-                            <option value="800">800A</option>
-                            <option value="1000">1000A</option>
-                            <option value="1200">1200A</option>
-                        </select>
                     </div>
 
                     <!-- Derating Section (collapsible) -->
@@ -265,12 +268,18 @@
     // ══════════════════════════════════════
 
     // ── Resolve effective temperature rating ──
-    // 110.14(C)(1)(a): ≤100A or #14–#1 conductors → 60°C
-    // 110.14(C)(1)(b): >100A or larger than #1 AWG → 75°C
+    // 110.14(C)(1)(a): Circuits rated ≤100A or marked for #14–#1 → 60°C
+    // 110.14(C)(1)(b): Circuits rated >100A or marked for larger than #1 → 75°C
+    // "Circuit rated" = OCPD rating, not load amps
     function getEffectiveTempRating() {
         var selected = document.getElementById('tempRating').value;
         if (selected !== 'auto') return selected;
 
+        // Primary: use OCPD rating (this IS the circuit rating per 110.14(C))
+        var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
+        if (ocpdVal) return (ocpdVal > 100) ? '75' : '60';
+
+        // Fallback: use load amps if OCPD not specified
         var amps = parseFloat(document.getElementById('amps').value) || 0;
         return (amps > 100) ? '75' : '60';
     }
@@ -301,27 +310,29 @@
             return;
         }
 
-        // Auto mode — show 110.14(C) resolution
-        var amps = parseFloat(document.getElementById('amps').value) || 0;
+        // Auto mode — show 110.14(C) resolution based on OCPD
+        var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
         var effective = getEffectiveTempRating();
 
         var html = '<div class="info-box">';
         html += '<strong>110.14(C) \u2014 Automatic termination rating</strong><br>';
-        if (amps <= 0) {
-            html += 'Enter load amps to determine the effective temperature rating.<br>';
-            html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
-            html += '\u2022 Circuits \u2264100A or conductors #14\u2013#1: <strong>60\u00B0C</strong> per 110.14(C)(1)(a)<br>';
-            html += '\u2022 Circuits >100A or conductors larger than #1: <strong>75\u00B0C</strong> per 110.14(C)(1)(b)';
-            html += '</span>';
-        } else {
+
+        if (ocpdVal) {
             if (effective === '60') {
-                html += 'Circuit is \u2264100A \u2192 using <strong>60\u00B0C</strong> ampacity column per 110.14(C)(1)(a).<br>';
+                html += 'OCPD is ' + ocpdVal + 'A (\u2264100A) \u2192 using <strong>60\u00B0C</strong> ampacity column per 110.14(C)(1)(a).<br>';
                 html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
                 html += 'If you know all terminations are rated 75\u00B0C+, select "75\u00B0C" above for higher ampacity values.';
                 html += '</span>';
             } else {
-                html += 'Circuit is >100A \u2192 using <strong>75\u00B0C</strong> ampacity column per 110.14(C)(1)(b).';
+                html += 'OCPD is ' + ocpdVal + 'A (>100A) \u2192 using <strong>75\u00B0C</strong> ampacity column per 110.14(C)(1)(b).';
             }
+        } else {
+            html += 'Select a breaker size to determine the circuit rating.<br>';
+            html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
+            html += '\u2022 Circuits rated \u2264100A: <strong>60\u00B0C</strong> per 110.14(C)(1)(a)<br>';
+            html += '\u2022 Circuits rated >100A: <strong>75\u00B0C</strong> per 110.14(C)(1)(b)<br>';
+            html += 'The breaker/OCPD rating is the circuit rating \u2014 not the load amps.';
+            html += '</span>';
         }
         html += '</div>';
         el.innerHTML = html;
