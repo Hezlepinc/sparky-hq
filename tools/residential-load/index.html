@@ -9,7 +9,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=9">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -114,7 +115,10 @@
                         </div>
                     </div>
 
-                    <button class="btn" onclick="calcStandard()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyStandard()">Apply</button>
+                    </div>
                 </div>
 
                 <!-- OPTIONAL METHOD -->
@@ -151,8 +155,13 @@
                         </div>
                     </div>
 
-                    <button class="btn" onclick="calcOptional()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyOptional()">Apply</button>
+                    </div>
                 </div>
+
+                <div id="validation-messages"></div>
 
                 <!-- RESULTS -->
                 <div class="result" id="result">
@@ -369,6 +378,14 @@
         document.getElementById('seCable').textContent = seCable;
         document.getElementById('conductorSection').style.display = '';
 
+        // Post-calc validation warning
+        if (amps > 400) {
+            SparkyValidate.showMessages('validation-messages', {
+                valid: true, errors: [],
+                warnings: ['Service over 400A is uncommon residential \u2014 verify loads']
+            });
+        }
+
         // Upgrade guidance
         var upgradeDiv = document.getElementById('upgradeGuidance');
         if (amps > 200) {
@@ -395,6 +412,45 @@
     }
 
     // ══════════════════════════════════════
+    // Validation Wrappers
+    // ══════════════════════════════════════
+    function applyStandard() {
+        var sqft = parseFloat(document.getElementById('sqft').value) || 0;
+        var rangeVA = parseFloat(document.getElementById('range').value) || 0;
+        var waterHeaterVA = parseFloat(document.getElementById('waterHeater').value) || 0;
+
+        var rules = [
+            { rule: 'gt', value: sqft, min: 0, label: 'Square footage', msg: 'Enter the dwelling square footage' },
+            { rule: 'custom', test: sqft > 20000, msg: '20,000+ sq ft \u2014 verify this is a single dwelling unit', level: 'warning' },
+            { rule: 'custom', test: rangeVA > 50000, msg: 'Range load over 50 kW is unusual', level: 'warning' },
+            { rule: 'custom', test: waterHeaterVA > 10000, msg: 'Water heater over 10 kW is unusual', level: 'warning' }
+        ];
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calcStandard();
+    }
+
+    function applyOptional() {
+        var optTotal = parseFloat(document.getElementById('optTotal').value) || 0;
+
+        var rules = [
+            { rule: 'gt', value: optTotal, min: 0, label: 'Total connected load', msg: 'Enter the total connected load' },
+            { rule: 'custom', test: optTotal > 200000, msg: '200 kW+ total \u2014 verify input', level: 'warning' }
+        ];
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calcOptional();
+    }
+
+    // ══════════════════════════════════════
     // Standard Method (Part III)
     // ══════════════════════════════════════
     function calcStandard() {
@@ -413,7 +469,6 @@
         var heatingVA = parseFloat(document.getElementById('heating').value) || 0;
 
         if (sqft <= 0) {
-            alert('Enter dwelling square footage.');
             return;
         }
 
@@ -505,7 +560,6 @@
         var spaceHeatVA = parseFloat(document.getElementById('optSpaceHeat').value) || 0;
 
         if (totalConnected <= 0) {
-            alert('Enter total connected load.');
             return;
         }
 

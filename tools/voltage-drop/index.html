@@ -9,7 +9,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=9">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -219,9 +220,13 @@
                         </div>
                     </details>
 
-                    <button class="btn" onclick="calculate()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyCalc()">Apply</button>
+                    </div>
                 </div>
 
+                <div id="validation-messages"></div>
                 <div class="result" id="result"></div>
             </div>
         </section>
@@ -689,6 +694,34 @@
     //  MAIN CALCULATE
     // ══════════════════════════════════════
 
+    function applyCalc() {
+        var voltage = parseFloat(document.getElementById('voltage').value);
+        var amps = parseFloat(document.getElementById('amps').value) || 0;
+        var distance = parseFloat(document.getElementById('distance').value) || 0;
+
+        var rules = [
+            { rule: 'gt', value: amps, min: 0, label: 'Load (amps)', msg: 'Enter a load greater than 0 amps' },
+            { rule: 'range', value: amps, max: 10000, label: 'Load (amps)', msg: 'Load exceeds 10,000A \u2014 verify input' }
+        ];
+
+        if (currentMode !== 'distance') {
+            rules.push({ rule: 'gt', value: distance, min: 0, label: 'Distance', msg: 'Enter a distance greater than 0 feet' });
+            rules.push({ rule: 'range', value: distance, max: 5000, label: 'Distance', level: 'warning', msg: 'Distance over 5,000 ft is unusual \u2014 verify input' });
+        }
+
+        if (amps > 0) {
+            rules.push({ rule: 'maxForVoltage', value: amps, voltage: voltage, label: 'Load (amps)' });
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate();
+    }
+
     function calculate() {
         var voltage = parseFloat(document.getElementById('voltage').value);
         var circuit = document.getElementById('circuit').value;
@@ -698,7 +731,7 @@
         var factor = getFactor(circuit);
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
 
-        if (!amps || amps <= 0) { alert('Enter load amps.'); return; }
+        if (!amps || amps <= 0) { return; }
 
         var html = '';
 
@@ -706,7 +739,7 @@
         if (currentMode === 'check') {
             var wireSize = document.getElementById('wireSize').value;
             var distance = parseFloat(document.getElementById('distance').value);
-            if (!distance) { alert('Enter one-way distance.'); return; }
+            if (!distance) { return; }
 
             var R = wireResistance[material][wireSize];
             var vd = calcVD(R, factor, distance, amps);
@@ -828,7 +861,7 @@
         // ── SIZE WIRE ──
         } else if (currentMode === 'wiresize') {
             var distance = parseFloat(document.getElementById('distance').value);
-            if (!distance) { alert('Enter one-way distance.'); return; }
+            if (!distance) { return; }
             var vdLimit = parseFloat(document.getElementById('vdLimit').value) / 100;
 
             var startIdx = (material === 'aluminum') ? 1 : 0;

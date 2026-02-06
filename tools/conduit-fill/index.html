@@ -9,7 +9,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=9">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -110,9 +111,13 @@
                     <button class="btn btn-sm btn-outline" onclick="addWireEntry()" style="margin-top:8px;margin-bottom:16px;">+ Add Wire</button>
 
                     <br>
-                    <button class="btn" onclick="calculate()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyCalc()">Apply</button>
+                    </div>
                 </div>
 
+                <div id="validation-messages"></div>
                 <div class="result" id="result">
                     <div class="result-section">
                         <div class="result-value" id="fillPct">--</div>
@@ -273,6 +278,37 @@
         event.target.classList.add('active');
     }
 
+    function applyCalc() {
+        var entries = document.querySelectorAll('.wire-entry');
+        var totalWireCount = 0;
+        var rules = [];
+        var hasInvalid = false;
+
+        entries.forEach(function(entry) {
+            var count = parseInt(entry.querySelector('.wireCount').value) || 0;
+            if (count > 0) totalWireCount += count;
+            if (count < 0) hasInvalid = true;
+        });
+
+        rules.push({ rule: 'custom', test: totalWireCount === 0, msg: 'Add at least one conductor', level: 'error' });
+        if (hasInvalid) {
+            rules.push({ rule: 'custom', test: true, msg: 'Wire count must be at least 1', level: 'error' });
+        }
+        if (totalWireCount > 100) {
+            rules.push({ rule: 'custom', test: true, msg: '100+ conductors \u2014 verify entries', level: 'warning' });
+        } else if (totalWireCount > 50) {
+            rules.push({ rule: 'custom', test: true, msg: '50+ conductors in one conduit is unusual', level: 'warning' });
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate();
+    }
+
     function calculate() {
         var conduitType = document.getElementById('conduitType').value;
         var conduitSize = document.getElementById('conduitSize').value;
@@ -304,7 +340,6 @@
         });
 
         if (totalWireCount === 0) {
-            alert('Add at least one conductor.');
             return;
         }
 

@@ -9,7 +9,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=9">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -283,9 +284,13 @@
                         </div>
                     </div>
 
-                    <button class="btn" onclick="calculate()" style="margin-top:24px;">Calculate</button>
+                    <div class="apply-section" style="margin-top:24px;">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyCalc()">Apply</button>
+                    </div>
                 </div>
 
+                <div id="validation-messages"></div>
                 <div class="result" id="result">
                     <!-- Load Summary -->
                     <div class="form-row">
@@ -458,6 +463,51 @@
             if (conductorTable[i].amps >= breakerAmps) return conductorTable[i].size;
         }
         return conductorTable[conductorTable.length - 1].size;
+    }
+
+    // ══════════════════════════════════════
+    //  VALIDATION + APPLY
+    // ══════════════════════════════════════
+    function applyCalc() {
+        var acW = parseInt(document.getElementById('acSize').value) || 0;
+        var lra = getLRA();
+        var lightingW = parseInt(document.getElementById('sqft').value) || 1000;
+
+        var totalW = lightingW + acW;
+        var hasLoads = false;
+        document.querySelectorAll('.load-cb').forEach(function(cb) {
+            if (cb.checked) {
+                hasLoads = true;
+                totalW += parseInt(cb.dataset.watts) || 0;
+            }
+        });
+
+        // Custom LRA visible check
+        var customLRAVisible = document.getElementById('customLRAGroup').style.display !== 'none';
+        var customLRAVal = parseFloat(document.getElementById('customLRA').value) || 0;
+
+        var rules = [
+            { rule: 'custom', test: !hasLoads && acW === 0, msg: 'Select at least one load', level: 'error' }
+        ];
+
+        if (customLRAVisible) {
+            rules.push({ rule: 'custom', test: customLRAVal <= 0, msg: 'Enter the A/C locked rotor amps', level: 'error' });
+            rules.push({ rule: 'custom', test: customLRAVal > 500, msg: 'LRA over 500A is unusual \u2014 verify nameplate', level: 'warning' });
+        }
+
+        if (acW > 0 && lra === 0 && !customLRAVisible) {
+            rules.push({ rule: 'custom', test: true, msg: 'A/C surge not factored \u2014 select an LRA for accurate sizing', level: 'warning' });
+        }
+
+        var runningW = totalW;
+        rules.push({ rule: 'custom', test: runningW > 50000, msg: 'Running load exceeds 50 kW \u2014 verify selections', level: 'warning' });
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate();
     }
 
     // ══════════════════════════════════════

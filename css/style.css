@@ -766,6 +766,60 @@ nav a:hover {
     color: var(--text);
 }
 
+/* ============================================
+   Apply Button + Validation Messages
+   ============================================ */
+
+.apply-section {
+    text-align: center;
+    margin: 20px 0 0;
+}
+
+.apply-terms {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    max-width: 500px;
+    margin: 0 auto 10px;
+    line-height: 1.5;
+}
+
+.validation-errors {
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.validation-errors strong { color: #dc2626; }
+
+.validation-errors ul,
+.validation-warnings ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+}
+
+.validation-errors li,
+.validation-warnings li {
+    margin-bottom: 2px;
+}
+
+.validation-warnings {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.validation-warnings strong { color: #d97706; }
+
 @media (max-width: 600px) {
     .preset-row {
         gap: 6px;

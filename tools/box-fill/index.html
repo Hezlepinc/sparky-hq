@@ -9,7 +9,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=9">
+    <link rel="stylesheet" href="/css/style.css?v=10">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -83,7 +84,10 @@
                         <strong>Pigtail reminder:</strong> Pigtails and jumpers that originate <em>and</em> terminate inside the box are NOT counted for box fill. Only conductors that enter through a cable or raceway count. This is the #1 box fill mistake.
                     </div>
 
-                    <button class="btn" onclick="calcCable()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyCable()">Apply</button>
+                    </div>
                 </div>
 
                 <!-- CONDUCTOR MODE (original) -->
@@ -176,7 +180,10 @@
                         </select>
                     </div>
 
-                    <button class="btn" onclick="calcConductor()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyConductor()">Apply</button>
+                    </div>
                 </div>
 
                 <!-- WHAT FITS MODE -->
@@ -211,9 +218,13 @@
                         </select>
                     </div>
 
-                    <button class="btn" onclick="calcWhatFits()">Calculate</button>
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <button class="btn" onclick="applyWhatFits()">Apply</button>
+                    </div>
                 </div>
 
+                <div id="validation-messages"></div>
                 <div class="result" id="result">
                     <div class="result-section">
                         <div class="result-value" id="totalCI">--</div>
@@ -350,6 +361,59 @@
 
         document.querySelectorAll('#cableForm .preset-btn').forEach(function(b) { b.classList.remove('active'); });
         event.target.classList.add('active');
+    }
+
+    function applyCable() {
+        var entries = document.querySelectorAll('#cableEntries .wire-entry');
+        var totalCables = 0;
+        var devices = parseInt(document.getElementById('cableDevices').value) || 0;
+
+        entries.forEach(function(entry) {
+            totalCables += parseInt(entry.querySelector('.cableCount').value) || 0;
+        });
+
+        var rules = [
+            { rule: 'custom', test: totalCables === 0, msg: 'Enter at least one cable or conductor', level: 'error' },
+            { rule: 'custom', test: totalCables > 10, msg: '10+ cables in one box is unusual', level: 'warning' },
+            { rule: 'custom', test: devices > 6, msg: '6+ device yokes in one box is unusual', level: 'warning' }
+        ];
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calcCable();
+    }
+
+    function applyConductor() {
+        var counts = {
+            '14': parseInt(document.getElementById('cond14').value) || 0,
+            '12': parseInt(document.getElementById('cond12').value) || 0,
+            '10': parseInt(document.getElementById('cond10').value) || 0,
+            '8':  parseInt(document.getElementById('cond8').value) || 0,
+            '6':  parseInt(document.getElementById('cond6').value) || 0
+        };
+        var total = counts['14'] + counts['12'] + counts['10'] + counts['8'] + counts['6'];
+        var devices = parseInt(document.getElementById('devices').value) || 0;
+
+        var rules = [
+            { rule: 'custom', test: total === 0, msg: 'Enter at least one conductor', level: 'error' },
+            { rule: 'custom', test: devices > 6, msg: '6+ device yokes in one box is unusual', level: 'warning' }
+        ];
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calcConductor();
+    }
+
+    function applyWhatFits() {
+        SparkyValidate.clearMessages('validation-messages');
+        SparkyValidate.logApply();
+        calcWhatFits();
     }
 
     function calcCable() {
