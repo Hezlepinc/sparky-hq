@@ -30,8 +30,9 @@
                 <p class="subtitle">Check voltage drop or find max distance for any wire run. For conductor sizing, ampacity, and derating, use the <a href="/tools/wire-size/">Wire Size Calculator</a>.</p>
 
                 <div class="method-toggle">
-                    <button class="active" onclick="setMode('check')">Check VD</button>
+                    <button class="active" onclick="setMode('check')">Check Voltage Drop</button>
                     <button onclick="setMode('distance')">Max Distance</button>
+                    <button onclick="setMode('conductor')">Size Conductor</button>
                 </div>
 
                 <div class="calc-form">
@@ -58,8 +59,8 @@
                     <div class="form-group">
                         <label for="application">Circuit Application</label>
                         <select id="application" onchange="updateAppVDLimit()">
-                            <option value="branch" selected>Branch Circuit (3% VD)</option>
-                            <option value="feeder">Feeder (2% VD)</option>
+                            <option value="branch" selected>Branch Circuit (3% Voltage Drop)</option>
+                            <option value="feeder">Feeder (2% Voltage Drop)</option>
                             <option value="combined">Branch + Feeder (5% total)</option>
                         </select>
                         <p class="field-note" id="appNote">NEC 210.19(A) Info Note No. 4: max 3% on branch circuits</p>
@@ -107,14 +108,6 @@
                     <div class="form-group" id="distanceGroup">
                         <label for="distance">One-Way Distance (ft)</label>
                         <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
-                    </div>
-
-                    <div class="form-group" id="vdLimitGroup">
-                        <label for="vdLimit">VD Limit</label>
-                        <select id="vdLimit">
-                            <option value="3" selected>3% (Branch Circuit)</option>
-                            <option value="5">5% (Total Feeder + Branch)</option>
-                        </select>
                     </div>
 
                     <div class="apply-section">
@@ -172,16 +165,12 @@
     function updateAppVDLimit() {
         var app = document.getElementById('application').value;
         var note = document.getElementById('appNote');
-        var vdSelect = document.getElementById('vdLimit');
         if (app === 'branch') {
             note.textContent = 'NEC 210.19(A) Info Note No. 4: max 3% on branch circuits';
-            if (currentMode !== 'check') vdSelect.value = '3';
         } else if (app === 'feeder') {
             note.textContent = 'NEC 215.2(A) Info Note No. 2: max 2% on feeders, 5% combined total';
-            if (currentMode !== 'check') vdSelect.value = '5';
         } else {
             note.textContent = 'Total feeder + branch circuit combined: 5% maximum recommended';
-            if (currentMode !== 'check') vdSelect.value = '5';
         }
     }
 
@@ -197,9 +186,10 @@
         buttons.forEach(function(b) { b.classList.remove('active'); });
         if (mode === 'check') buttons[0].classList.add('active');
         if (mode === 'distance') buttons[1].classList.add('active');
+        if (mode === 'conductor') buttons[2].classList.add('active');
 
+        document.getElementById('wireSizeGroup').style.display = (mode === 'conductor') ? 'none' : '';
         document.getElementById('distanceGroup').style.display = (mode === 'distance') ? 'none' : '';
-        document.getElementById('vdLimitGroup').style.display = (mode === 'check') ? 'none' : '';
 
         document.getElementById('result').classList.remove('show');
         document.getElementById('result').innerHTML = '';
@@ -300,13 +290,14 @@
         var amps = parseFloat(document.getElementById('amps').value);
         var material = document.getElementById('material').value;
         var factor = getFactor(circuit);
+        var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
 
         if (!amps || amps <= 0) { return; }
 
         var html = '';
         var infoNote = '<div class="info-box" style="margin-top:16px;">This calculator checks voltage drop only. Use the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> to verify ampacity, derating, and conductor sizing.</div>';
 
-        // ── CHECK VD ──
+        // ── CHECK VOLTAGE DROP ──
         if (currentMode === 'check') {
             var wireSize = document.getElementById('wireSize').value;
             var distance = parseFloat(document.getElementById('distance').value);
@@ -322,16 +313,15 @@
             html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
             html += '<div class="result-section">';
             html += '<div class="result-value">' + vd.toFixed(2) + ' V (' + vdPct.toFixed(2) + '%)</div>';
-            html += '<div class="result-label">Voltage Drop — ' + sizeLabel(wireSize) + ' ' + cap(material) + ' @ ' + distance + ' ft</div>';
+            html += '<div class="result-label">Voltage Drop \u2014 ' + sizeLabel(wireSize) + ' ' + cap(material) + ' @ ' + distance + ' ft</div>';
             html += '</div>';
             html += '<table class="breakdown-table">';
-            html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' — ' + amps + 'A</td></tr>';
+            html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' \u2014 ' + amps + 'A</td></tr>';
             html += '<tr><td>Delivered Voltage</td><td>' + deliveredV.toFixed(1) + ' V</td></tr>';
-            html += '<tr><td>Branch Circuit (3% max)</td><td>' + vdPct.toFixed(2) + '% — <span class="' + (pass3 ? 'result-pass' : 'result-fail') + '">' + (pass3 ? 'PASS' : 'FAIL') + '</span></td></tr>';
-            html += '<tr><td>Total Circuit (5% max)</td><td>' + vdPct.toFixed(2) + '% — <span class="' + (pass5 ? 'result-pass' : 'result-fail') + '">' + (pass5 ? 'PASS' : 'FAIL') + '</span></td></tr>';
+            html += '<tr><td>Branch Circuit (3% max)</td><td>' + vdPct.toFixed(2) + '% \u2014 <span class="' + (pass3 ? 'result-pass' : 'result-fail') + '">' + (pass3 ? 'PASS' : 'FAIL') + '</span></td></tr>';
+            html += '<tr><td>Total Circuit (5% max)</td><td>' + vdPct.toFixed(2) + '% \u2014 <span class="' + (pass5 ? 'result-pass' : 'result-fail') + '">' + (pass5 ? 'PASS' : 'FAIL') + '</span></td></tr>';
             html += '</table>';
 
-            // VD fail guidance
             if (!pass3 && pass5) {
                 html += '<div class="caution-box"><strong>Consider upsizing:</strong> Voltage drop exceeds 3% for a branch circuit. Use <strong>Max Distance</strong> mode to find the maximum run length, or the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> to find the right conductor.</div>';
             } else if (!pass5) {
@@ -340,8 +330,6 @@
 
             html += infoNote;
 
-            // Show Your Work
-            var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
             var formulaName = (circuit === '3ac') ? 'VD = (1.732 \u00D7 L \u00D7 I \u00D7 R) / 1000' : 'VD = (2 \u00D7 L \u00D7 I \u00D7 R) / 1000';
             html += buildShowWork(formulaName,
                 'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + R + ') / 1000',
@@ -349,9 +337,9 @@
                 [
                     ['L (one-way distance)', distance + ' ft'],
                     ['I (load current)', amps + ' A'],
-                    ['R (resistance per 1000ft)', R + ' \u03A9 — NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
+                    ['R (resistance per 1000ft)', R + ' \u03A9 \u2014 NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
                     ['Factor', formulaLabel + (circuit === '3ac' ? ' (\u221A3 for three-phase)' : ' (single-phase / DC round-trip)')],
-                    ['VD%', '(' + vd.toFixed(4) + ' / ' + voltage + ') \u00D7 100 = ' + vdPct.toFixed(2) + '%'],
+                    ['Voltage Drop %', '(' + vd.toFixed(4) + ' / ' + voltage + ') \u00D7 100 = ' + vdPct.toFixed(2) + '%'],
                     ['Delivered voltage', voltage + ' \u2212 ' + vd.toFixed(2) + ' = ' + deliveredV.toFixed(1) + ' V']
                 ]
             );
@@ -359,40 +347,129 @@
         // ── MAX DISTANCE ──
         } else if (currentMode === 'distance') {
             var wireSize = document.getElementById('wireSize').value;
-            var vdLimit = parseFloat(document.getElementById('vdLimit').value) / 100;
-
             var R = wireResistance[material][wireSize];
-            var maxDist = (vdLimit * voltage * 1000) / (factor * amps * R);
+            var maxDist3 = (0.03 * voltage * 1000) / (factor * amps * R);
+            var maxDist5 = (0.05 * voltage * 1000) / (factor * amps * R);
 
             html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
             html += '<div class="result-section">';
-            html += '<div class="result-value">' + Math.floor(maxDist) + ' ft</div>';
-            html += '<div class="result-label">Max One-Way Distance at ' + (vdLimit * 100) + '% with ' + sizeLabel(wireSize) + ' ' + cap(material) + '</div>';
+            html += '<div class="result-value">' + Math.floor(maxDist3) + ' ft</div>';
+            html += '<div class="result-label">Max distance at 3% Voltage Drop \u2014 ' + sizeLabel(wireSize) + ' ' + cap(material) + '</div>';
+            html += '</div>';
+            html += '<div class="result-section" style="margin-top:10px;">';
+            html += '<div class="result-value">' + Math.floor(maxDist5) + ' ft</div>';
+            html += '<div class="result-label">Max distance at 5% Voltage Drop \u2014 ' + sizeLabel(wireSize) + ' ' + cap(material) + '</div>';
             html += '</div>';
             html += '<table class="breakdown-table">';
-            html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' — ' + amps + 'A</td></tr>';
+            html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' \u2014 ' + amps + 'A</td></tr>';
             html += '<tr><td>Wire</td><td>' + sizeLabel(wireSize) + ' ' + cap(material) + '</td></tr>';
             html += '<tr><td>Resistance (Table 8)</td><td>' + R + ' \u03A9/1000ft</td></tr>';
-            html += '<tr><td>VD at max distance</td><td>' + (vdLimit * 100).toFixed(0) + '% (' + (vdLimit * voltage).toFixed(1) + 'V)</td></tr>';
+            html += '<tr><td>At 3% Voltage Drop</td><td>' + Math.floor(maxDist3) + ' ft (' + (0.03 * voltage).toFixed(1) + 'V drop)</td></tr>';
+            html += '<tr><td>At 5% Voltage Drop</td><td>' + Math.floor(maxDist5) + ' ft (' + (0.05 * voltage).toFixed(1) + 'V drop)</td></tr>';
             html += '</table>';
 
             html += infoNote;
 
-            // Show Your Work
-            var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
             var formulaName = (circuit === '3ac') ? 'L = (VD% \u00D7 V \u00D7 1000) / (1.732 \u00D7 I \u00D7 R)' : 'L = (VD% \u00D7 V \u00D7 1000) / (2 \u00D7 I \u00D7 R)';
             html += buildShowWork(formulaName,
-                'L = (' + (vdLimit).toFixed(2) + ' \u00D7 ' + voltage + ' \u00D7 1000) / (' + formulaLabel + ' \u00D7 ' + amps + ' \u00D7 ' + R + ')',
-                'L = ' + maxDist.toFixed(1) + ' ft',
+                'L = (0.03 \u00D7 ' + voltage + ' \u00D7 1000) / (' + formulaLabel + ' \u00D7 ' + amps + ' \u00D7 ' + R + ')',
+                'L = ' + maxDist3.toFixed(1) + ' ft (at 3%)',
                 [
-                    ['VD% (limit)', (vdLimit * 100) + '% = ' + vdLimit.toFixed(2)],
                     ['V (system voltage)', voltage + ' V'],
                     ['I (load current)', amps + ' A'],
-                    ['R (resistance per 1000ft)', R + ' \u03A9 — NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
+                    ['R (resistance per 1000ft)', R + ' \u03A9 \u2014 NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
                     ['Factor', formulaLabel + (circuit === '3ac' ? ' (\u221A3 for three-phase)' : ' (single-phase / DC round-trip)')],
-                    ['Max distance', maxDist.toFixed(1) + ' ft (rounded down to ' + Math.floor(maxDist) + ' ft)']
+                    ['At 3%', 'L = (0.03 \u00D7 ' + voltage + ' \u00D7 1000) / (' + formulaLabel + ' \u00D7 ' + amps + ' \u00D7 ' + R + ') = ' + maxDist3.toFixed(1) + ' ft \u2192 ' + Math.floor(maxDist3) + ' ft'],
+                    ['At 5%', 'L = (0.05 \u00D7 ' + voltage + ' \u00D7 1000) / (' + formulaLabel + ' \u00D7 ' + amps + ' \u00D7 ' + R + ') = ' + maxDist5.toFixed(1) + ' ft \u2192 ' + Math.floor(maxDist5) + ' ft']
                 ]
             );
+
+        // ── SIZE CONDUCTOR ──
+        } else if (currentMode === 'conductor') {
+            var distance = parseFloat(document.getElementById('distance').value);
+            if (!distance) { return; }
+
+            var startIdx = (material === 'aluminum') ? 1 : 0;
+            var rec3 = null, rec3VD = 0;
+            var rec5 = null, rec5VD = 0;
+
+            for (var i = startIdx; i < wireSizes.length; i++) {
+                var size = wireSizes[i];
+                var R = wireResistance[material][size];
+                var vd = calcVD(R, factor, distance, amps);
+                var vdPct = (vd / voltage) * 100;
+                if (!rec5 && vdPct <= 5) { rec5 = size; rec5VD = vdPct; }
+                if (!rec3 && vdPct <= 3) { rec3 = size; rec3VD = vdPct; break; }
+            }
+
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
+
+            if (!rec5) {
+                html += '<div class="result-section">';
+                html += '<div class="result-value result-fail">No Standard Size</div>';
+                html += '<div class="result-label">No single conductor keeps voltage drop under 5% at ' + distance + ' ft and ' + amps + 'A. Consider parallel runs or higher system voltage.</div>';
+                html += '</div>';
+            } else {
+                // 3% result
+                if (rec3) {
+                    var R3 = wireResistance[material][rec3];
+                    var vd3Volts = rec3VD / 100 * voltage;
+                    html += '<div class="result-section">';
+                    html += '<div class="result-value">' + sizeLabel(rec3) + ' ' + cap(material) + '</div>';
+                    html += '<div class="result-label">Minimum conductor for 3% Voltage Drop</div>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="result-section">';
+                    html += '<div class="result-value result-fail">No standard size for 3%</div>';
+                    html += '<div class="result-label">No single conductor keeps voltage drop under 3% at this distance and load.</div>';
+                    html += '</div>';
+                }
+
+                // 5% result
+                var R5 = wireResistance[material][rec5];
+                var vd5Volts = rec5VD / 100 * voltage;
+                if (rec3 && rec3 === rec5) {
+                    html += '<div class="info-box" style="margin-top:10px;">' + sizeLabel(rec3) + ' ' + cap(material) + ' meets both the 3% and 5% voltage drop limits.</div>';
+                } else {
+                    html += '<div class="result-section" style="margin-top:10px;">';
+                    html += '<div class="result-value">' + sizeLabel(rec5) + ' ' + cap(material) + '</div>';
+                    html += '<div class="result-label">Minimum conductor for 5% Voltage Drop</div>';
+                    html += '</div>';
+                }
+
+                // Breakdown table
+                html += '<table class="breakdown-table">';
+                html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' \u2014 ' + amps + 'A @ ' + distance + ' ft</td></tr>';
+                if (rec3) {
+                    html += '<tr><td>At 3% Voltage Drop</td><td>' + sizeLabel(rec3) + ' ' + cap(material) + ' \u2014 ' + rec3VD.toFixed(2) + '% (' + (rec3VD / 100 * voltage).toFixed(1) + 'V drop, ' + (voltage - rec3VD / 100 * voltage).toFixed(1) + 'V delivered)</td></tr>';
+                }
+                html += '<tr><td>At 5% Voltage Drop</td><td>' + sizeLabel(rec5) + ' ' + cap(material) + ' \u2014 ' + rec5VD.toFixed(2) + '% (' + (rec5VD / 100 * voltage).toFixed(1) + 'V drop, ' + (voltage - rec5VD / 100 * voltage).toFixed(1) + 'V delivered)</td></tr>';
+                html += '</table>';
+            }
+
+            html += infoNote;
+
+            // Show Your Work
+            if (rec3) {
+                var R3 = wireResistance[material][rec3];
+                var formulaName = (circuit === '3ac') ? 'VD = (1.732 \u00D7 L \u00D7 I \u00D7 R) / 1000' : 'VD = (2 \u00D7 L \u00D7 I \u00D7 R) / 1000';
+                var steps = [
+                    ['L (one-way distance)', distance + ' ft'],
+                    ['I (load current)', amps + ' A'],
+                    ['Factor', formulaLabel + (circuit === '3ac' ? ' (\u221A3 for three-phase)' : ' (single-phase / DC round-trip)')]
+                ];
+                if (rec5 !== rec3) {
+                    var R5 = wireResistance[material][rec5];
+                    steps.push(['For 5% limit', sizeLabel(rec5) + ': R = ' + R5 + ' \u03A9/1000ft \u2192 VD = ' + rec5VD.toFixed(2) + '% (' + (rec5VD / 100 * voltage).toFixed(2) + 'V)']);
+                }
+                steps.push(['For 3% limit', sizeLabel(rec3) + ': R = ' + R3 + ' \u03A9/1000ft \u2192 VD = ' + rec3VD.toFixed(2) + '% (' + (rec3VD / 100 * voltage).toFixed(2) + 'V)']);
+
+                html += buildShowWork(formulaName,
+                    'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + R3 + ') / 1000',
+                    'VD = ' + (rec3VD / 100 * voltage).toFixed(4) + ' V (' + rec3VD.toFixed(2) + '%)',
+                    steps
+                );
+            }
         }
 
         var resultEl = document.getElementById('result');
