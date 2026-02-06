@@ -64,7 +64,9 @@ var ALL_TOOLS = [
     { path: '/tools/box-fill/',        name: 'Box Fill' },
     { path: '/tools/residential-load/', name: 'Dwelling Load Calc' },
     { path: '/tools/generator-sizing/', name: 'Generator Sizing' },
-    { path: '/tools/circuit-design/',  name: 'Circuit Design' }
+    { path: '/tools/circuit-design/',  name: 'Circuit Design' },
+    { path: '/tools/ohms-law/',        name: 'Ohms Law' },
+    { path: '/tools/conduit-bending/', name: 'Conduit Bending' }
 ];
 
 // Add a tool path here and push to make it public
