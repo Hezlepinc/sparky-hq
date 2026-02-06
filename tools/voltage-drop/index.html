@@ -61,7 +61,6 @@
                         <select id="application" onchange="updateAppVDLimit()">
                             <option value="branch" selected>Branch Circuit (3% Voltage Drop)</option>
                             <option value="feeder">Feeder (2% Voltage Drop)</option>
-                            <option value="combined">Branch + Feeder (5% total)</option>
                         </select>
                         <p class="field-note" id="appNote">NEC 210.19(A) Info Note No. 4: max 3% on branch circuits</p>
                     </div>
@@ -167,10 +166,8 @@
         var note = document.getElementById('appNote');
         if (app === 'branch') {
             note.textContent = 'NEC 210.19(A) Info Note No. 4: max 3% on branch circuits';
-        } else if (app === 'feeder') {
-            note.textContent = 'NEC 215.2(A) Info Note No. 2: max 2% on feeders, 5% combined total';
         } else {
-            note.textContent = 'Total feeder + branch circuit combined: 5% maximum recommended';
+            note.textContent = 'NEC 215.2(A) Info Note No. 2: max 2% on feeders, 5% combined total';
         }
     }
 
