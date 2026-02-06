@@ -57,15 +57,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="application">Circuit Application</label>
-                        <select id="application" onchange="updateAppVDLimit()">
-                            <option value="branch" selected>Branch Circuit (3% Voltage Drop)</option>
-                            <option value="feeder">Feeder (2% Voltage Drop)</option>
-                        </select>
-                        <p class="field-note" id="appNote">NEC 210.19(A) Info Note No. 4: max 3% on branch circuits</p>
-                    </div>
-
-                    <div class="form-group">
                         <label for="amps">Load (Amps)</label>
                         <input type="number" id="amps" placeholder="e.g. 20" min="0" step="0.1">
                     </div>
@@ -160,16 +151,6 @@
         '1':'#1','1/0':'1/0','2/0':'2/0','3/0':'3/0','4/0':'4/0',
         '250':'250','300':'300','350':'350','400':'400','500':'500','600':'600','750':'750'
     };
-
-    function updateAppVDLimit() {
-        var app = document.getElementById('application').value;
-        var note = document.getElementById('appNote');
-        if (app === 'branch') {
-            note.textContent = 'NEC 210.19(A) Info Note No. 4: max 3% on branch circuits';
-        } else {
-            note.textContent = 'NEC 215.2(A) Info Note No. 2: max 2% on feeders, 5% combined total';
-        }
-    }
 
     // ══════════════════════════════════════
     //  MODE MANAGEMENT
