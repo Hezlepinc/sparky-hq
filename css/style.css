@@ -29,6 +29,13 @@ body {
     color: var(--text);
     background: var(--offwhite);
     line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
 }
 
 .container {
@@ -177,7 +184,6 @@ nav a:hover {
     padding: 32px 0;
     text-align: center;
     font-size: 0.85rem;
-    margin-top: 20px;
 }
 
 .site-footer p + p {
