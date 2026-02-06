@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=8">
     <style>
         .temp-info {
             background: var(--gray);
@@ -448,6 +448,42 @@
     }
 
     // ══════════════════════════════════════
+    //  SHOW YOUR WORK
+    // ══════════════════════════════════════
+
+    function buildShowWork(formula, substituted, answer, steps) {
+        var h = '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        h += '<details style="cursor:pointer;">';
+        h += '<summary style="font-weight:700;font-size:0.92rem;color:var(--text);padding:4px 0;user-select:none;">Show Your Work</summary>';
+        h += '<div style="margin-top:12px;">';
+
+        // Formula
+        h += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:12px;">';
+        h += '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Formula</div>';
+        h += '<div style="font-family:\'Courier New\',monospace;font-size:0.95rem;font-weight:600;color:var(--text);">' + formula + '</div>';
+        h += '</div>';
+
+        // Substitution
+        h += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:12px;">';
+        h += '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Substitution</div>';
+        h += '<div style="font-family:\'Courier New\',monospace;font-size:0.92rem;color:var(--text);">' + substituted + '</div>';
+        h += '<div style="font-family:\'Courier New\',monospace;font-size:0.92rem;font-weight:700;color:var(--text);margin-top:4px;">' + answer + '</div>';
+        h += '</div>';
+
+        // Step-by-step breakdown
+        if (steps && steps.length > 0) {
+            h += '<table class="breakdown-table" style="font-size:0.85rem;">';
+            for (var i = 0; i < steps.length; i++) {
+                h += '<tr><td style="white-space:nowrap;vertical-align:top;">' + steps[i][0] + '</td><td>' + steps[i][1] + '</td></tr>';
+            }
+            h += '</table>';
+        }
+
+        h += '</div></details></div>';
+        return h;
+    }
+
+    // ══════════════════════════════════════
     //  AMPACITY / OCPD WARNINGS
     // ══════════════════════════════════════
 
@@ -528,6 +564,7 @@
             // Warnings first — above everything
             html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
             html += '<div class="result-section">';
             html += '<div class="result-value">' + vd.toFixed(2) + ' V (' + vdPct.toFixed(2) + '%)</div>';
             html += '<div class="result-label">Voltage Drop — ' + sizeLabel(wireSize) + ' ' + cap(material) + ' @ ' + distance + ' ft</div>';
@@ -550,6 +587,22 @@
             var egc = calcEGC(ocpdVal, material, wireSize, amps, tempRating);
             if (egc) html += buildEGChtml(egc, material);
 
+            // Show Your Work
+            var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
+            var formulaName = (circuit === '3ac') ? 'VD = (1.732 \u00D7 L \u00D7 I \u00D7 R) / 1000' : 'VD = (2 \u00D7 L \u00D7 I \u00D7 R) / 1000';
+            html += buildShowWork(formulaName,
+                'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + R + ') / 1000',
+                'VD = ' + vd.toFixed(4) + ' V',
+                [
+                    ['L (one-way distance)', distance + ' ft'],
+                    ['I (load current)', amps + ' A'],
+                    ['R (resistance per 1000ft)', R + ' \u03A9 — NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
+                    ['Factor', formulaLabel + (circuit === '3ac' ? ' (\u221A3 for three-phase)' : ' (single-phase / DC round-trip)')],
+                    ['VD%', '(' + vd.toFixed(4) + ' / ' + voltage + ') \u00D7 100 = ' + vdPct.toFixed(2) + '%'],
+                    ['Delivered voltage', voltage + ' \u2212 ' + vd.toFixed(2) + ' = ' + deliveredV.toFixed(1) + ' V']
+                ]
+            );
+
         // ── MAX DISTANCE ──
         } else if (currentMode === 'distance') {
             var wireSize = document.getElementById('wireSize').value;
@@ -561,6 +614,7 @@
             // Warnings first
             html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
             html += '<div class="result-section">';
             html += '<div class="result-value">' + Math.floor(maxDist) + ' ft</div>';
             html += '<div class="result-label">Max One-Way Distance at ' + (vdLimit * 100) + '% with ' + sizeLabel(wireSize) + ' ' + cap(material) + '</div>';
@@ -581,6 +635,22 @@
 
             var egc = calcEGC(ocpdVal, material, wireSize, amps, tempRating);
             if (egc) html += buildEGChtml(egc, material);
+
+            // Show Your Work
+            var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
+            var formulaName = (circuit === '3ac') ? 'L = (VD% \u00D7 V \u00D7 1000) / (1.732 \u00D7 I \u00D7 R)' : 'L = (VD% \u00D7 V \u00D7 1000) / (2 \u00D7 I \u00D7 R)';
+            html += buildShowWork(formulaName,
+                'L = (' + (vdLimit).toFixed(2) + ' \u00D7 ' + voltage + ' \u00D7 1000) / (' + formulaLabel + ' \u00D7 ' + amps + ' \u00D7 ' + R + ')',
+                'L = ' + maxDist.toFixed(1) + ' ft',
+                [
+                    ['VD% (limit)', (vdLimit * 100) + '% = ' + vdLimit.toFixed(2)],
+                    ['V (system voltage)', voltage + ' V'],
+                    ['I (load current)', amps + ' A'],
+                    ['R (resistance per 1000ft)', R + ' \u03A9 — NEC Table 8, ' + sizeLabel(wireSize) + ' ' + cap(material)],
+                    ['Factor', formulaLabel + (circuit === '3ac' ? ' (\u221A3 for three-phase)' : ' (single-phase / DC round-trip)')],
+                    ['Max distance', maxDist.toFixed(1) + ' ft (rounded down to ' + Math.floor(maxDist) + ' ft)']
+                ]
+            );
 
         // ── SIZE WIRE ──
         } else if (currentMode === 'wiresize') {
@@ -610,6 +680,8 @@
                 }
             }
 
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
+
             if (!recommended) {
                 html += '<div class="result-section">';
                 html += '<div class="result-value result-fail">No Standard Size</div>';
@@ -619,6 +691,8 @@
                 var recIdx = wireSizes.indexOf(recommended);
                 var upsized = recIdx > minAmpIdx;
                 var ampTable = ampacity[material][tempRating];
+                var recR = wireResistance[material][recommended];
+                var recVdVolts = recVD / 100 * voltage;
 
                 html += '<div class="result-section">';
                 html += '<div class="result-value">' + sizeLabel(recommended) + ' ' + cap(material) + '</div>';
@@ -626,8 +700,8 @@
                 html += '</div>';
                 html += '<table class="breakdown-table">';
                 html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' — ' + amps + 'A @ ' + distance + ' ft</td></tr>';
-                html += '<tr><td>VD at ' + sizeLabel(recommended) + '</td><td>' + recVD.toFixed(2) + '% (' + (recVD / 100 * voltage).toFixed(1) + 'V drop)</td></tr>';
-                html += '<tr><td>Delivered Voltage</td><td>' + (voltage - (recVD / 100 * voltage)).toFixed(1) + 'V</td></tr>';
+                html += '<tr><td>VD at ' + sizeLabel(recommended) + '</td><td>' + recVD.toFixed(2) + '% (' + recVdVolts.toFixed(1) + 'V drop)</td></tr>';
+                html += '<tr><td>Delivered Voltage</td><td>' + (voltage - recVdVolts).toFixed(1) + 'V</td></tr>';
                 html += '<tr><td>Ampacity at ' + tempRating + '°C (310.16)</td><td>' + sizeLabel(minAmpWire) + ' (' + ampTable[minAmpWire] + 'A)</td></tr>';
                 if (upsized) {
                     html += '<tr><td>Upsized for VD?</td><td><span class="result-fail">Yes</span> — ' + sizeLabel(minAmpWire) + ' \u2192 ' + sizeLabel(recommended) + '</td></tr>';
@@ -638,6 +712,25 @@
 
                 var egc = calcEGC(ocpdVal, material, recommended, amps, tempRating);
                 if (egc) html += buildEGChtml(egc, material);
+
+                // Show Your Work
+                var formulaLabel = (circuit === '3ac') ? '1.732' : '2';
+                var formulaName = (circuit === '3ac') ? 'VD = (1.732 \u00D7 L \u00D7 I \u00D7 R) / 1000' : 'VD = (2 \u00D7 L \u00D7 I \u00D7 R) / 1000';
+                var steps = [
+                    ['Step 1: Min wire for ampacity', sizeLabel(minAmpWire) + ' rated ' + ampTable[minAmpWire] + 'A at ' + tempRating + '\u00B0C (NEC 310.16) \u2265 ' + amps + 'A load']
+                ];
+                if (upsized) {
+                    steps.push(['Step 2: Check VD at ' + sizeLabel(minAmpWire), 'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + wireResistance[material][minAmpWire] + ') / 1000 = ' + calcVD(wireResistance[material][minAmpWire], factor, distance, amps).toFixed(2) + 'V (' + (calcVD(wireResistance[material][minAmpWire], factor, distance, amps) / voltage * 100).toFixed(2) + '%) \u2014 exceeds ' + (vdLimit * 100) + '%']);
+                    steps.push(['Step 3: Upsize to ' + sizeLabel(recommended), 'R = ' + recR + ' \u03A9/1000ft (NEC Table 8)']);
+                }
+                steps.push(['VD at ' + sizeLabel(recommended), 'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + recR + ') / 1000 = ' + (recVD / 100 * voltage).toFixed(2) + 'V (' + recVD.toFixed(2) + '%)']);
+                steps.push(['Delivered voltage', voltage + ' \u2212 ' + (recVD / 100 * voltage).toFixed(2) + ' = ' + (voltage - recVdVolts).toFixed(1) + 'V']);
+
+                html += buildShowWork(formulaName,
+                    'VD = (' + formulaLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + recR + ') / 1000',
+                    'VD = ' + (recVD / 100 * voltage).toFixed(4) + ' V (' + recVD.toFixed(2) + '%)',
+                    steps
+                );
             }
         }
 
