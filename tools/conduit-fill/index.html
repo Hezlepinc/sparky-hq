@@ -27,11 +27,7 @@
         <section class="calc-page">
             <div class="container">
                 <h1>Conduit Fill Calculator <span class="nec-ref">NEC Ch.9 Table 4 &amp; 5</span></h1>
-                <p class="subtitle">Calculate conduit fill percentage. Limits: 1 wire = 53%, 2 wires = 31%, 3+ wires = 40%.</p>
-
-                <div class="info-box">
-                    <strong>Why different fill limits?</strong> NEC Chapter 9 Table 1 sets fill at 53% for 1 conductor, 31% for 2, and 40% for 3+. Two conductors get a tighter limit because they tend to stack and create hot spots. Three or more wires distribute better, allowing 40%. These limits prevent overheating and make pulling easier.
-                </div>
+                <p class="subtitle">Calculate conduit fill percentage per NEC Chapter 9 Table 1.</p>
 
                 <div class="calc-form">
                     <!-- Common Presets -->
@@ -365,6 +361,17 @@
 
         // Guidance boxes
         var guidance = '';
+
+        // Fill limit explanation (contextual to their wire count)
+        if (!isNipple) {
+            if (totalWireCount === 1) {
+                guidance += '<div class="info-box"><strong>NEC Ch.9 Table 1:</strong> 1 conductor = 53% fill. A single conductor can sit anywhere in the raceway, so the code allows over half the area.</div>';
+            } else if (totalWireCount === 2) {
+                guidance += '<div class="info-box"><strong>NEC Ch.9 Table 1:</strong> 2 conductors = 31% fill. Two wires tend to stack against each other and trap heat, so the limit is tighter than 3+.</div>';
+            } else {
+                guidance += '<div class="info-box"><strong>NEC Ch.9 Table 1:</strong> 3+ conductors = 40% fill. Multiple wires distribute more evenly in the raceway, allowing a higher limit than 2 conductors.</div>';
+            }
+        }
 
         // Approaching limit warning (85%+)
         var fillRatio = fillPct / fillLimit;
