@@ -553,21 +553,21 @@ nav a:hover {
 }
 
 .btn-share {
-    background: none;
-    border: 1px solid var(--border);
+    background: var(--accent);
+    border: 1px solid var(--accent);
     padding: 6px 14px;
     border-radius: 4px;
     font-size: 0.82rem;
     font-weight: 600;
-    color: var(--text-light);
+    color: var(--white);
     cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
+    transition: background 0.2s, border-color 0.2s;
     white-space: nowrap;
 }
 
 .btn-share:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+    background: #b87c0a;
+    border-color: #b87c0a;
 }
 
 /* Admin Panel */
