@@ -209,6 +209,21 @@ nav a:hover {
     margin-bottom: 32px;
 }
 
+.tool-disclaimer {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    padding: 8px 12px;
+    background: var(--gray);
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+.tool-disclaimer a {
+    color: var(--text-muted);
+    text-decoration: underline;
+}
+
 .calc-form {
     background: var(--white);
     border: 1px solid var(--border);
