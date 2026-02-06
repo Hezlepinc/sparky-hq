@@ -209,17 +209,25 @@ nav a:hover {
     margin-bottom: 32px;
 }
 
-.tool-disclaimer {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-    padding: 8px 12px;
-    background: var(--gray);
-    border-radius: 4px;
-    line-height: 1.5;
+/* Disclaimer Box (below calculators) */
+.disclaimer-box {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 20px 20px 0;
 }
 
-.tool-disclaimer a {
+.disclaimer-box p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    line-height: 1.6;
+    text-align: center;
+}
+
+.disclaimer-box a {
     color: var(--text-muted);
     text-decoration: underline;
 }
