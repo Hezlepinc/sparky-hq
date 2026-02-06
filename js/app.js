@@ -1,4 +1,4 @@
-/* Sparky HQ - PWA, Install Banner, Share, Admin */
+/* Sparky HQ - PWA, Install Banner, Share */
 
 // ── Service Worker ──
 if ('serviceWorker' in navigator) {
@@ -56,7 +56,7 @@ window.addEventListener('load', function() {
     setTimeout(showInstallBanner, 1500);
 });
 
-// ── Admin Tool Lock System ──
+// ── Tool Visibility (edit DEFAULT_ENABLED and push to publish) ──
 var ALL_TOOLS = [
     { path: '/tools/voltage-drop/',    name: 'Voltage Drop' },
     { path: '/tools/wire-size/',       name: 'Wire Size' },
@@ -66,34 +66,24 @@ var ALL_TOOLS = [
     { path: '/tools/generator-sizing/', name: 'Generator Sizing' }
 ];
 
-// Default: only voltage-drop is live
-var DEFAULT_ENABLED = ['/tools/voltage-drop/'];
+// Add a tool path here and push to make it public
+var DEFAULT_ENABLED = [];
 
-var ADMIN_KEY = 'sparky-admin';
-var ENABLED_KEY = 'sparky-enabled-tools';
-
-function isAdmin() {
-    return localStorage.getItem(ADMIN_KEY) === '1';
-}
-
-function getEnabledTools() {
-    var stored = localStorage.getItem(ENABLED_KEY);
-    if (stored) {
-        try { return JSON.parse(stored); } catch(e) {}
+// Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('key') === 'sparky') {
+        localStorage.setItem('sparky_unlock', '1');
     }
-    return DEFAULT_ENABLED;
-}
+})();
 
-function setEnabledTools(list) {
-    localStorage.setItem(ENABLED_KEY, JSON.stringify(list));
-}
-
-function isToolEnabled(path) {
-    return getEnabledTools().indexOf(path) !== -1;
+function isOwnerUnlocked() {
+    return localStorage.getItem('sparky_unlock') === '1';
 }
 
 function checkToolLock() {
-    if (isAdmin()) return;
+    if (isOwnerUnlocked()) return;
+
     var path = window.location.pathname;
     if (!path.endsWith('/')) path += '/';
 
@@ -101,7 +91,7 @@ function checkToolLock() {
     if (!isTool) return;
 
     var enabled = ALL_TOOLS.some(function(t) {
-        return path.indexOf(t.path) !== -1 && isToolEnabled(t.path);
+        return path.indexOf(t.path) !== -1 && DEFAULT_ENABLED.indexOf(t.path) !== -1;
     });
     if (enabled) return;
 
@@ -118,12 +108,12 @@ function checkToolLock() {
 }
 
 function lockCards() {
-    if (isAdmin()) return;
+    if (isOwnerUnlocked()) return;
     var cards = document.querySelectorAll('.tool-card');
     cards.forEach(function(card) {
         var href = card.getAttribute('href') || '';
         var match = ALL_TOOLS.find(function(t) { return href.indexOf(t.path) !== -1; });
-        if (match && !isToolEnabled(match.path)) {
+        if (match && DEFAULT_ENABLED.indexOf(match.path) === -1) {
             card.style.opacity = '0.5';
             card.style.pointerEvents = 'none';
             var badge = document.createElement('span');
@@ -135,122 +125,10 @@ function lockCards() {
     });
 }
 
-// ── Admin Login (Ctrl+Shift+A) ──
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        e.preventDefault();
-        if (isAdmin()) {
-            localStorage.removeItem(ADMIN_KEY);
-            location.reload();
-            return;
-        }
-        var user = prompt('Username:');
-        if (!user) return;
-        var pass = prompt('Password:');
-        if (!pass) return;
-        if (user === 'johnhezlep' && pass === 'admin123') {
-            localStorage.setItem(ADMIN_KEY, '1');
-            location.reload();
-        } else {
-            alert('Invalid credentials.');
-        }
-    }
-});
-
-// ── Admin Panel UI ──
-function buildAdminPanel() {
-    if (!isAdmin()) return;
-
-    var enabled = getEnabledTools();
-
-    var panel = document.createElement('div');
-    panel.id = 'admin-panel';
-
-    var header = '<div class="ap-header">' +
-        '<strong>Admin Panel</strong>' +
-        '<button id="ap-close" title="Minimize">&ndash;</button>' +
-        '</div>';
-
-    var rows = '';
-    ALL_TOOLS.forEach(function(tool) {
-        var on = enabled.indexOf(tool.path) !== -1;
-        rows +=
-            '<label class="ap-row">' +
-            '<span>' + tool.name + '</span>' +
-            '<input type="checkbox" data-path="' + tool.path + '"' + (on ? ' checked' : '') + '>' +
-            '<span class="ap-toggle"></span>' +
-            '</label>';
-    });
-
-    var footer = '<div class="ap-footer">' +
-        '<button id="ap-logout">Log Out</button>' +
-        '</div>';
-
-    panel.innerHTML = header + '<div class="ap-body">' + rows + '</div>' + footer;
-    document.body.appendChild(panel);
-
-    // Toggle handler
-    panel.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
-        cb.addEventListener('change', function() {
-            var path = cb.getAttribute('data-path');
-            var list = getEnabledTools();
-            if (cb.checked) {
-                if (list.indexOf(path) === -1) list.push(path);
-            } else {
-                list = list.filter(function(p) { return p !== path; });
-            }
-            setEnabledTools(list);
-            // Update card visuals if on homepage
-            updateCardStates();
-        });
-    });
-
-    // Minimize/expand
-    var minimized = false;
-    document.getElementById('ap-close').addEventListener('click', function() {
-        minimized = !minimized;
-        panel.querySelector('.ap-body').style.display = minimized ? 'none' : '';
-        panel.querySelector('.ap-footer').style.display = minimized ? 'none' : '';
-        this.innerHTML = minimized ? '+' : '&ndash;';
-    });
-
-    // Logout
-    document.getElementById('ap-logout').addEventListener('click', function() {
-        localStorage.removeItem(ADMIN_KEY);
-        location.reload();
-    });
-}
-
-function updateCardStates() {
-    var cards = document.querySelectorAll('.tool-card');
-    cards.forEach(function(card) {
-        var href = card.getAttribute('href') || '';
-        var match = ALL_TOOLS.find(function(t) { return href.indexOf(t.path) !== -1; });
-        if (!match) return;
-
-        var on = isToolEnabled(match.path);
-        card.style.opacity = on ? '' : '0.5';
-
-        // Update or add/remove badge
-        var existing = card.querySelector('.coming-soon-badge');
-        if (!on && !existing) {
-            var badge = document.createElement('span');
-            badge.className = 'coming-soon-badge';
-            badge.textContent = 'Coming Soon';
-            badge.style.cssText = 'display:inline-block;background:#f2f1ef;color:#888;font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:10px;margin-top:8px;';
-            var body = card.querySelector('.card-body');
-            if (body) body.appendChild(badge);
-        } else if (on && existing) {
-            existing.remove();
-        }
-    });
-}
-
 // ── Share Button on Calculator Pages ──
 document.addEventListener('DOMContentLoaded', function() {
     checkToolLock();
     lockCards();
-    buildAdminPanel();
 
     var calcPage = document.querySelector('.calc-page');
     if (!calcPage) return;
