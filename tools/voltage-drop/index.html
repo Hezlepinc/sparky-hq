@@ -454,7 +454,7 @@
     function buildShowWork(formula, substituted, answer, steps) {
         var h = '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
         h += '<details style="cursor:pointer;">';
-        h += '<summary style="font-weight:700;font-size:0.92rem;color:var(--text);padding:4px 0;user-select:none;">Show Your Work</summary>';
+        h += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
         h += '<div style="margin-top:12px;">';
 
         // Formula
@@ -564,7 +564,7 @@
             // Warnings first — above everything
             html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
-            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
             html += '<div class="result-section">';
             html += '<div class="result-value">' + vd.toFixed(2) + ' V (' + vdPct.toFixed(2) + '%)</div>';
             html += '<div class="result-label">Voltage Drop — ' + sizeLabel(wireSize) + ' ' + cap(material) + ' @ ' + distance + ' ft</div>';
@@ -614,7 +614,7 @@
             // Warnings first
             html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
-            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
             html += '<div class="result-section">';
             html += '<div class="result-value">' + Math.floor(maxDist) + ' ft</div>';
             html += '<div class="result-label">Max One-Way Distance at ' + (vdLimit * 100) + '% with ' + sizeLabel(wireSize) + ' ' + cap(material) + '</div>';
@@ -680,7 +680,7 @@
                 }
             }
 
-            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">Response</div>';
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
 
             if (!recommended) {
                 html += '<div class="result-section">';
