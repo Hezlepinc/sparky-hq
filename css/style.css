@@ -547,6 +547,119 @@ nav a:hover {
     color: var(--accent);
 }
 
+/* Admin Panel */
+#admin-panel {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 260px;
+    background: #1c1c1c;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    z-index: 10000;
+    font-size: 0.84rem;
+    color: #ccc;
+    overflow: hidden;
+}
+
+.ap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #333;
+    color: #D4910D;
+}
+
+.ap-header button {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.ap-body {
+    padding: 8px 0;
+}
+
+.ap-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.ap-row:hover {
+    background: #262626;
+}
+
+.ap-row span:first-child {
+    flex: 1;
+}
+
+.ap-row input[type="checkbox"] {
+    display: none;
+}
+
+.ap-toggle {
+    width: 36px;
+    height: 20px;
+    background: #444;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.ap-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #888;
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.ap-row input:checked + .ap-toggle {
+    background: #2d6b3f;
+}
+
+.ap-row input:checked + .ap-toggle::after {
+    transform: translateX(16px);
+    background: #4ade80;
+}
+
+.ap-footer {
+    padding: 8px 16px 12px;
+    border-top: 1px solid #333;
+}
+
+.ap-footer button {
+    width: 100%;
+    padding: 7px;
+    background: #333;
+    border: none;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ap-footer button:hover {
+    background: #444;
+    color: #fff;
+}
+
 /* Mobile */
 @media (max-width: 600px) {
     .hero {
