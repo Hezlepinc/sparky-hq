@@ -448,6 +448,54 @@
     }
 
     // ══════════════════════════════════════
+    //  AMPACITY / OCPD WARNINGS
+    // ══════════════════════════════════════
+
+    function buildWarnings(wireSize, amps, material, tempRating, ocpdVal) {
+        var html = '';
+        var ampTable = ampacity[material][tempRating];
+        var ampRating = ampTable[wireSize];
+
+        if (!ampRating) return '';
+
+        // Wire undersized for load
+        if (ampRating < amps) {
+            html += '<div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;">';
+            html += '<strong style="color:#dc2626;">Conductor Undersized</strong><br>';
+            html += sizeLabel(wireSize) + ' ' + cap(material) + ' is rated <strong>' + ampRating + 'A</strong> at ' + tempRating + '°C (NEC 310.16). ';
+            html += 'Your load is <strong>' + amps + 'A</strong>. ';
+            var minWire = getMinWireForAmps(amps, material, tempRating);
+            html += 'Minimum conductor for this load: <strong>' + sizeLabel(minWire) + '</strong>.';
+            html += '</div>';
+        }
+
+        // OCPD too large for wire
+        if (ocpdVal && ampRating < ocpdVal) {
+            // Max OCPD per 240.4(D) for small conductors
+            var maxOCPD = null;
+            if (wireSize === '14') maxOCPD = 15;
+            if (wireSize === '12') maxOCPD = 20;
+            if (wireSize === '10') maxOCPD = 30;
+
+            if (maxOCPD && ocpdVal > maxOCPD) {
+                html += '<div style="background:#fef9ee;border-left:4px solid #D4910D;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;">';
+                html += '<strong style="color:#b87c0a;">OCPD Mismatch</strong><br>';
+                html += sizeLabel(wireSize) + ' ' + cap(material) + ' max OCPD is <strong>' + maxOCPD + 'A</strong> per NEC 240.4(D). ';
+                html += 'Selected breaker is <strong>' + ocpdVal + 'A</strong>.';
+                html += '</div>';
+            } else if (!maxOCPD && ocpdVal > ampRating) {
+                html += '<div style="background:#fef9ee;border-left:4px solid #D4910D;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;">';
+                html += '<strong style="color:#b87c0a;">OCPD Exceeds Ampacity</strong><br>';
+                html += sizeLabel(wireSize) + ' ' + cap(material) + ' is rated <strong>' + ampRating + 'A</strong> at ' + tempRating + '°C. ';
+                html += 'Selected breaker is <strong>' + ocpdVal + 'A</strong>. Verify overcurrent protection per NEC 240.4.';
+                html += '</div>';
+            }
+        }
+
+        return html;
+    }
+
+    // ══════════════════════════════════════
     //  MAIN CALCULATE
     // ══════════════════════════════════════
 
@@ -476,6 +524,9 @@
             var deliveredV = voltage - vd;
             var pass3 = vdPct <= 3;
             var pass5 = vdPct <= 5;
+
+            // Warnings first — above everything
+            html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
             html += '<div class="result-section">';
             html += '<div class="result-value">' + vd.toFixed(2) + ' V (' + vdPct.toFixed(2) + '%)</div>';
@@ -506,6 +557,9 @@
 
             var R = wireResistance[material][wireSize];
             var maxDist = (vdLimit * voltage * 1000) / (factor * amps * R);
+
+            // Warnings first
+            html += buildWarnings(wireSize, amps, material, tempRating, ocpdVal);
 
             html += '<div class="result-section">';
             html += '<div class="result-value">' + Math.floor(maxDist) + ' ft</div>';
