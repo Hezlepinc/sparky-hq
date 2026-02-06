@@ -441,6 +441,11 @@
             rules.push({ rule: 'maxForVoltage', value: amps, voltage: voltage, label: 'Load (amps)' });
         }
 
+        var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
+        if (ocpdVal && amps > 0 && amps > ocpdVal) {
+            rules.push({ rule: 'custom', test: true, msg: 'Load (' + amps + 'A) exceeds OCPD (' + ocpdVal + 'A) \u2014 breaker will trip. Verify breaker size or load.', level: 'warning' });
+        }
+
         var result = SparkyValidate.check(rules);
         SparkyValidate.showMessages('validation-messages', result);
 
