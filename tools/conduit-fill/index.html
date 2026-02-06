@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conduit Fill Calculator - NEC Chapter 9 | Sparky HQ</title>
-    <meta name="description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC.">
+    <meta name="description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with common presets.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
     <header class="site-header">
@@ -28,7 +28,20 @@
                 <h1>Conduit Fill Calculator <span class="nec-ref">NEC Ch.9 Table 4 &amp; 5</span></h1>
                 <p class="subtitle">Calculate conduit fill percentage. Limits: 1 wire = 53%, 2 wires = 31%, 3+ wires = 40%.</p>
 
+                <div class="info-box">
+                    <strong>Why different fill limits?</strong> NEC Chapter 9 Table 1 sets fill at 53% for 1 conductor, 31% for 2, and 40% for 3+. Two conductors get a tighter limit because they tend to stack and create hot spots. Three or more wires distribute better, allowing 40%. These limits prevent overheating and make pulling easier.
+                </div>
+
                 <div class="calc-form">
+                    <!-- Common Presets -->
+                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Quick Start Presets</label>
+                    <div class="preset-row">
+                        <button class="preset-btn" onclick="loadPreset('20a')">20A circuit (3x #12 + #12 GND)</button>
+                        <button class="preset-btn" onclick="loadPreset('30a')">30A circuit (3x #10 + #10 GND)</button>
+                        <button class="preset-btn" onclick="loadPreset('50a')">50A circuit (3x #6 + #10 GND)</button>
+                        <button class="preset-btn" onclick="loadPreset('100a')">100A feeder (3x #3 + #8 GND)</button>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="conduitType">Conduit Type</label>
@@ -45,6 +58,18 @@
                             <label for="conduitSize">Conduit Size</label>
                             <select id="conduitSize"></select>
                         </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="conduitLength">Conduit Length (optional)</label>
+                            <select id="conduitLength">
+                                <option value="normal" selected>Standard (over 24")</option>
+                                <option value="nipple">Nipple (24" or less)</option>
+                            </select>
+                            <p class="field-note" id="nippleNote">Standard fill limits apply.</p>
+                        </div>
+                        <div class="form-group"></div>
                     </div>
 
                     <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Conductors</label>
@@ -90,25 +115,34 @@
 
                 <div class="result" id="result">
                     <div class="result-section">
-                        <div class="result-value" id="fillPct">—</div>
+                        <div class="result-value" id="fillPct">--</div>
                         <div class="result-label">Conduit Fill</div>
                     </div>
                     <div class="result-section">
                         <span id="passStatus"></span>
                     </div>
+
+                    <!-- Guidance boxes injected here -->
+                    <div id="resultGuidance"></div>
+
                     <table class="breakdown-table" id="breakdownTable">
                         <thead>
                             <tr><th>Conductor</th><th>Area (in²)</th><th>Qty</th><th>Total (in²)</th></tr>
                         </thead>
                         <tbody id="breakdownBody"></tbody>
                     </table>
+
+                    <div class="result-section" style="margin-top:16px;" id="remainingSection">
+                        <h3>Remaining Capacity</h3>
+                        <p id="remainingText" style="color:var(--text-light);font-size:0.9rem;">--</p>
+                    </div>
                 </div>
             </div>
         </section>
         <div class="disclaimer-box">
-        <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
-    </div>
-</main>
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
 
     <footer class="site-footer">
         <div class="container">
@@ -119,7 +153,7 @@
 
     <script>
     // NEC Table 4 - Internal area of conduit (sq inches) by trade size
-    const conduitArea = {
+    var conduitArea = {
         EMT:   {'1/2':0.304,'3/4':0.533,'1':0.864,'1-1/4':1.496,'1-1/2':2.036,'2':3.356,'2-1/2':5.858,'3':8.846,'3-1/2':11.545,'4':14.753},
         IMC:   {'1/2':0.342,'3/4':0.586,'1':0.959,'1-1/4':1.647,'1-1/2':2.225,'2':3.630,'2-1/2':5.135,'3':7.922,'3-1/2':10.584,'4':13.631},
         RMC:   {'1/2':0.314,'3/4':0.549,'1':0.887,'1-1/4':1.526,'1-1/2':2.071,'2':3.408,'2-1/2':4.866,'3':7.499,'3-1/2':10.010,'4':12.882},
@@ -129,7 +163,7 @@
     };
 
     // NEC Table 5 - Wire area (sq inches) including insulation
-    const wireArea = {
+    var wireArea = {
         THHN: {
             '14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,
             '6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,
@@ -160,53 +194,108 @@
         }
     };
 
+    // Nipple note
+    document.getElementById('conduitLength').addEventListener('change', function() {
+        var note = document.getElementById('nippleNote');
+        if (this.value === 'nipple') {
+            note.textContent = 'NEC 376.22 / Ch.9 Note 4: Conduit nipples \u226424" may be filled to 60%.';
+        } else {
+            note.textContent = 'Standard fill limits apply.';
+        }
+    });
+
     function updateConduitSizes() {
-        const type = document.getElementById('conduitType').value;
-        const select = document.getElementById('conduitSize');
-        const sizes = Object.keys(conduitArea[type]);
-        select.innerHTML = sizes.map(s => '<option value="' + s + '">' + s + '"</option>').join('');
+        var type = document.getElementById('conduitType').value;
+        var select = document.getElementById('conduitSize');
+        var sizes = Object.keys(conduitArea[type]);
+        select.innerHTML = sizes.map(function(s) { return '<option value="' + s + '">' + s + '"</option>'; }).join('');
     }
 
-    function updateWireSizesInRow(el) {
-        // Wire sizes are the same across all types, no action needed
-    }
+    function updateWireSizesInRow(el) {}
 
     function addWireEntry() {
-        const container = document.getElementById('wireEntries');
-        const entry = container.querySelector('.wire-entry').cloneNode(true);
+        var container = document.getElementById('wireEntries');
+        var entry = container.querySelector('.wire-entry').cloneNode(true);
         entry.querySelector('.wireCount').value = 1;
         container.appendChild(entry);
     }
 
     function removeWireEntry(btn) {
-        const container = document.getElementById('wireEntries');
+        var container = document.getElementById('wireEntries');
         if (container.children.length > 1) {
             btn.closest('.wire-entry').remove();
         }
     }
 
+    function loadPreset(type) {
+        var container = document.getElementById('wireEntries');
+        // Clear existing
+        container.innerHTML = '';
+
+        var configs = {
+            '20a': [
+                { type: 'THHN', gauge: '12', count: 3 },
+                { type: 'THHN', gauge: '12', count: 1 }
+            ],
+            '30a': [
+                { type: 'THHN', gauge: '10', count: 3 },
+                { type: 'THHN', gauge: '10', count: 1 }
+            ],
+            '50a': [
+                { type: 'THHN', gauge: '6', count: 3 },
+                { type: 'THHN', gauge: '10', count: 1 }
+            ],
+            '100a': [
+                { type: 'THHN', gauge: '3', count: 3 },
+                { type: 'THHN', gauge: '8', count: 1 }
+            ]
+        };
+
+        var rows = configs[type];
+        rows.forEach(function(row) {
+            var html = '<div class="wire-entry">';
+            html += '<select class="wireType"><option value="THHN" ' + (row.type === 'THHN' ? 'selected' : '') + '>THHN / THWN-2</option><option value="THW">THW / THWN</option><option value="XHHW">XHHW / XHHW-2</option><option value="USE">USE-2 / RHH</option></select>';
+            html += '<select class="wireGauge">';
+            var gauges = ['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750'];
+            gauges.forEach(function(g) {
+                var label = parseInt(g) >= 250 ? g + ' kcmil' : g + ' AWG';
+                html += '<option value="' + g + '"' + (g === row.gauge ? ' selected' : '') + '>' + label + '</option>';
+            });
+            html += '</select>';
+            html += '<input type="number" class="wireCount" value="' + row.count + '" min="1" placeholder="Qty">';
+            html += '<button class="btn-remove" onclick="removeWireEntry(this)" title="Remove">&times;</button>';
+            html += '</div>';
+            container.innerHTML += html;
+        });
+
+        // Highlight active preset
+        document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        event.target.classList.add('active');
+    }
+
     function calculate() {
-        const conduitType = document.getElementById('conduitType').value;
-        const conduitSize = document.getElementById('conduitSize').value;
-        const cArea = conduitArea[conduitType][conduitSize];
+        var conduitType = document.getElementById('conduitType').value;
+        var conduitSize = document.getElementById('conduitSize').value;
+        var isNipple = document.getElementById('conduitLength').value === 'nipple';
+        var cArea = conduitArea[conduitType][conduitSize];
 
-        const entries = document.querySelectorAll('.wire-entry');
-        let totalWireArea = 0;
-        let totalWireCount = 0;
-        const breakdown = [];
+        var entries = document.querySelectorAll('.wire-entry');
+        var totalWireArea = 0;
+        var totalWireCount = 0;
+        var breakdown = [];
 
-        entries.forEach(entry => {
-            const type = entry.querySelector('.wireType').value;
-            const gauge = entry.querySelector('.wireGauge').value;
-            const count = parseInt(entry.querySelector('.wireCount').value) || 0;
-            const area = wireArea[type][gauge];
+        entries.forEach(function(entry) {
+            var type = entry.querySelector('.wireType').value;
+            var gauge = entry.querySelector('.wireGauge').value;
+            var count = parseInt(entry.querySelector('.wireCount').value) || 0;
+            var area = wireArea[type][gauge];
 
             if (count > 0 && area) {
-                const total = area * count;
+                var total = area * count;
                 totalWireArea += total;
                 totalWireCount += count;
                 breakdown.push({
-                    label: gauge + (parseInt(gauge) ? ' AWG' : ' kcmil') + ' ' + type,
+                    label: gauge + (parseInt(gauge) >= 250 ? ' kcmil' : ' AWG') + ' ' + type,
                     area: area,
                     count: count,
                     total: total
@@ -219,25 +308,66 @@
             return;
         }
 
-        // Fill limit based on wire count
-        let fillLimit;
-        if (totalWireCount === 1) fillLimit = 53;
-        else if (totalWireCount === 2) fillLimit = 31;
-        else fillLimit = 40;
+        // Fill limit
+        var fillLimit;
+        if (isNipple) {
+            fillLimit = 60;
+        } else if (totalWireCount === 1) {
+            fillLimit = 53;
+        } else if (totalWireCount === 2) {
+            fillLimit = 31;
+        } else {
+            fillLimit = 40;
+        }
 
-        const fillPct = (totalWireArea / cArea) * 100;
-        const pass = fillPct <= fillLimit;
+        var fillPct = (totalWireArea / cArea) * 100;
+        var pass = fillPct <= fillLimit;
 
         document.getElementById('fillPct').textContent = fillPct.toFixed(1) + '%';
-        document.getElementById('passStatus').innerHTML = '<span class="' + (pass ? 'result-pass' : 'result-fail') + '">' + (pass ? 'PASS' : 'FAIL') + '</span> — Limit is ' + fillLimit + '% for ' + totalWireCount + ' conductor' + (totalWireCount > 1 ? 's' : '');
+
+        var statusNote = isNipple ? ' (nipple \u226424": 60% allowed)' : '';
+        document.getElementById('passStatus').innerHTML = '<span class="' + (pass ? 'result-pass' : 'result-fail') + '">' + (pass ? 'PASS' : 'FAIL') + '</span> \u2014 Limit is ' + fillLimit + '% for ' + totalWireCount + ' conductor' + (totalWireCount > 1 ? 's' : '') + statusNote;
+
+        // Guidance boxes
+        var guidance = '';
+
+        // Approaching limit warning (85%+)
+        var fillRatio = fillPct / fillLimit;
+        if (pass && fillRatio >= 0.85) {
+            guidance += '<div class="caution-box"><strong>Getting tight:</strong> Fill is at ' + (fillRatio * 100).toFixed(0) + '% of the ' + fillLimit + '% limit. Adding even one more conductor may exceed fill. Consider the next size up if future additions are likely.</div>';
+        }
+
+        // Derating trigger (>3 CCCs)
+        if (totalWireCount > 3) {
+            guidance += '<div class="info-box"><strong>Derating reminder:</strong> With ' + totalWireCount + ' conductors, ampacity adjustment per NEC 310.15(C)(1) is likely required. Count current-carrying conductors (exclude equipment grounds and neutrals that carry only unbalanced loads) to determine the adjustment factor. Check the <a href="/tools/wire-size/" style="color:var(--accent);font-weight:600;">Wire Size Calculator</a> with derating enabled.</div>';
+        }
+
+        // Nipple exception note
+        if (isNipple) {
+            guidance += '<div class="tip-box"><strong>Nipple exception applied:</strong> Per NEC Chapter 9, Note 4 to Tables, conduit bodies and nipples not exceeding 24 inches may be filled to 60%. Ampacity derating for conduit fill does not apply to nipples per NEC 310.15(C)(1)(a).</div>';
+        }
+
+        document.getElementById('resultGuidance').innerHTML = guidance;
 
         // Breakdown table
-        const tbody = document.getElementById('breakdownBody');
+        var tbody = document.getElementById('breakdownBody');
         tbody.innerHTML = '';
-        breakdown.forEach(row => {
+        breakdown.forEach(function(row) {
             tbody.innerHTML += '<tr><td>' + row.label + '</td><td>' + row.area.toFixed(4) + '</td><td>' + row.count + '</td><td>' + row.total.toFixed(4) + '</td></tr>';
         });
         tbody.innerHTML += '<tr><td><strong>Total</strong></td><td></td><td>' + totalWireCount + '</td><td><strong>' + totalWireArea.toFixed(4) + ' / ' + cArea.toFixed(4) + '</strong></td></tr>';
+
+        // Remaining capacity — how many more #12 THHN could fit
+        var remainingArea = (cArea * fillLimit / 100) - totalWireArea;
+        var ref12area = wireArea.THHN['12'];
+        var extraWires = Math.floor(remainingArea / ref12area);
+        var remainText = '';
+        if (remainingArea > 0) {
+            remainText = 'Remaining fill area: ' + remainingArea.toFixed(4) + ' in\u00B2. Room for approximately ' + extraWires + ' more #12 THHN conductors.';
+        } else {
+            remainText = 'No remaining capacity \u2014 conduit is at or over fill limit.';
+        }
+        document.getElementById('remainingText').textContent = remainText;
 
         document.getElementById('result').classList.add('show');
     }

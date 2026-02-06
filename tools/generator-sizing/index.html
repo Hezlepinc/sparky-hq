@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generator Sizing Calculator - Generac Recommendations | Sparky HQ</title>
-    <meta name="description" content="Free generator sizing calculator for electricians. Calculate peak and managed loads with Generac model recommendations. Includes load management and fuel type derate.">
+    <meta name="description" content="Free generator sizing calculator for electricians. Calculate peak and managed loads with A/C starting surge, NEC breaker/conductor sizing, and Generac model recommendations.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
     <header class="site-header">
@@ -26,7 +26,7 @@
         <section class="calc-page">
             <div class="container">
                 <h1>Generator Sizing Calculator</h1>
-                <p class="subtitle">Size standby generators based on load analysis. Check "Manage" for loads that can be shed via smart transfer switch or load control modules.</p>
+                <p class="subtitle">Size standby generators based on load analysis with A/C starting surge. Check "Manage" for loads that can be shed via smart transfer switch or load control modules.</p>
 
                 <div class="calc-form">
                     <div class="form-row">
@@ -36,33 +36,59 @@
                                 <option value="propane">Propane (LP)</option>
                                 <option value="natural-gas">Natural Gas</option>
                             </select>
-                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">Natural gas output is ~10% lower than LP.</p>
+                            <p class="field-note">Natural gas output is ~10% lower than LP.</p>
                         </div>
                         <div class="form-group">
                             <label for="sqft">Home Square Footage (lighting estimate)</label>
                             <select id="sqft">
                                 <option value="500">Under 1,000 sq ft (500W)</option>
-                                <option value="750">1,000–1,500 sq ft (750W)</option>
-                                <option value="1000" selected>1,500–2,500 sq ft (1,000W)</option>
-                                <option value="1500">2,500–3,500 sq ft (1,500W)</option>
-                                <option value="2000">3,500–5,000 sq ft (2,000W)</option>
+                                <option value="750">1,000-1,500 sq ft (750W)</option>
+                                <option value="1000" selected>1,500-2,500 sq ft (1,000W)</option>
+                                <option value="1500">2,500-3,500 sq ft (1,500W)</option>
+                                <option value="2000">3,500-5,000 sq ft (2,000W)</option>
                                 <option value="2500">Over 5,000 sq ft (2,500W)</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="acSize">Central Air Conditioning</label>
-                        <select id="acSize">
-                            <option value="0">No Central AC</option>
-                            <option value="3500">2-ton (3,500W)</option>
-                            <option value="4500">2.5-ton (4,500W)</option>
-                            <option value="5500" selected>3-ton (5,500W)</option>
-                            <option value="6500">3.5-ton (6,500W)</option>
-                            <option value="7500">4-ton (7,500W)</option>
-                            <option value="9000">5-ton (9,000W)</option>
-                            <option value="12000">Dual units (12,000W)</option>
-                        </select>
+                    <!-- A/C Section with LRA -->
+                    <h3 style="margin-top:24px;margin-bottom:12px;">Central Air Conditioning</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="acSize">A/C Unit Size (running watts)</label>
+                            <select id="acSize" onchange="updateLRA()">
+                                <option value="0">No Central AC</option>
+                                <option value="3500">2-ton (3,500W)</option>
+                                <option value="4500">2.5-ton (4,500W)</option>
+                                <option value="5500" selected>3-ton (5,500W)</option>
+                                <option value="6500">3.5-ton (6,500W)</option>
+                                <option value="7500">4-ton (7,500W)</option>
+                                <option value="9000">5-ton (9,000W)</option>
+                                <option value="12000">Dual units (12,000W)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="lraGroup">
+                            <label for="acLRA">A/C Locked Rotor Amps (LRA) at 240V</label>
+                            <select id="acLRA" onchange="updateCustomLRA()">
+                                <option value="0">No A/C selected</option>
+                                <option value="60">2-ton typical: 60A</option>
+                                <option value="75">2.5-ton typical: 75A</option>
+                                <option value="90">3-ton typical: 90A</option>
+                                <option value="105">3.5-ton typical: 105A</option>
+                                <option value="120">4-ton typical: 120A</option>
+                                <option value="150">5-ton typical: 150A</option>
+                                <option value="custom">Enter nameplate LRA...</option>
+                            </select>
+                            <p class="field-note">Use nameplate LRA if available. These are typical estimates.</p>
+                        </div>
+                    </div>
+                    <div class="form-group" id="customLRAGroup" style="display:none;">
+                        <label for="customLRA">Nameplate LRA (amps at 240V)</label>
+                        <input type="number" id="customLRA" placeholder="e.g. 96" min="0" step="1">
+                    </div>
+
+                    <div class="info-box" id="lraInfoBox">
+                        <strong>Why LRA matters:</strong> A/C compressors draw 5-7x their running amps during startup (Locked Rotor Amps). This surge lasts 1-3 seconds but the generator must handle it or the compressor won't start. LRA is the #1 factor that determines whether a generator is actually big enough.
                     </div>
 
                     <!-- Heating -->
@@ -97,7 +123,7 @@
                         </div>
                         <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
                             <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
-                                <input type="checkbox" id="load-spaceheat" class="load-cb" data-watts="3000"> Space Heaters (1–2 units)
+                                <input type="checkbox" id="load-spaceheat" class="load-cb" data-watts="3000"> Space Heaters (1-2 units)
                             </label>
                             <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+3,000W</span>
                             <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
@@ -261,17 +287,33 @@
                 </div>
 
                 <div class="result" id="result">
+                    <!-- Load Summary -->
                     <div class="form-row">
                         <div class="result-section">
-                            <div class="result-value" id="peakKW">—</div>
-                            <div class="result-label">Peak Load (with 25% buffer)</div>
+                            <div class="result-value" id="runningKW">--</div>
+                            <div class="result-label">Running Load (with 25% buffer)</div>
                         </div>
                         <div class="result-section">
-                            <div class="result-value" id="managedKW">—</div>
+                            <div class="result-value" id="managedKW">--</div>
                             <div class="result-label">With Load Management</div>
                         </div>
                     </div>
 
+                    <!-- Surge Section -->
+                    <div id="surgeSection" style="display:none;">
+                        <div class="result-section" style="margin-top:16px;padding:16px;background:#fffbeb;border-radius:var(--radius);border:1px solid #fde68a;">
+                            <h3 style="margin-bottom:8px;">A/C Starting Surge</h3>
+                            <table class="breakdown-table" id="surgeTable">
+                                <tr><td>A/C Running Load</td><td id="surgeRunning">--</td></tr>
+                                <tr><td>A/C LRA</td><td id="surgeLRA">--</td></tr>
+                                <tr><td>Starting Surge (LRA x 240V)</td><td id="surgeKW">--</td></tr>
+                                <tr><td>Other Running Loads</td><td id="surgeOther">--</td></tr>
+                                <tr><td><strong>Peak Demand at A/C Startup</strong></td><td id="surgePeak"><strong>--</strong></td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Generac Table -->
                     <div class="result-section" style="margin-top:16px;">
                         <h3>Generac Model Recommendation</h3>
                         <table class="breakdown-table" id="generacTable">
@@ -283,13 +325,32 @@
                     <div class="result-section" style="margin-top:16px;" id="managedNote">
                         <p id="managedText" style="font-size:0.9rem;color:var(--text-light);"></p>
                     </div>
+
+                    <!-- NEC Installation Requirements -->
+                    <div class="nec-result-section" id="necSection" style="display:none;">
+                        <h3>NEC Installation Requirements <span class="nec-ref">NEC 445</span></h3>
+
+                        <table class="breakdown-table" id="necTable">
+                            <tr><td>Generator Output Current (240V)</td><td id="necAmps">--</td></tr>
+                            <tr><td>Main Breaker <span class="nec-ref">445.12</span></td><td id="necBreaker">--</td></tr>
+                            <tr><td>Conductor Size (Gen to Transfer Switch) <span class="nec-ref">445.13</span></td><td id="necConductor">--</td></tr>
+                        </table>
+
+                        <div class="info-box" style="margin-top:12px;">
+                            <strong>Transfer Switch Sizing:</strong> Transfer switch must be rated for the generator output or the main breaker size, whichever is larger. Most residential installs use a 200A transfer switch matched to the main panel.
+                        </div>
+
+                        <div class="warning-box" style="margin-top:0;">
+                            <strong>Neutral Bonding - Common Mistake:</strong> Standby generators with a transfer switch are typically <strong>non-separately derived systems</strong>. Do NOT bond the neutral to ground at the generator. The neutral-ground bond exists at the main panel only. Bonding at both locations creates parallel paths for fault current. Remove the bonding jumper at the generator if present.
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
         <div class="disclaimer-box">
-        <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
-    </div>
-</main>
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
 
     <footer class="site-footer">
         <div class="container">
@@ -299,8 +360,54 @@
     </footer>
 
     <script>
-    // Generac Guardian / Protector series models
-    const generacModels = [
+    // ══════════════════════════════════════
+    //  LRA DATA (typical values by A/C tonnage)
+    // ══════════════════════════════════════
+    var lraByAC = {
+        '0':    0,
+        '3500': 60,   // 2-ton
+        '4500': 75,   // 2.5-ton
+        '5500': 90,   // 3-ton
+        '6500': 105,  // 3.5-ton
+        '7500': 120,  // 4-ton
+        '9000': 150,  // 5-ton
+        '12000': 200  // Dual units
+    };
+
+    function updateLRA() {
+        var acW = document.getElementById('acSize').value;
+        var lraSelect = document.getElementById('acLRA');
+        var lra = lraByAC[acW] || 0;
+
+        if (acW === '0') {
+            lraSelect.innerHTML = '<option value="0">No A/C selected</option>';
+            document.getElementById('customLRAGroup').style.display = 'none';
+        } else {
+            var tonLabels = {'3500':'2-ton','4500':'2.5-ton','5500':'3-ton','6500':'3.5-ton','7500':'4-ton','9000':'5-ton','12000':'Dual'};
+            var label = tonLabels[acW] || '';
+            lraSelect.innerHTML = '<option value="' + lra + '">' + label + ' typical: ' + lra + 'A</option>' +
+                                  '<option value="custom">Enter nameplate LRA...</option>';
+            document.getElementById('customLRAGroup').style.display = 'none';
+        }
+    }
+
+    function updateCustomLRA() {
+        var val = document.getElementById('acLRA').value;
+        document.getElementById('customLRAGroup').style.display = (val === 'custom') ? '' : 'none';
+    }
+
+    function getLRA() {
+        var val = document.getElementById('acLRA').value;
+        if (val === 'custom') {
+            return parseFloat(document.getElementById('customLRA').value) || 0;
+        }
+        return parseFloat(val) || 0;
+    }
+
+    // ══════════════════════════════════════
+    //  GENERAC MODELS
+    // ══════════════════════════════════════
+    var generacModels = [
         { model: 'Guardian 10kW (7224)', lp: 10, ng: 9 },
         { model: 'Guardian 14kW (7225)', lp: 14, ng: 12.5 },
         { model: 'Guardian 16kW (7226)', lp: 16, ng: 14 },
@@ -311,54 +418,128 @@
         { model: 'Guardian 26kW (7291)', lp: 26, ng: 23 },
     ];
 
-    function calculate() {
-        const fuelType = document.getElementById('fuelType').value;
-        const fuelDerate = fuelType === 'natural-gas' ? 1.10 : 1.0;
-        const lightingW = parseInt(document.getElementById('sqft').value) || 1000;
-        const acW = parseInt(document.getElementById('acSize').value) || 0;
+    // ══════════════════════════════════════
+    //  NEC CONDUCTOR SIZING
+    // ══════════════════════════════════════
+    // NEC 310.16 at 75C copper — used for generator conductor sizing
+    var conductorTable = [
+        { size: '#14 AWG', amps: 20 },
+        { size: '#12 AWG', amps: 25 },
+        { size: '#10 AWG', amps: 35 },
+        { size: '#8 AWG',  amps: 50 },
+        { size: '#6 AWG',  amps: 65 },
+        { size: '#4 AWG',  amps: 85 },
+        { size: '#3 AWG',  amps: 100 },
+        { size: '#2 AWG',  amps: 115 },
+        { size: '#1 AWG',  amps: 130 },
+        { size: '1/0 AWG', amps: 150 },
+        { size: '2/0 AWG', amps: 175 },
+        { size: '3/0 AWG', amps: 200 },
+        { size: '4/0 AWG', amps: 230 },
+        { size: '250 kcmil', amps: 255 },
+        { size: '300 kcmil', amps: 285 },
+        { size: '350 kcmil', amps: 310 },
+        { size: '400 kcmil', amps: 335 },
+        { size: '500 kcmil', amps: 380 },
+    ];
 
-        let totalW = lightingW + acW;
-        let managedW = 0;
+    // Standard breaker sizes
+    var breakerSizes = [15,20,25,30,35,40,50,60,70,80,100,125,150,175,200,225,250,300,350,400];
+
+    function getBreaker(amps115pct) {
+        for (var i = 0; i < breakerSizes.length; i++) {
+            if (breakerSizes[i] >= amps115pct) return breakerSizes[i];
+        }
+        return breakerSizes[breakerSizes.length - 1];
+    }
+
+    function getConductor(breakerAmps) {
+        for (var i = 0; i < conductorTable.length; i++) {
+            if (conductorTable[i].amps >= breakerAmps) return conductorTable[i].size;
+        }
+        return conductorTable[conductorTable.length - 1].size;
+    }
+
+    // ══════════════════════════════════════
+    //  MAIN CALCULATE
+    // ══════════════════════════════════════
+    function calculate() {
+        var fuelType = document.getElementById('fuelType').value;
+        var fuelDerate = fuelType === 'natural-gas' ? 1.10 : 1.0;
+        var lightingW = parseInt(document.getElementById('sqft').value) || 1000;
+        var acW = parseInt(document.getElementById('acSize').value) || 0;
+        var lra = getLRA();
+
+        var totalW = lightingW + acW;
+        var managedW = 0;
 
         // Process all load checkboxes
-        document.querySelectorAll('.load-cb').forEach(cb => {
+        document.querySelectorAll('.load-cb').forEach(function(cb) {
             if (!cb.checked) return;
-            const watts = parseInt(cb.dataset.watts) || 0;
+            var watts = parseInt(cb.dataset.watts) || 0;
             totalW += watts;
 
-            // Check if managed
-            const mgd = document.querySelector('.mgd-cb[data-for="' + cb.id + '"]');
+            var mgd = document.querySelector('.mgd-cb[data-for="' + cb.id + '"]');
             if (mgd && mgd.checked) {
                 managedW += watts;
             }
         });
 
-        const peakWithBuffer = Math.ceil(totalW * 1.25 * fuelDerate);
-        const managedWithBuffer = Math.ceil((totalW - managedW) * 1.25 * fuelDerate);
-        const peakKW = peakWithBuffer / 1000;
-        const managedKW = managedWithBuffer / 1000;
+        var runningWithBuffer = Math.ceil(totalW * 1.25 * fuelDerate);
+        var managedWithBuffer = Math.ceil((totalW - managedW) * 1.25 * fuelDerate);
+        var runningKW = runningWithBuffer / 1000;
+        var managedKW = managedWithBuffer / 1000;
 
-        document.getElementById('peakKW').textContent = peakKW.toFixed(1) + ' kW';
+        document.getElementById('runningKW').textContent = runningKW.toFixed(1) + ' kW';
         document.getElementById('managedKW').textContent = managedKW.toFixed(1) + ' kW';
 
-        // Generac table
-        const ratingKey = fuelType === 'natural-gas' ? 'ng' : 'lp';
-        const targetKW = managedW > 0 ? managedKW : peakKW;
-        const tbody = document.getElementById('generacBody');
+        // ── Surge Calculation ──
+        var surgeSection = document.getElementById('surgeSection');
+        var peakSurgeKW = 0;
+
+        if (acW > 0 && lra > 0) {
+            var surgeW = lra * 240; // LRA * voltage = starting watts
+            var otherRunningW = totalW - acW; // everything except A/C
+            var peakAtStartup = surgeW + (otherRunningW * fuelDerate);
+            peakSurgeKW = peakAtStartup / 1000;
+
+            document.getElementById('surgeRunning').textContent = (acW / 1000).toFixed(1) + ' kW (' + (acW / 240).toFixed(1) + 'A running)';
+            document.getElementById('surgeLRA').textContent = lra + 'A at 240V';
+            document.getElementById('surgeKW').textContent = (surgeW / 1000).toFixed(1) + ' kW';
+            document.getElementById('surgeOther').textContent = (otherRunningW / 1000).toFixed(1) + ' kW';
+            document.getElementById('surgePeak').innerHTML = '<strong>' + peakSurgeKW.toFixed(1) + ' kW</strong>';
+            surgeSection.style.display = '';
+        } else {
+            surgeSection.style.display = 'none';
+        }
+
+        // ── Generac Table ──
+        var ratingKey = fuelType === 'natural-gas' ? 'ng' : 'lp';
+        // Target: use managed KW for running, but also check surge
+        var targetKW = managedW > 0 ? managedKW : runningKW;
+        var tbody = document.getElementById('generacBody');
         tbody.innerHTML = '';
 
-        let recommended = false;
-        generacModels.forEach(m => {
-            const rating = m[ratingKey];
-            let fit = '';
-            let cls = '';
-            if (!recommended && rating >= targetKW) {
+        var recommended = false;
+        generacModels.forEach(function(m) {
+            var rating = m[ratingKey];
+            var fit = '';
+            var cls = '';
+
+            // Check both running and surge capability
+            var meetsRunning = rating >= targetKW;
+            var meetsSurge = (peakSurgeKW === 0) || (rating >= peakSurgeKW * 0.85); // Generators can handle surge at ~85% of rating briefly
+
+            if (!recommended && meetsRunning && meetsSurge) {
                 fit = 'RECOMMENDED';
                 cls = 'result-pass';
                 recommended = true;
-            } else if (rating >= targetKW) {
+            } else if (meetsRunning && meetsSurge) {
                 fit = 'Sufficient';
                 cls = '';
+            } else if (meetsRunning && !meetsSurge) {
+                fit = 'Running OK / Surge Risk';
+                cls = 'result-fail';
             } else {
                 fit = 'Undersized';
                 cls = 'result-fail';
@@ -366,8 +547,8 @@
             tbody.innerHTML += '<tr><td>' + m.model + '</td><td>' + m.lp + ' kW</td><td>' + m.ng + ' kW</td><td><span class="' + cls + '">' + fit + '</span></td></tr>';
         });
 
-        // Managed note
-        const noteEl = document.getElementById('managedText');
+        // ── Managed Note ──
+        var noteEl = document.getElementById('managedText');
         if (managedW > 0) {
             noteEl.textContent = 'Load management removes ' + (managedW / 1000).toFixed(1) + ' kW from simultaneous demand. Requires compatible smart transfer switch (e.g., Generac PWRview) or load control modules.';
             document.getElementById('managedNote').style.display = '';
@@ -375,8 +556,43 @@
             document.getElementById('managedNote').style.display = 'none';
         }
 
+        // ── NEC Section ──
+        var necSection = document.getElementById('necSection');
+        // Use the recommended generator's rating to determine NEC requirements
+        // Find the recommended model
+        var recModel = null;
+        var recRating = 0;
+        for (var i = 0; i < generacModels.length; i++) {
+            var rating = generacModels[i][ratingKey];
+            var meetsRunning = rating >= targetKW;
+            var meetsSurge = (peakSurgeKW === 0) || (rating >= peakSurgeKW * 0.85);
+            if (meetsRunning && meetsSurge) {
+                recModel = generacModels[i];
+                recRating = rating;
+                break;
+            }
+        }
+
+        if (recModel) {
+            var genAmps = (recRating * 1000) / 240;
+            var breakerAmps115 = genAmps * 1.15; // NEC 445.12: 115% of rated current
+            var breakerSize = getBreaker(breakerAmps115);
+            var conductorSize = getConductor(breakerSize);
+
+            document.getElementById('necAmps').textContent = genAmps.toFixed(1) + 'A (based on ' + recRating + ' kW at 240V)';
+            document.getElementById('necBreaker').textContent = breakerSize + 'A (115% of ' + genAmps.toFixed(1) + 'A = ' + breakerAmps115.toFixed(1) + 'A)';
+            document.getElementById('necConductor').textContent = conductorSize + ' copper at 75\u00B0C (per NEC 310.16)';
+
+            necSection.style.display = '';
+        } else {
+            necSection.style.display = 'none';
+        }
+
         document.getElementById('result').classList.add('show');
     }
+
+    // ── Initialize ──
+    updateLRA();
     </script>
     <script src="/js/app.js" defer></script>
 </body>

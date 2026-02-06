@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Box Fill Calculator - NEC 314.16 | Sparky HQ</title>
-    <meta name="description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Counts conductors, devices, clamps, and grounds.">
+    <meta name="description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors with common scenario presets.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
     <header class="site-header">
@@ -26,9 +26,68 @@
         <section class="calc-page">
             <div class="container">
                 <h1>Box Fill Calculator <span class="nec-ref">NEC 314.16</span></h1>
-                <p class="subtitle">Calculate required box volume per NEC 314.16(B) counting rules. Each entry uses the volume allowance from Table 314.16(B).</p>
+                <p class="subtitle">Calculate required box volume per NEC 314.16(B) counting rules.</p>
 
-                <div class="calc-form">
+                <div class="method-toggle">
+                    <button class="active" onclick="switchMode('cable')">Count by Cables</button>
+                    <button onclick="switchMode('conductor')">Count by Conductors</button>
+                    <button onclick="switchMode('whatfits')">What Fits?</button>
+                </div>
+
+                <!-- CABLE MODE -->
+                <div id="cableForm" class="calc-form">
+                    <div class="info-box">
+                        <strong>Cable mode:</strong> Enter cables entering the box (e.g., "two 14/2 NM-B"). Conductors are auto-counted — each cable's hot and neutral count as individual conductors. Equipment grounds from all cables count as one conductor total.
+                    </div>
+
+                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Common Scenarios</label>
+                    <div class="preset-row">
+                        <button class="preset-btn" onclick="loadCablePreset('switch1')">Single Switch</button>
+                        <button class="preset-btn" onclick="loadCablePreset('recep1')">Single Receptacle</button>
+                        <button class="preset-btn" onclick="loadCablePreset('switchrecep')">Switch + Receptacle</button>
+                        <button class="preset-btn" onclick="loadCablePreset('junction3')">Junction (3 cables)</button>
+                    </div>
+
+                    <h3 style="margin-bottom:12px;margin-top:16px;">Cables Entering Box</h3>
+                    <div id="cableEntries">
+                        <div class="wire-entry" style="grid-template-columns:1fr 80px 40px;">
+                            <select class="cableType">
+                                <option value="14/2">14/2 NM-B (2 conductors + ground)</option>
+                                <option value="14/3">14/3 NM-B (3 conductors + ground)</option>
+                                <option value="12/2" selected>12/2 NM-B (2 conductors + ground)</option>
+                                <option value="12/3">12/3 NM-B (3 conductors + ground)</option>
+                                <option value="10/2">10/2 NM-B (2 conductors + ground)</option>
+                                <option value="10/3">10/3 NM-B (3 conductors + ground)</option>
+                            </select>
+                            <input type="number" class="cableCount" value="2" min="1" placeholder="Qty">
+                            <button class="btn-remove" onclick="removeCableEntry(this)" title="Remove">&times;</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="addCableEntry()" style="margin-top:8px;margin-bottom:16px;">+ Add Cable Type</button>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cableDevices">Device Yokes (switches/receptacles)</label>
+                            <input type="number" id="cableDevices" value="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="cableClamps">Internal cable clamps?</label>
+                            <select id="cableClamps">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong>Pigtail reminder:</strong> Pigtails and jumpers that originate <em>and</em> terminate inside the box are NOT counted for box fill. Only conductors that enter through a cable or raceway count. This is the #1 box fill mistake.
+                    </div>
+
+                    <button class="btn" onclick="calcCable()">Calculate</button>
+                </div>
+
+                <!-- CONDUCTOR MODE (original) -->
+                <div id="conductorForm" class="calc-form" style="display:none;">
                     <h3 style="margin-bottom:16px;">Conductors <span class="nec-ref">314.16(B)(1)</span></h3>
                     <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">Count each conductor that enters the box. Pigtails and jumpers that originate and terminate inside the box are not counted.</p>
                     <div class="form-row">
@@ -60,10 +119,10 @@
                     </div>
 
                     <h3 style="margin-bottom:16px;margin-top:24px;">Devices <span class="nec-ref">314.16(B)(4)</span></h3>
-                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">Each device yoke counts as 2× the volume of the largest conductor connected to it.</p>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">Each device yoke counts as 2x the volume of the largest conductor connected to it.</p>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="devices">Number of device yokes (switches/receptacles)</label>
+                            <label for="devices">Number of device yokes</label>
                             <input type="number" id="devices" value="0" min="0">
                         </div>
                         <div class="form-group">
@@ -79,7 +138,7 @@
                     </div>
 
                     <h3 style="margin-bottom:16px;margin-top:24px;">Clamps <span class="nec-ref">314.16(B)(2)</span></h3>
-                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All internal clamps count as 1× the volume of the largest conductor in the box.</p>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All internal clamps count as 1x the volume of the largest conductor in the box.</p>
                     <div class="form-group">
                         <label for="clamps">Internal cable clamps present?</label>
                         <select id="clamps">
@@ -89,7 +148,7 @@
                     </div>
 
                     <h3 style="margin-bottom:16px;margin-top:24px;">Equipment Grounding Conductors <span class="nec-ref">314.16(B)(5)</span></h3>
-                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All EGCs count as 1× the volume of the largest EGC entering the box. An additional EGC from a device counts as 1× more.</p>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All EGCs count as 1x the volume of the largest EGC entering the box. An additional EGC from a device counts as 1x more.</p>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="egcSize">Largest EGC size</label>
@@ -117,13 +176,48 @@
                         </select>
                     </div>
 
-                    <button class="btn" onclick="calculate()">Calculate</button>
+                    <button class="btn" onclick="calcConductor()">Calculate</button>
+                </div>
+
+                <!-- WHAT FITS MODE -->
+                <div id="whatfitsForm" class="calc-form" style="display:none;">
+                    <div class="info-box">
+                        <strong>Reverse lookup:</strong> Select a box and see the maximum number of conductors that fit per NEC 314.16(A).
+                    </div>
+
+                    <div class="form-group">
+                        <label for="boxSelect">Select Box</label>
+                        <select id="boxSelect">
+                            <option value="10.5">3" x 2" x 2" Device Box (10.5 cu in)</option>
+                            <option value="12.5">3" x 2" x 2-1/4" Device Box (12.5 cu in)</option>
+                            <option value="14">3" x 2" x 2-1/2" Device Box (14 cu in)</option>
+                            <option value="18d">3" x 2" x 2-3/4" Device Box (18 cu in)</option>
+                            <option value="18s">4" Square x 1-1/4" Deep (18 cu in)</option>
+                            <option value="21" selected>4" Square x 1-1/2" Deep (21 cu in)</option>
+                            <option value="25">3" x 2" x 3-1/2" Device Box (25 cu in)</option>
+                            <option value="29.5">4-11/16" Square x 1-1/2" Deep (29.5 cu in)</option>
+                            <option value="30.3">4" Square x 2-1/8" Deep (30.3 cu in)</option>
+                            <option value="42">4-11/16" Square x 2-1/8" Deep (42 cu in)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fitWireSize">Conductor Size</label>
+                        <select id="fitWireSize">
+                            <option value="14" selected>14 AWG (2.00 cu in each)</option>
+                            <option value="12">12 AWG (2.25 cu in each)</option>
+                            <option value="10">10 AWG (2.50 cu in each)</option>
+                            <option value="8">8 AWG (3.00 cu in each)</option>
+                            <option value="6">6 AWG (5.00 cu in each)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" onclick="calcWhatFits()">Calculate</button>
                 </div>
 
                 <div class="result" id="result">
                     <div class="result-section">
-                        <div class="result-value" id="totalCI">—</div>
-                        <div class="result-label">Minimum Box Volume Required</div>
+                        <div class="result-value" id="totalCI">--</div>
+                        <div class="result-label" id="resultLabel">Minimum Box Volume Required</div>
                     </div>
                     <table class="breakdown-table" id="breakdownTable">
                         <thead>
@@ -133,15 +227,15 @@
                     </table>
                     <div class="result-section" style="margin-top:16px;">
                         <h3>Recommended Box</h3>
-                        <p id="recBox" style="color:var(--text-light);font-size:0.9rem;">—</p>
+                        <p id="recBox" style="color:var(--text-light);font-size:0.9rem;">--</p>
                     </div>
                 </div>
             </div>
         </section>
         <div class="disclaimer-box">
-        <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
-    </div>
-</main>
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
 
     <footer class="site-footer">
         <div class="container">
@@ -152,112 +246,283 @@
 
     <script>
     // NEC Table 314.16(B) - Volume allowance per conductor (cubic inches)
-    const volumePerConductor = {
-        '14': 2.00,
-        '12': 2.25,
-        '10': 2.50,
-        '8':  3.00,
-        '6':  5.00
+    var volumePerConductor = {
+        '14': 2.00, '12': 2.25, '10': 2.50, '8': 3.00, '6': 5.00
     };
 
-    // Common box sizes and volumes (cubic inches)
-    const standardBoxes = [
-        { name: '4" Square × 1-1/4" Deep (18 cu in)', volume: 18 },
-        { name: '4" Square × 1-1/2" Deep (21 cu in)', volume: 21 },
-        { name: '4" Square × 2-1/8" Deep (30.3 cu in)', volume: 30.3 },
-        { name: '4-11/16" Square × 1-1/2" Deep (29.5 cu in)', volume: 29.5 },
-        { name: '4-11/16" Square × 2-1/8" Deep (42 cu in)', volume: 42 },
-        { name: '3" × 2" × 2" Device Box (10.5 cu in)', volume: 10.5 },
-        { name: '3" × 2" × 2-1/4" Device Box (12.5 cu in)', volume: 12.5 },
-        { name: '3" × 2" × 2-1/2" Device Box (14 cu in)', volume: 14 },
-        { name: '3" × 2" × 2-3/4" Device Box (18 cu in)', volume: 18 },
-        { name: '3" × 2" × 3-1/2" Device Box (25 cu in)', volume: 25 },
+    // Cable conductor counts (conductors excluding ground)
+    var cableData = {
+        '14/2': { size: '14', conductors: 2 },
+        '14/3': { size: '14', conductors: 3 },
+        '12/2': { size: '12', conductors: 2 },
+        '12/3': { size: '12', conductors: 3 },
+        '10/2': { size: '10', conductors: 2 },
+        '10/3': { size: '10', conductors: 3 }
+    };
+
+    var standardBoxes = [
+        { name: '3" x 2" x 2" Device Box (10.5 cu in)', volume: 10.5 },
+        { name: '3" x 2" x 2-1/4" Device Box (12.5 cu in)', volume: 12.5 },
+        { name: '3" x 2" x 2-1/2" Device Box (14 cu in)', volume: 14 },
+        { name: '3" x 2" x 2-3/4" Device Box (18 cu in)', volume: 18 },
+        { name: '4" Square x 1-1/4" Deep (18 cu in)', volume: 18 },
+        { name: '4" Square x 1-1/2" Deep (21 cu in)', volume: 21 },
+        { name: '3" x 2" x 3-1/2" Device Box (25 cu in)', volume: 25 },
+        { name: '4-11/16" Square x 1-1/2" Deep (29.5 cu in)', volume: 29.5 },
+        { name: '4" Square x 2-1/8" Deep (30.3 cu in)', volume: 30.3 },
+        { name: '4-11/16" Square x 2-1/8" Deep (42 cu in)', volume: 42 },
     ];
 
-    function calculate() {
-        const counts = {
+    // ══════════════════════════════════════
+    //  MODE MANAGEMENT
+    // ══════════════════════════════════════
+
+    function switchMode(mode) {
+        var buttons = document.querySelectorAll('.method-toggle button');
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+
+        document.getElementById('cableForm').style.display = 'none';
+        document.getElementById('conductorForm').style.display = 'none';
+        document.getElementById('whatfitsForm').style.display = 'none';
+        document.getElementById('result').classList.remove('show');
+
+        if (mode === 'cable') {
+            buttons[0].classList.add('active');
+            document.getElementById('cableForm').style.display = '';
+        } else if (mode === 'conductor') {
+            buttons[1].classList.add('active');
+            document.getElementById('conductorForm').style.display = '';
+        } else {
+            buttons[2].classList.add('active');
+            document.getElementById('whatfitsForm').style.display = '';
+        }
+    }
+
+    // ══════════════════════════════════════
+    //  CABLE MODE
+    // ══════════════════════════════════════
+
+    function addCableEntry() {
+        var container = document.getElementById('cableEntries');
+        var entry = container.querySelector('.wire-entry').cloneNode(true);
+        entry.querySelector('.cableCount').value = 1;
+        container.appendChild(entry);
+    }
+
+    function removeCableEntry(btn) {
+        var container = document.getElementById('cableEntries');
+        if (container.children.length > 1) {
+            btn.closest('.wire-entry').remove();
+        }
+    }
+
+    function loadCablePreset(type) {
+        var container = document.getElementById('cableEntries');
+        var devicesEl = document.getElementById('cableDevices');
+        var clampsEl = document.getElementById('cableClamps');
+
+        var presets = {
+            'switch1': { cables: [{ type: '14/2', count: 2 }], devices: 1, clamps: 1 },
+            'recep1': { cables: [{ type: '12/2', count: 1 }], devices: 1, clamps: 1 },
+            'switchrecep': { cables: [{ type: '14/2', count: 2 }, { type: '12/2', count: 1 }], devices: 2, clamps: 1 },
+            'junction3': { cables: [{ type: '14/2', count: 3 }], devices: 0, clamps: 1 }
+        };
+
+        var preset = presets[type];
+        container.innerHTML = '';
+
+        preset.cables.forEach(function(c) {
+            var html = '<div class="wire-entry" style="grid-template-columns:1fr 80px 40px;">';
+            html += '<select class="cableType">';
+            Object.keys(cableData).forEach(function(k) {
+                var d = cableData[k];
+                html += '<option value="' + k + '"' + (k === c.type ? ' selected' : '') + '>' + k + ' NM-B (' + d.conductors + ' conductors + ground)</option>';
+            });
+            html += '</select>';
+            html += '<input type="number" class="cableCount" value="' + c.count + '" min="1" placeholder="Qty">';
+            html += '<button class="btn-remove" onclick="removeCableEntry(this)" title="Remove">&times;</button>';
+            html += '</div>';
+            container.innerHTML += html;
+        });
+
+        devicesEl.value = preset.devices;
+        clampsEl.value = preset.clamps;
+
+        document.querySelectorAll('#cableForm .preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        event.target.classList.add('active');
+    }
+
+    function calcCable() {
+        var entries = document.querySelectorAll('#cableEntries .wire-entry');
+        var conductorCounts = { '14': 0, '12': 0, '10': 0, '8': 0, '6': 0 };
+        var largestEGC = '14';
+        var hasEGC = false;
+
+        entries.forEach(function(entry) {
+            var type = entry.querySelector('.cableType').value;
+            var count = parseInt(entry.querySelector('.cableCount').value) || 0;
+            var data = cableData[type];
+            if (count > 0 && data) {
+                conductorCounts[data.size] += data.conductors * count;
+                hasEGC = true;
+                if (volumePerConductor[data.size] > volumePerConductor[largestEGC]) {
+                    largestEGC = data.size;
+                }
+            }
+        });
+
+        var devices = parseInt(document.getElementById('cableDevices').value) || 0;
+        var hasClamps = parseInt(document.getElementById('cableClamps').value);
+
+        // Find largest conductor in box
+        var largestSize = '14';
+        var allSizes = ['6','8','10','12','14'];
+        for (var i = 0; i < allSizes.length; i++) {
+            if (conductorCounts[allSizes[i]] > 0) { largestSize = allSizes[i]; break; }
+        }
+
+        doCalc(conductorCounts, devices, largestSize, hasClamps, largestSize, hasEGC ? 1 : 0, 0);
+    }
+
+    // ══════════════════════════════════════
+    //  CONDUCTOR MODE
+    // ══════════════════════════════════════
+
+    function calcConductor() {
+        var counts = {
             '14': parseInt(document.getElementById('cond14').value) || 0,
             '12': parseInt(document.getElementById('cond12').value) || 0,
             '10': parseInt(document.getElementById('cond10').value) || 0,
             '8':  parseInt(document.getElementById('cond8').value) || 0,
             '6':  parseInt(document.getElementById('cond6').value) || 0
         };
-        const devices = parseInt(document.getElementById('devices').value) || 0;
-        const deviceSize = document.getElementById('deviceSize').value;
-        const hasClamps = parseInt(document.getElementById('clamps').value);
-        const egcSize = document.getElementById('egcSize').value;
-        const egcPresent = parseInt(document.getElementById('egcPresent').value);
-        const egcDevice = parseInt(document.getElementById('egcDevice').value);
+        var devices = parseInt(document.getElementById('devices').value) || 0;
+        var deviceSize = document.getElementById('deviceSize').value;
+        var hasClamps = parseInt(document.getElementById('clamps').value);
+        var egcSize = document.getElementById('egcSize').value;
+        var egcPresent = parseInt(document.getElementById('egcPresent').value);
+        var egcDevice = parseInt(document.getElementById('egcDevice').value);
 
-        // Find largest conductor in box for clamp allowance
-        let largestSize = '14';
-        const allSizes = ['6','8','10','12','14'];
-        for (const s of allSizes) {
-            if (counts[s] > 0) { largestSize = s; break; }
+        // Find largest conductor
+        var largestSize = '14';
+        var allSizes = ['6','8','10','12','14'];
+        for (var i = 0; i < allSizes.length; i++) {
+            if (counts[allSizes[i]] > 0) { largestSize = allSizes[i]; break; }
         }
-        // Also check device and EGC sizes
         if (volumePerConductor[deviceSize] > volumePerConductor[largestSize]) largestSize = deviceSize;
 
-        let totalVolume = 0;
-        const breakdown = [];
+        doCalc(counts, devices, deviceSize, hasClamps, egcSize, egcPresent, egcDevice);
+    }
 
-        // Conductors - 314.16(B)(1)
-        for (const [size, count] of Object.entries(counts)) {
+    // ══════════════════════════════════════
+    //  SHARED CALCULATION
+    // ══════════════════════════════════════
+
+    function doCalc(counts, devices, deviceSize, hasClamps, egcSize, egcPresent, egcDevice) {
+        var largestSize = '14';
+        var allSizes = ['6','8','10','12','14'];
+        for (var i = 0; i < allSizes.length; i++) {
+            if (counts[allSizes[i]] > 0) { largestSize = allSizes[i]; break; }
+        }
+        if (devices > 0 && volumePerConductor[deviceSize] > volumePerConductor[largestSize]) largestSize = deviceSize;
+
+        var totalVolume = 0;
+        var breakdown = [];
+
+        // Conductors
+        for (var size in counts) {
+            var count = counts[size];
             if (count > 0) {
-                const vol = volumePerConductor[size];
-                const sub = vol * count;
+                var vol = volumePerConductor[size];
+                var sub = vol * count;
                 totalVolume += sub;
                 breakdown.push({ item: size + ' AWG conductors', count: count, each: vol, subtotal: sub });
             }
         }
 
-        // Clamps - 314.16(B)(2) - 1× largest conductor
+        // Clamps
         if (hasClamps) {
-            const vol = volumePerConductor[largestSize];
+            var vol = volumePerConductor[largestSize];
             totalVolume += vol;
-            breakdown.push({ item: 'Internal clamps (1× ' + largestSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+            breakdown.push({ item: 'Internal clamps (1x ' + largestSize + ' AWG)', count: 1, each: vol, subtotal: vol });
         }
 
-        // Devices - 314.16(B)(4) - 2× per yoke
+        // Devices
         if (devices > 0) {
-            const vol = volumePerConductor[deviceSize];
-            const sub = vol * 2 * devices;
+            var vol = volumePerConductor[deviceSize];
+            var sub = vol * 2 * devices;
             totalVolume += sub;
-            breakdown.push({ item: 'Device yokes (2× ' + deviceSize + ' AWG each)', count: devices, each: vol * 2, subtotal: sub });
+            breakdown.push({ item: 'Device yokes (2x ' + deviceSize + ' AWG each)', count: devices, each: vol * 2, subtotal: sub });
         }
 
-        // EGC - 314.16(B)(5) - 1× for all grounds
+        // EGC
         if (egcPresent) {
-            const vol = volumePerConductor[egcSize];
+            var vol = volumePerConductor[egcSize];
             totalVolume += vol;
-            breakdown.push({ item: 'Equipment grounds (1× ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+            breakdown.push({ item: 'Equipment grounds (1x ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
         }
 
-        // Additional isolated EGC from device
+        // Isolated EGC
         if (egcDevice) {
-            const vol = volumePerConductor[egcSize];
+            var vol = volumePerConductor[egcSize];
             totalVolume += vol;
-            breakdown.push({ item: 'Isolated ground (1× ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+            breakdown.push({ item: 'Isolated ground (1x ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
         }
 
+        document.getElementById('resultLabel').textContent = 'Minimum Box Volume Required';
         document.getElementById('totalCI').textContent = totalVolume.toFixed(1) + ' cu in';
 
-        // Breakdown
-        const tbody = document.getElementById('breakdownBody');
+        var tbody = document.getElementById('breakdownBody');
         tbody.innerHTML = '';
-        breakdown.forEach(row => {
+        breakdown.forEach(function(row) {
             tbody.innerHTML += '<tr><td>' + row.item + '</td><td>' + row.count + '</td><td>' + row.each.toFixed(2) + '</td><td>' + row.subtotal.toFixed(2) + '</td></tr>';
         });
         tbody.innerHTML += '<tr><td><strong>Total Required</strong></td><td></td><td></td><td><strong>' + totalVolume.toFixed(2) + ' cu in</strong></td></tr>';
 
-        // Recommend box
-        const suitable = standardBoxes.filter(b => b.volume >= totalVolume).sort((a, b) => a.volume - b.volume);
+        var suitable = standardBoxes.filter(function(b) { return b.volume >= totalVolume; }).sort(function(a, b) { return a.volume - b.volume; });
         if (suitable.length > 0) {
             document.getElementById('recBox').textContent = suitable[0].name;
         } else {
             document.getElementById('recBox').textContent = 'Requires a box larger than standard sizes listed. Consider a 6" square or ganged boxes.';
         }
 
+        document.getElementById('breakdownTable').style.display = '';
+        document.getElementById('result').classList.add('show');
+    }
+
+    // ══════════════════════════════════════
+    //  WHAT FITS MODE
+    // ══════════════════════════════════════
+
+    function calcWhatFits() {
+        var boxVal = document.getElementById('boxSelect').value;
+        // Handle duplicate 18 cu in entries
+        var boxVolume = parseFloat(boxVal.replace('d','').replace('s',''));
+        var wireSize = document.getElementById('fitWireSize').value;
+        var volEach = volumePerConductor[wireSize];
+
+        // Max conductors = floor(box volume / volume per conductor)
+        // But must reserve space for 1x clamp + 1x EGC + 2x per device
+        var maxRaw = Math.floor(boxVolume / volEach);
+
+        // Practical max: subtract 1 for clamps, 1 for EGC, show both
+        var reserveClampEGC = 2; // 1 clamp + 1 EGC
+        var maxWithReserve = Math.max(0, maxRaw - reserveClampEGC);
+
+        document.getElementById('resultLabel').textContent = 'Maximum Conductors';
+        document.getElementById('totalCI').textContent = maxRaw + ' conductors (' + wireSize + ' AWG)';
+
+        var tbody = document.getElementById('breakdownBody');
+        tbody.innerHTML = '';
+        tbody.innerHTML += '<tr><td>Box volume</td><td></td><td></td><td>' + boxVolume.toFixed(1) + ' cu in</td></tr>';
+        tbody.innerHTML += '<tr><td>' + wireSize + ' AWG volume allowance</td><td></td><td></td><td>' + volEach.toFixed(2) + ' cu in each</td></tr>';
+        tbody.innerHTML += '<tr><td>Maximum conductors (raw)</td><td></td><td></td><td>' + maxRaw + '</td></tr>';
+        tbody.innerHTML += '<tr><td>After reserving clamp + EGC fill</td><td></td><td></td><td><strong>' + maxWithReserve + ' conductors</strong></td></tr>';
+        tbody.innerHTML += '<tr><td>With 1 device (subtract 2 more)</td><td></td><td></td><td>' + Math.max(0, maxWithReserve - 2) + ' conductors</td></tr>';
+
+        document.getElementById('recBox').textContent = 'Selected: ' + boxVolume.toFixed(1) + ' cu in box holds up to ' + maxWithReserve + ' x ' + wireSize + ' AWG conductors (after clamp + EGC).';
+
+        document.getElementById('breakdownTable').style.display = '';
         document.getElementById('result').classList.add('show');
     }
     </script>

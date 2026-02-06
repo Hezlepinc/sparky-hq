@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wire Size Calculator - NEC 310.16 Ampacity | Sparky HQ</title>
-    <meta name="description" content="Free wire size calculator for electricians. Determine minimum conductor size per NEC 310.16 ampacity tables with automatic voltage drop verification.">
+    <meta name="description" content="Free wire size calculator for electricians. Determine minimum conductor size per NEC 310.16 ampacity tables with automatic voltage drop verification, EGC sizing, and derating.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
     <header class="site-header">
@@ -26,14 +26,27 @@
         <section class="calc-page">
             <div class="container">
                 <h1>Wire Size Calculator <span class="nec-ref">NEC 310.16</span></h1>
-                <p class="subtitle">Determine minimum conductor size based on ampacity and verify voltage drop. Automatically upsizes if voltage drop exceeds 3%.</p>
+                <p class="subtitle">Determine minimum conductor size based on ampacity and verify voltage drop. Automatically upsizes if voltage drop exceeds limit.</p>
 
                 <div class="calc-form">
+                    <!-- Row 1: Application + Load -->
                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="application">Circuit Application</label>
+                            <select id="application" onchange="updateVDLimit()">
+                                <option value="branch" selected>Branch Circuit</option>
+                                <option value="feeder">Feeder</option>
+                            </select>
+                            <p class="field-note" id="applicationNote">Branch circuits: 3% VD recommended per NEC 210.19(A) Informational Note No. 4</p>
+                        </div>
                         <div class="form-group">
                             <label for="amps">Load (Amps)</label>
                             <input type="number" id="amps" placeholder="e.g. 40" min="0" step="0.1">
                         </div>
+                    </div>
+
+                    <!-- Row 2: Voltage + Phase -->
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="voltage">System Voltage</label>
                             <select id="voltage">
@@ -44,8 +57,6 @@
                                 <option value="480">480V</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="phase">Phase</label>
                             <select id="phase">
@@ -53,12 +64,14 @@
                                 <option value="3">Three Phase</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Row 3: Distance + Material -->
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="distance">One-Way Distance (ft)</label>
                             <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="material">Conductor Material</label>
                             <select id="material">
@@ -66,36 +79,113 @@
                                 <option value="aluminum">Aluminum</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Row 4: Temp Rating + VD Limit -->
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="tempRating">Insulation Temperature Rating</label>
-                            <select id="tempRating">
-                                <option value="60">60°C (TW, UF)</option>
-                                <option value="75" selected>75°C (THW, THWN, XHHW)</option>
-                                <option value="90">90°C (THHN, THWN-2, XHHW-2)</option>
+                            <label for="tempRating">Conductor Temperature Rating <span class="nec-ref">110.14(C)</span></label>
+                            <select id="tempRating" onchange="updateTempInfo()">
+                                <option value="60">60°C</option>
+                                <option value="75" selected>75°C</option>
+                                <option value="90">90°C</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vdLimit">Voltage Drop Limit</label>
+                            <select id="vdLimit">
+                                <option value="3" selected>3% (Branch Circuit)</option>
+                                <option value="5">5% (Feeder + Branch Total)</option>
+                                <option value="2">2% (Feeder Only)</option>
+                                <option value="custom">Custom...</option>
                             </select>
                         </div>
                     </div>
+                    <div class="form-group" id="customVDGroup" style="display:none;">
+                        <label for="customVD">Custom VD Limit (%)</label>
+                        <input type="number" id="customVD" placeholder="e.g. 4" min="0.5" max="10" step="0.5">
+                    </div>
+
+                    <!-- Temperature Info Box -->
+                    <div id="tempInfo"></div>
+
+                    <!-- Row 5: OCPD (optional) -->
+                    <div class="form-group">
+                        <label for="ocpd">OCPD / Breaker Size <span style="font-weight:400;color:var(--text-muted);">(optional — enables EGC sizing)</span></label>
+                        <select id="ocpd">
+                            <option value="">-- Skip EGC calc --</option>
+                            <option value="15">15A</option>
+                            <option value="20">20A</option>
+                            <option value="25">25A</option>
+                            <option value="30">30A</option>
+                            <option value="35">35A</option>
+                            <option value="40">40A</option>
+                            <option value="50">50A</option>
+                            <option value="60">60A</option>
+                            <option value="70">70A</option>
+                            <option value="80">80A</option>
+                            <option value="100">100A</option>
+                            <option value="125">125A</option>
+                            <option value="150">150A</option>
+                            <option value="200">200A</option>
+                            <option value="225">225A</option>
+                            <option value="250">250A</option>
+                            <option value="300">300A</option>
+                            <option value="350">350A</option>
+                            <option value="400">400A</option>
+                            <option value="500">500A</option>
+                            <option value="600">600A</option>
+                            <option value="800">800A</option>
+                            <option value="1000">1000A</option>
+                            <option value="1200">1200A</option>
+                        </select>
+                    </div>
+
+                    <!-- Derating Section (collapsible) -->
+                    <details class="collapsible-section">
+                        <summary>Ampacity Derating (optional)</summary>
+                        <div class="section-content">
+                            <div class="info-box">
+                                <strong>When to derate:</strong> Ampacity must be adjusted when ambient temperature exceeds 30°C (86°F) per NEC 310.15(B), or when more than 3 current-carrying conductors (CCCs) share a raceway per NEC 310.15(C)(1).
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ambientTemp">Ambient Temperature</label>
+                                    <select id="ambientTemp">
+                                        <option value="30" selected>30°C / 86°F (standard - no correction)</option>
+                                        <option value="31-35">31-35°C / 87-95°F</option>
+                                        <option value="36-40">36-40°C / 96-104°F</option>
+                                        <option value="41-45">41-45°C / 105-113°F</option>
+                                        <option value="46-50">46-50°C / 114-122°F</option>
+                                        <option value="51-55">51-55°C / 123-131°F</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cccCount">Current-Carrying Conductors in Raceway</label>
+                                    <select id="cccCount">
+                                        <option value="3" selected>1-3 CCCs (no adjustment)</option>
+                                        <option value="4-6">4-6 CCCs (80%)</option>
+                                        <option value="7-9">7-9 CCCs (70%)</option>
+                                        <option value="10-20">10-20 CCCs (50%)</option>
+                                        <option value="21-30">21-30 CCCs (45%)</option>
+                                        <option value="31-40">31-40 CCCs (40%)</option>
+                                        <option value="41+">41+ CCCs (35%)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
                     <button class="btn" onclick="calculate()">Calculate</button>
                 </div>
 
-                <div class="result" id="result">
-                    <div class="result-section">
-                        <div class="result-value" id="recWire">—</div>
-                        <div class="result-label">Recommended Wire Size</div>
-                    </div>
-                    <table class="breakdown-table">
-                        <tr><td>Ampacity at Size</td><td id="ampacity">—</td></tr>
-                        <tr><td>Minimum by Ampacity</td><td id="minAmpacity">—</td></tr>
-                        <tr><td>Minimum by Voltage Drop (3%)</td><td id="minVD">—</td></tr>
-                        <tr><td>Voltage Drop at Recommended Size</td><td id="vdAtSize">—</td></tr>
-                    </table>
-                </div>
+                <div class="result" id="result"></div>
             </div>
         </section>
         <div class="disclaimer-box">
-        <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
-    </div>
-</main>
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
 
     <footer class="site-footer">
         <div class="container">
@@ -105,114 +195,220 @@
     </footer>
 
     <script>
-    // Wire sizes in order from smallest to largest
-    const wireSizes = ['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750'];
+    // ══════════════════════════════════════
+    //  NEC DATA TABLES
+    // ══════════════════════════════════════
 
-    // NEC Table 310.16 - Allowable ampacities (amperes)
-    // [60°C, 75°C, 90°C]
-    const ampacityTable = {
+    var wireSizes = ['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750'];
+
+    // NEC Table 310.16 — [60C, 75C, 90C]
+    var ampacityTable = {
         copper: {
-            '14':  [15, 20, 25],
-            '12':  [20, 25, 30],
-            '10':  [30, 35, 40],
-            '8':   [40, 50, 55],
-            '6':   [55, 65, 75],
-            '4':   [70, 85, 95],
-            '3':   [85, 100, 115],
-            '2':   [95, 115, 130],
-            '1':   [110, 130, 145],
-            '1/0': [125, 150, 170],
-            '2/0': [145, 175, 195],
-            '3/0': [165, 200, 225],
-            '4/0': [195, 230, 260],
-            '250': [215, 255, 290],
-            '300': [240, 285, 320],
-            '350': [260, 310, 350],
-            '400': [280, 335, 380],
-            '500': [320, 380, 430],
-            '600': [350, 420, 475],
-            '750': [385, 460, 535]
+            '14':[15,20,25],'12':[20,25,30],'10':[30,35,40],'8':[40,50,55],
+            '6':[55,65,75],'4':[70,85,95],'3':[85,100,115],'2':[95,115,130],
+            '1':[110,130,145],'1/0':[125,150,170],'2/0':[145,175,195],'3/0':[165,200,225],
+            '4/0':[195,230,260],'250':[215,255,290],'300':[240,285,320],'350':[260,310,350],
+            '400':[280,335,380],'500':[320,380,430],'600':[350,420,475],'750':[385,460,535]
         },
         aluminum: {
-            '14':  [null, null, null],
-            '12':  [15, 20, 25],
-            '10':  [25, 30, 35],
-            '8':   [30, 40, 45],
-            '6':   [40, 50, 60],
-            '4':   [55, 65, 75],
-            '3':   [65, 75, 85],
-            '2':   [75, 90, 100],
-            '1':   [85, 100, 115],
-            '1/0': [100, 120, 135],
-            '2/0': [115, 135, 150],
-            '3/0': [130, 155, 175],
-            '4/0': [150, 180, 205],
-            '250': [170, 205, 230],
-            '300': [190, 230, 255],
-            '350': [210, 250, 280],
-            '400': [225, 270, 305],
-            '500': [260, 310, 350],
-            '600': [285, 340, 385],
-            '750': [320, 385, 435]
+            '14':[null,null,null],'12':[15,20,25],'10':[25,30,35],'8':[30,40,45],
+            '6':[40,50,60],'4':[55,65,75],'3':[65,75,85],'2':[75,90,100],
+            '1':[85,100,115],'1/0':[100,120,135],'2/0':[115,135,150],'3/0':[130,155,175],
+            '4/0':[150,180,205],'250':[170,205,230],'300':[190,230,255],'350':[210,250,280],
+            '400':[225,270,305],'500':[260,310,350],'600':[285,340,385],'750':[320,385,435]
         }
     };
 
-    // NEC Chapter 9 Table 8 - DC Resistance at 75°C (ohms per 1000 ft)
-    const wireResistance = {
+    // NEC Chapter 9 Table 8 — DC Resistance at 75°C (ohms/1000ft)
+    var wireResistance = {
         copper: {
-            '14': 3.14, '12': 1.98, '10': 1.24, '8': 0.778,
-            '6': 0.491, '4': 0.308, '3': 0.245, '2': 0.194,
-            '1': 0.154, '1/0': 0.122, '2/0': 0.0967, '3/0': 0.0766,
-            '4/0': 0.0608, '250': 0.0515, '300': 0.0429, '350': 0.0367,
-            '400': 0.0321, '500': 0.0258, '600': 0.0214, '750': 0.0171
+            '14':3.14,'12':1.98,'10':1.24,'8':0.778,'6':0.491,'4':0.308,'3':0.245,'2':0.194,
+            '1':0.154,'1/0':0.122,'2/0':0.0967,'3/0':0.0766,'4/0':0.0608,
+            '250':0.0515,'300':0.0429,'350':0.0367,'400':0.0321,'500':0.0258,'600':0.0214,'750':0.0171
         },
         aluminum: {
-            '14': 5.17, '12': 3.25, '10': 2.04, '8': 1.28,
-            '6': 0.808, '4': 0.508, '3': 0.403, '2': 0.319,
-            '1': 0.253, '1/0': 0.201, '2/0': 0.159, '3/0': 0.126,
-            '4/0': 0.100, '250': 0.0847, '300': 0.0707, '350': 0.0605,
-            '400': 0.0529, '500': 0.0424, '600': 0.0353, '750': 0.0282
+            '14':5.17,'12':3.25,'10':2.04,'8':1.28,'6':0.808,'4':0.508,'3':0.403,'2':0.319,
+            '1':0.253,'1/0':0.201,'2/0':0.159,'3/0':0.126,'4/0':0.100,
+            '250':0.0847,'300':0.0707,'350':0.0605,'400':0.0529,'500':0.0424,'600':0.0353,'750':0.0282
         }
     };
+
+    // Circular mil area
+    var cmil = {
+        '14':4110,'12':6530,'10':10380,'8':16510,'6':26240,'4':41740,'3':52620,'2':66360,
+        '1':83690,'1/0':105600,'2/0':133100,'3/0':167800,'4/0':211600,
+        '250':250000,'300':300000,'350':350000,'400':400000,'500':500000,'600':600000,'750':750000
+    };
+
+    // NEC 250.122 — Min EGC by OCPD rating
+    var egcTable = [
+        {max:15,cu:'14',al:'12'},{max:20,cu:'12',al:'10'},{max:60,cu:'10',al:'8'},
+        {max:100,cu:'8',al:'6'},{max:200,cu:'6',al:'4'},{max:300,cu:'4',al:'2'},
+        {max:400,cu:'3',al:'1'},{max:500,cu:'2',al:'1/0'},{max:600,cu:'1',al:'2/0'},
+        {max:800,cu:'1/0',al:'3/0'},{max:1000,cu:'2/0',al:'4/0'},{max:1200,cu:'3/0',al:'250'}
+    ];
+
+    // Derating factors
+    var tempCorrectionFactors = {
+        '60':  {'30':1.00,'31-35':0.91,'36-40':0.82,'41-45':0.71,'46-50':0.58,'51-55':0.41},
+        '75':  {'30':1.00,'31-35':0.94,'36-40':0.88,'41-45':0.82,'46-50':0.75,'51-55':0.67},
+        '90':  {'30':1.00,'31-35':0.96,'36-40':0.91,'41-45':0.87,'46-50':0.82,'51-55':0.76}
+    };
+
+    var cccAdjustmentFactors = {
+        '3':1.00,'4-6':0.80,'7-9':0.70,'10-20':0.50,'21-30':0.45,'31-40':0.40,'41+':0.35
+    };
+
+    // ══════════════════════════════════════
+    //  TEMPERATURE INFO
+    // ══════════════════════════════════════
+
+    var tempInfoText = {
+        '60': {
+            type: 'info',
+            html: '<strong>60\u00B0C \u2014 Standard</strong><br>Use when wiring with <strong>NM-B (Romex)</strong> or when terminals are rated 60\u00B0C only. This is the default for most residential branch circuits using NM cable. Per NEC 110.14(C), ampacity is based on the lowest temperature rating in the circuit.'
+        },
+        '75': {
+            type: 'info',
+            html: '<strong>75\u00B0C \u2014 Verify your terminals</strong><br>Use when <strong>both</strong> the conductor insulation <strong>and</strong> all terminations (breaker, device, equipment) are rated 75\u00B0C or higher. Common with THHN/THWN in conduit. Per NEC 110.14(C)(1)(a), circuits \u2264100A with #14\u2013#1 conductors: use 60\u00B0C unless all terminals are rated 75\u00B0C+.'
+        },
+        '90': {
+            type: 'warning',
+            html: '<strong>90\u00B0C \u2014 Derating calculations only</strong><br>The 90\u00B0C ampacity column is used <strong>only as a starting point</strong> for ampacity correction and adjustment factors (conduit fill per 310.15(C)(1), ambient temperature per 310.15(B)). After applying derating, the final ampacity <strong>cannot exceed</strong> the 75\u00B0C (or 60\u00B0C) column value based on the terminal temperature rating.'
+        }
+    };
+
+    function updateTempInfo() {
+        var val = document.getElementById('tempRating').value;
+        var info = tempInfoText[val];
+        var el = document.getElementById('tempInfo');
+        var cls = info.type === 'warning' ? 'warning-box' : 'info-box';
+        el.innerHTML = '<div class="' + cls + '">' + info.html + '</div>';
+    }
+
+    function updateVDLimit() {
+        var app = document.getElementById('application').value;
+        var note = document.getElementById('applicationNote');
+        var vdSelect = document.getElementById('vdLimit');
+
+        if (app === 'branch') {
+            note.textContent = 'Branch circuits: 3% VD recommended per NEC 210.19(A) Informational Note No. 4';
+            vdSelect.value = '3';
+        } else {
+            note.textContent = 'Feeders: 2% VD recommended individually, 5% combined with branch per NEC 215.2(A) Info Note No. 2';
+            vdSelect.value = '2';
+        }
+    }
+
+    // ══════════════════════════════════════
+    //  HELPERS
+    // ══════════════════════════════════════
 
     function getTempIndex(temp) {
         if (temp === '60') return 0;
         if (temp === '75') return 1;
-        return 2; // 90
+        return 2;
     }
 
     function getAmpacity(size, material, tempIdx) {
-        const val = ampacityTable[material][size];
+        var val = ampacityTable[material][size];
         return val ? val[tempIdx] : null;
     }
 
+    function sizeLabel(size) {
+        var n = parseInt(size);
+        if (!isNaN(n) && n >= 250) return size + ' kcmil';
+        if (!isNaN(n) && n > 0 && n <= 14) return '#' + size + ' AWG';
+        return size + ' AWG';
+    }
+
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
     function calcVD(amps, distance, wireSize, material, voltage, phase) {
-        const R = wireResistance[material][wireSize];
-        const factor = phase === 3 ? 1.732 : 2;
+        var R = wireResistance[material][wireSize];
+        var factor = phase === 3 ? 1.732 : 2;
         return (factor * distance * amps * R) / 1000;
     }
 
+    function getEGC(ocpdVal, material) {
+        var key = (material === 'aluminum') ? 'al' : 'cu';
+        for (var i = 0; i < egcTable.length; i++) {
+            if (ocpdVal <= egcTable[i].max) return egcTable[i][key];
+        }
+        return egcTable[egcTable.length - 1][key];
+    }
+
+    function nextSizeUp(targetCmil, material) {
+        var startIdx = (material === 'aluminum') ? 1 : 0;
+        for (var i = startIdx; i < wireSizes.length; i++) {
+            if (cmil[wireSizes[i]] >= targetCmil) return wireSizes[i];
+        }
+        return wireSizes[wireSizes.length - 1];
+    }
+
+    function getVDLimit() {
+        var val = document.getElementById('vdLimit').value;
+        if (val === 'custom') {
+            return parseFloat(document.getElementById('customVD').value) || 3;
+        }
+        return parseFloat(val);
+    }
+
+    function getDeratingFactor() {
+        var tempRating = document.getElementById('tempRating').value;
+        var ambientTemp = document.getElementById('ambientTemp').value;
+        var cccCount = document.getElementById('cccCount').value;
+
+        var tempFactor = tempCorrectionFactors[tempRating][ambientTemp];
+        var cccFactor = cccAdjustmentFactors[cccCount];
+
+        return { temp: tempFactor, ccc: cccFactor, combined: tempFactor * cccFactor };
+    }
+
+    // ══════════════════════════════════════
+    //  MAIN CALCULATE
+    // ══════════════════════════════════════
+
     function calculate() {
-        const amps = parseFloat(document.getElementById('amps').value);
-        const voltage = parseFloat(document.getElementById('voltage').value);
-        const phase = parseInt(document.getElementById('phase').value);
-        const distance = parseFloat(document.getElementById('distance').value);
-        const material = document.getElementById('material').value;
-        const tempRating = document.getElementById('tempRating').value;
-        const tempIdx = getTempIndex(tempRating);
+        var amps = parseFloat(document.getElementById('amps').value);
+        var voltage = parseFloat(document.getElementById('voltage').value);
+        var phase = parseInt(document.getElementById('phase').value);
+        var distance = parseFloat(document.getElementById('distance').value);
+        var material = document.getElementById('material').value;
+        var tempRating = document.getElementById('tempRating').value;
+        var tempIdx = getTempIndex(tempRating);
+        var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
+        var vdLimitPct = getVDLimit();
+        var application = document.getElementById('application').value;
 
         if (!amps || !distance) {
             alert('Enter load amps and distance.');
             return;
         }
 
-        // Find minimum wire size by ampacity
-        let minByAmpacity = null;
-        for (const size of wireSizes) {
-            const amp = getAmpacity(size, material, tempIdx);
-            if (amp !== null && amp >= amps) {
-                minByAmpacity = size;
-                break;
+        // Derating
+        var derating = getDeratingFactor();
+        var hasDerating = derating.combined < 1.0;
+        var effectiveAmps = amps; // The amps the wire must carry (unchanged)
+        // For derating, we need a wire whose derated ampacity >= load amps
+
+        // Find minimum wire size by ampacity (considering derating)
+        var minByAmpacity = null;
+        var startIdx = (material === 'aluminum') ? 1 : 0;
+        for (var i = startIdx; i < wireSizes.length; i++) {
+            var size = wireSizes[i];
+            var amp = getAmpacity(size, material, tempIdx);
+            if (amp !== null) {
+                var deratedAmp = amp * derating.combined;
+                // If using 90C for derating, cap at 75C column value
+                if (tempRating === '90' && hasDerating) {
+                    var cap75 = getAmpacity(size, material, 1); // 75C column
+                    if (cap75 !== null) deratedAmp = Math.min(deratedAmp, cap75);
+                }
+                if (deratedAmp >= amps) {
+                    minByAmpacity = size;
+                    break;
+                }
             }
         }
 
@@ -221,42 +417,179 @@
             return;
         }
 
-        // Find minimum wire size by voltage drop (3%)
-        let minByVD = null;
-        for (const size of wireSizes) {
-            const vd = calcVD(amps, distance, size, material, voltage, phase);
-            const vdPct = (vd / voltage) * 100;
-            if (vdPct <= 3) {
+        // Find minimum wire size by voltage drop
+        var minByVD = null;
+        for (var i = startIdx; i < wireSizes.length; i++) {
+            var size = wireSizes[i];
+            var vd = calcVD(amps, distance, size, material, voltage, phase);
+            var vdPct = (vd / voltage) * 100;
+            if (vdPct <= vdLimitPct) {
                 minByVD = size;
                 break;
             }
         }
 
-        // Take the larger of the two (higher index = larger wire)
-        let recommended;
+        // Take the larger of the two
+        var recommended;
+        var vdExceeds = false;
         if (!minByVD) {
             recommended = minByAmpacity;
-            minByVD = 'Exceeds all sizes';
+            vdExceeds = true;
         } else {
-            const idxAmp = wireSizes.indexOf(minByAmpacity);
-            const idxVD = wireSizes.indexOf(minByVD);
+            var idxAmp = wireSizes.indexOf(minByAmpacity);
+            var idxVD = wireSizes.indexOf(minByVD);
             recommended = wireSizes[Math.max(idxAmp, idxVD)];
         }
 
-        const recAmpacity = getAmpacity(recommended, material, tempIdx);
-        const recVD = calcVD(amps, distance, recommended, material, voltage, phase);
-        const recVDPct = (recVD / voltage) * 100;
+        var recAmpacity = getAmpacity(recommended, material, tempIdx);
+        var recDeratedAmpacity = recAmpacity * derating.combined;
+        if (tempRating === '90' && hasDerating) {
+            var cap75 = getAmpacity(recommended, material, 1);
+            if (cap75 !== null) recDeratedAmpacity = Math.min(recDeratedAmpacity, cap75);
+        }
+        var recVD = calcVD(amps, distance, recommended, material, voltage, phase);
+        var recVDPct = (recVD / voltage) * 100;
+        var upsized = wireSizes.indexOf(recommended) > wireSizes.indexOf(minByAmpacity);
+        var upsizedCount = wireSizes.indexOf(recommended) - wireSizes.indexOf(minByAmpacity);
 
-        document.getElementById('recWire').textContent = recommended + (parseInt(recommended) ? ' AWG' : ' kcmil');
-        document.getElementById('ampacity').textContent = recAmpacity + 'A at ' + tempRating + '°C';
-        document.getElementById('minAmpacity').textContent = minByAmpacity + (parseInt(minByAmpacity) ? ' AWG' : ' kcmil');
-        document.getElementById('minVD').textContent = typeof minByVD === 'string' ? minByVD : minByVD + (parseInt(minByVD) ? ' AWG' : ' kcmil');
+        // ── Build HTML ──
+        var html = '';
 
-        const pass = recVDPct <= 3;
-        document.getElementById('vdAtSize').innerHTML = recVD.toFixed(2) + 'V (' + recVDPct.toFixed(2) + '%) — <span class="' + (pass ? 'result-pass' : 'result-fail') + '">' + (pass ? 'PASS' : 'EXCEEDS 3%') + '</span>';
+        // Warnings
+        if (ocpdVal) {
+            var maxOCPD = null;
+            if (minByAmpacity === '14') maxOCPD = 15;
+            if (minByAmpacity === '12') maxOCPD = 20;
+            if (minByAmpacity === '10') maxOCPD = 30;
+            if (maxOCPD && ocpdVal > maxOCPD) {
+                html += '<div class="warning-box"><strong>240.4(D) Warning:</strong> ' + sizeLabel(minByAmpacity) + ' max OCPD is ' + maxOCPD + 'A. Selected breaker is ' + ocpdVal + 'A. Must upsize conductor or reduce breaker.</div>';
+            }
+        }
 
-        document.getElementById('result').classList.add('show');
+        // Main result
+        html += '<div class="result-section">';
+        html += '<div class="result-value">' + sizeLabel(recommended) + ' ' + cap(material) + '</div>';
+        html += '<div class="result-label">Recommended Wire Size</div>';
+        html += '</div>';
+
+        // Breakdown table
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Application</td><td>' + (application === 'branch' ? 'Branch Circuit' : 'Feeder') + '</td></tr>';
+        html += '<tr><td>Ampacity at ' + tempRating + '\u00B0C (310.16)</td><td>' + recAmpacity + 'A';
+        if (hasDerating) {
+            html += ' \u2192 ' + recDeratedAmpacity.toFixed(0) + 'A derated';
+        }
+        html += '</td></tr>';
+        html += '<tr><td>Minimum by Ampacity</td><td>' + sizeLabel(minByAmpacity) + '</td></tr>';
+        html += '<tr><td>Minimum by Voltage Drop (' + vdLimitPct + '%)</td><td>' + (vdExceeds ? 'Exceeds all sizes' : sizeLabel(minByVD)) + '</td></tr>';
+
+        var vdPass = recVDPct <= vdLimitPct;
+        html += '<tr><td>VD at Recommended Size</td><td>' + recVD.toFixed(2) + 'V (' + recVDPct.toFixed(2) + '%) \u2014 <span class="' + (vdPass ? 'result-pass' : 'result-fail') + '">' + (vdPass ? 'PASS' : 'EXCEEDS ' + vdLimitPct + '%') + '</span></td></tr>';
+
+        if (upsized) {
+            html += '<tr><td>Upsized for VD?</td><td><span class="result-fail">Yes</span> \u2014 ' + sizeLabel(minByAmpacity) + ' \u2192 ' + sizeLabel(recommended) + '</td></tr>';
+        }
+        html += '</table>';
+
+        // Derating note
+        if (hasDerating) {
+            html += '<div class="info-box" style="margin-top:12px;">';
+            html += '<strong>Derating Applied:</strong> ';
+            if (derating.temp < 1.0) html += 'Ambient temp correction: ' + (derating.temp * 100).toFixed(0) + '%. ';
+            if (derating.ccc < 1.0) html += 'Conduit fill adjustment: ' + (derating.ccc * 100).toFixed(0) + '%. ';
+            html += 'Combined: ' + (derating.combined * 100).toFixed(0) + '% of ' + tempRating + '\u00B0C ampacity.';
+            if (tempRating === '90') html += ' Final ampacity capped at 75\u00B0C column per NEC 110.14(C).';
+            html += '</div>';
+        }
+
+        // Cost note when upsized 2+ sizes
+        if (upsizedCount >= 2) {
+            html += '<div class="tip-box"><strong>Cost Consideration:</strong> Conductor upsized ' + upsizedCount + ' sizes beyond ampacity minimum for voltage drop. Consider a shorter route, higher system voltage, or parallel conductors to reduce material cost.</div>';
+        }
+
+        // ── EGC Section ──
+        if (ocpdVal) {
+            var minEGC = getEGC(ocpdVal, material);
+            html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+            html += '<div style="font-weight:700;font-size:0.92rem;margin-bottom:8px;">Equipment Grounding Conductor <span class="nec-ref">250.122</span></div>';
+            html += '<table class="breakdown-table">';
+            html += '<tr><td>Min EGC per 250.122</td><td>' + sizeLabel(minEGC) + ' ' + cap(material) + '</td></tr>';
+
+            // Proportional EGC per 250.122(B)
+            var minAmpWire = minByAmpacity;
+            var minCmil = cmil[minAmpWire];
+            var actualCmil = cmil[recommended];
+            if (actualCmil > minCmil) {
+                var minEGCcmil = cmil[minEGC];
+                var newEGCcmil = minEGCcmil * (actualCmil / minCmil);
+                var propSize = nextSizeUp(newEGCcmil, material);
+                if (cmil[propSize] > cmil[minEGC]) {
+                    html += '<tr><td>Proportional EGC per 250.122(B)</td><td><strong>' + sizeLabel(propSize) + ' ' + cap(material) + '</strong></td></tr>';
+                    html += '<tr><td>Reason</td><td>Conductor upsized from ' + sizeLabel(minAmpWire) + ' to ' + sizeLabel(recommended) + ' \u2014 EGC must increase proportionally</td></tr>';
+                }
+            }
+            html += '</table>';
+
+            if (actualCmil > minCmil) {
+                html += '<div class="info-box" style="margin-top:10px;">';
+                html += '<strong>Cable assemblies:</strong> NM-B, SEU, and SER have integral grounds that cannot be upsized independently. For cable assemblies, use the Min EGC per 250.122 row as your baseline.';
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        // ── Show Your Work ──
+        var factorLabel = (phase === 3) ? '1.732' : '2';
+        var formulaName = (phase === 3) ? 'VD = (1.732 \u00D7 L \u00D7 I \u00D7 R) / 1000' : 'VD = (2 \u00D7 L \u00D7 I \u00D7 R) / 1000';
+        var recR = wireResistance[material][recommended];
+
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details class="collapsible-section">';
+        html += '<summary>Show Your Work</summary>';
+        html += '<div class="section-content">';
+
+        // Formula
+        html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:12px;">';
+        html += '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Formula</div>';
+        html += '<div style="font-family:\'Courier New\',monospace;font-size:0.95rem;font-weight:600;">' + formulaName + '</div>';
+        html += '</div>';
+
+        // Steps
+        html += '<table class="breakdown-table" style="font-size:0.85rem;">';
+        html += '<tr><td>Step 1: Ampacity</td><td>' + sizeLabel(minByAmpacity) + ' rated ' + getAmpacity(minByAmpacity, material, tempIdx) + 'A at ' + tempRating + '\u00B0C';
+        if (hasDerating) {
+            var minDerated = getAmpacity(minByAmpacity, material, tempIdx) * derating.combined;
+            html += ' \u2192 ' + minDerated.toFixed(0) + 'A after derating';
+        }
+        html += ' \u2265 ' + amps + 'A load</td></tr>';
+
+        if (upsized) {
+            var minVDpct = (calcVD(amps, distance, minByAmpacity, material, voltage, phase) / voltage * 100);
+            html += '<tr><td>Step 2: VD at ' + sizeLabel(minByAmpacity) + '</td><td>' + minVDpct.toFixed(2) + '% \u2014 exceeds ' + vdLimitPct + '%</td></tr>';
+            html += '<tr><td>Step 3: Upsize</td><td>' + sizeLabel(recommended) + ' (R = ' + recR + ' \u03A9/1000ft)</td></tr>';
+        }
+
+        html += '<tr><td>VD at ' + sizeLabel(recommended) + '</td><td>(' + factorLabel + ' \u00D7 ' + distance + ' \u00D7 ' + amps + ' \u00D7 ' + recR + ') / 1000 = ' + recVD.toFixed(2) + 'V (' + recVDPct.toFixed(2) + '%)</td></tr>';
+        html += '<tr><td>Delivered voltage</td><td>' + voltage + ' \u2212 ' + recVD.toFixed(2) + ' = ' + (voltage - recVD).toFixed(1) + 'V</td></tr>';
+        html += '</table>';
+
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
     }
+
+    // ══════════════════════════════════════
+    //  UI LISTENERS
+    // ══════════════════════════════════════
+
+    document.getElementById('vdLimit').addEventListener('change', function() {
+        document.getElementById('customVDGroup').style.display = (this.value === 'custom') ? '' : 'none';
+    });
+
+    // ── Initialize ──
+    updateTempInfo();
     </script>
     <script src="/js/app.js" defer></script>
 </body>

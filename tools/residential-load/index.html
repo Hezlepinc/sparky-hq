@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
     <header class="site-header">
@@ -28,9 +28,16 @@
                 <h1>Dwelling Unit Load Calculator <span class="nec-ref">NEC Article 220</span></h1>
                 <p class="subtitle">Single-family dwelling service/feeder load calculation. Select calculation method below.</p>
 
+                <div class="info-box" style="margin-bottom:20px;">
+                    <strong>Which method should I use?</strong><br>
+                    <strong>Standard (Part III)</strong> — Required for new construction. Uses individual demand factors per load type.<br>
+                    <strong>Optional (Part IV)</strong> — Allowed for existing dwellings with 100A+ service per 220.82. Uses a simplified demand factor on total connected load. Often yields a lower result.
+                </div>
+
                 <div class="method-toggle">
                     <button class="active" onclick="switchMethod('standard')">Standard Method (Part III)</button>
                     <button onclick="switchMethod('optional')">Optional Method (Part IV)</button>
+                    <button onclick="compareMethodsPrompt()" style="background:#f0f0f0;color:var(--text);border:1px solid var(--border);">Compare Both</button>
                 </div>
 
                 <!-- STANDARD METHOD -->
@@ -39,7 +46,7 @@
                     <div class="form-group">
                         <label for="sqft">Dwelling Square Footage</label>
                         <input type="number" id="sqft" placeholder="e.g. 2000" min="0">
-                        <p style="font-size:0.8rem;color:#999;margin-top:4px;">3 VA per sq ft per NEC 220.12</p>
+                        <p class="field-note">3 VA per sq ft per NEC 220.12</p>
                     </div>
 
                     <h3 style="margin-bottom:16px;margin-top:24px;">Small Appliance & Laundry <span class="nec-ref">220.52</span></h3>
@@ -47,12 +54,12 @@
                         <div class="form-group">
                             <label for="smallAppliance">Small Appliance Circuits (min 2)</label>
                             <input type="number" id="smallAppliance" value="2" min="2">
-                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">1,500 VA each per 220.52(A)</p>
+                            <p class="field-note">1,500 VA each per 220.52(A)</p>
                         </div>
                         <div class="form-group">
                             <label for="laundry">Laundry Circuits (min 1)</label>
                             <input type="number" id="laundry" value="1" min="1">
-                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">1,500 VA each per 220.52(B)</p>
+                            <p class="field-note">1,500 VA each per 220.52(B)</p>
                         </div>
                     </div>
 
@@ -61,33 +68,34 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="range">Range/Oven (VA)</label>
-                            <input type="number" id="range" placeholder="e.g. 8000" min="0">
-                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">NEC 220.55 Table demand applies</p>
+                            <input type="number" id="range" placeholder="Typical: 8,000–12,000" min="0">
+                            <p class="field-note">NEC 220.55 Table demand applies</p>
                         </div>
                         <div class="form-group">
                             <label for="dryer">Dryer (VA)</label>
-                            <input type="number" id="dryer" placeholder="e.g. 5000" min="0">
-                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">Min 5,000 VA per 220.54</p>
+                            <input type="number" id="dryer" placeholder="Typical: 5,000" min="0">
+                            <p class="field-note">Min 5,000 VA per 220.54</p>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="waterHeater">Water Heater (VA)</label>
-                            <input type="number" id="waterHeater" placeholder="e.g. 4500" min="0">
+                            <input type="number" id="waterHeater" placeholder="Typical: 4,500" min="0">
                         </div>
                         <div class="form-group">
                             <label for="dishwasher">Dishwasher (VA)</label>
-                            <input type="number" id="dishwasher" placeholder="e.g. 1500" min="0">
+                            <input type="number" id="dishwasher" placeholder="Typical: 1,200–1,800" min="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="disposal">Disposal (VA)</label>
-                            <input type="number" id="disposal" placeholder="e.g. 1000" min="0">
+                            <input type="number" id="disposal" placeholder="Typical: 600–1,000" min="0">
                         </div>
                         <div class="form-group">
                             <label for="otherFixed">Other Fixed Appliances (VA)</label>
                             <input type="number" id="otherFixed" placeholder="e.g. 0" min="0">
+                            <p class="field-note">Trash compactor, built-in microwave, etc.</p>
                         </div>
                     </div>
 
@@ -96,11 +104,13 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="cooling">A/C or Heat Pump Cooling (VA)</label>
-                            <input type="number" id="cooling" placeholder="e.g. 5000" min="0">
+                            <input type="number" id="cooling" placeholder="Typical: 3,500–7,500" min="0">
+                            <p class="field-note">Nameplate VA or amps × 240V</p>
                         </div>
                         <div class="form-group">
                             <label for="heating">Electric Heat (VA)</label>
-                            <input type="number" id="heating" placeholder="e.g. 10000" min="0">
+                            <input type="number" id="heating" placeholder="Typical: 5,000–15,000" min="0">
+                            <p class="field-note">Total of all fixed electric heat strips</p>
                         </div>
                     </div>
 
@@ -115,7 +125,7 @@
                     <div class="form-group">
                         <label for="optTotal">Total Connected Load (VA)</label>
                         <input type="number" id="optTotal" placeholder="e.g. 45000" min="0">
-                        <p style="font-size:0.8rem;color:#999;margin-top:4px;">Sum of all branch circuit loads at nameplate ratings</p>
+                        <p class="field-note">Sum of all branch circuit loads at nameplate ratings</p>
                     </div>
 
                     <h3 style="margin-bottom:16px;margin-top:24px;">Heating & Cooling <span class="nec-ref">220.82(C)</span></h3>
@@ -144,10 +154,11 @@
                     <button class="btn" onclick="calcOptional()">Calculate</button>
                 </div>
 
+                <!-- RESULTS -->
                 <div class="result" id="result">
                     <div class="result-section">
                         <div class="result-value" id="totalVA">—</div>
-                        <div class="result-label">Calculated Demand Load</div>
+                        <div class="result-label" id="vaLabel">Calculated Demand Load</div>
                     </div>
                     <div class="result-section">
                         <div class="result-value" id="totalAmps">—</div>
@@ -161,6 +172,53 @@
                         <thead><tr><th>Item</th><th>VA</th></tr></thead>
                         <tbody id="breakdownBody"></tbody>
                     </table>
+
+                    <!-- Service Conductor & GEC Sizing -->
+                    <div id="conductorSection" style="display:none;">
+                        <div class="nec-result-section">
+                            <h3>Service Installation Requirements</h3>
+                            <table class="breakdown-table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Service/Feeder Conductors</strong> <span class="nec-ref">310.16</span></td>
+                                        <td id="serviceConductor">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Grounding Electrode Conductor</strong> <span class="nec-ref">250.66</span></td>
+                                        <td id="gecSize">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Entrance Cable</strong></td>
+                                        <td id="seCable">—</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Upgrade Guidance -->
+                    <div id="upgradeGuidance" style="display:none;"></div>
+                </div>
+
+                <!-- COMPARE RESULTS -->
+                <div id="compareResult" class="result" style="display:none;">
+                    <h3 style="margin-bottom:16px;">Method Comparison</h3>
+                    <table class="breakdown-table">
+                        <thead>
+                            <tr><th>Metric</th><th>Standard (Part III)</th><th>Optional (Part IV)</th></tr>
+                        </thead>
+                        <tbody id="compareBody"></tbody>
+                    </table>
+                    <div id="compareNote" style="margin-top:12px;"></div>
+                    <div id="compareConductors" style="display:none;">
+                        <div class="nec-result-section">
+                            <h3>Service Installation Requirements (based on selected method)</h3>
+                            <table class="breakdown-table">
+                                <tbody id="compareConductorBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="compareUpgrade" style="display:none;"></div>
                 </div>
             </div>
         </section>
@@ -177,9 +235,101 @@
     </footer>
 
     <script>
+    // ══════════════════════════════════════
+    // NEC Table 310.16 — 75°C Copper (service conductors)
+    // ══════════════════════════════════════
+    var conductorTable = [
+        { size: '#14 AWG', amps: 20 },
+        { size: '#12 AWG', amps: 25 },
+        { size: '#10 AWG', amps: 35 },
+        { size: '#8 AWG', amps: 50 },
+        { size: '#6 AWG', amps: 65 },
+        { size: '#4 AWG', amps: 85 },
+        { size: '#3 AWG', amps: 100 },
+        { size: '#2 AWG', amps: 115 },
+        { size: '#1 AWG', amps: 130 },
+        { size: '1/0 AWG', amps: 150 },
+        { size: '2/0 AWG', amps: 175 },
+        { size: '3/0 AWG', amps: 200 },
+        { size: '4/0 AWG', amps: 230 },
+        { size: '250 kcmil', amps: 255 },
+        { size: '300 kcmil', amps: 285 },
+        { size: '350 kcmil', amps: 310 },
+        { size: '400 kcmil', amps: 335 },
+        { size: '500 kcmil', amps: 380 }
+    ];
+
+    // ══════════════════════════════════════
+    // NEC Table 250.66 — Grounding Electrode Conductor
+    // Based on size of largest service-entrance conductor
+    // ══════════════════════════════════════
+    var gecTable = [
+        { maxService: '#2 AWG', gec: '#8 AWG copper' },
+        { maxService: '1/0 AWG', gec: '#6 AWG copper' },
+        { maxService: '3/0 AWG', gec: '#4 AWG copper' },
+        { maxService: '4/0 AWG+', gec: '#2 AWG copper' },
+        { maxService: '350 kcmil', gec: '#1/0 AWG copper' },
+        { maxService: '600 kcmil', gec: '#2/0 AWG copper' }
+    ];
+
+    // GEC lookup by conductor size index in conductorTable
+    function getGEC(conductorSize) {
+        // Map conductor sizes to GEC per Table 250.66
+        var sizeToGEC = {
+            '#14 AWG': '#8 AWG copper',
+            '#12 AWG': '#8 AWG copper',
+            '#10 AWG': '#8 AWG copper',
+            '#8 AWG': '#8 AWG copper',
+            '#6 AWG': '#8 AWG copper',
+            '#4 AWG': '#8 AWG copper',
+            '#3 AWG': '#8 AWG copper',
+            '#2 AWG': '#8 AWG copper',
+            '#1 AWG': '#6 AWG copper',
+            '1/0 AWG': '#6 AWG copper',
+            '2/0 AWG': '#4 AWG copper',
+            '3/0 AWG': '#4 AWG copper',
+            '4/0 AWG': '#2 AWG copper',
+            '250 kcmil': '#2 AWG copper',
+            '300 kcmil': '#2 AWG copper',
+            '350 kcmil': '#2 AWG copper',
+            '400 kcmil': '#1/0 AWG copper',
+            '500 kcmil': '#1/0 AWG copper'
+        };
+        return sizeToGEC[conductorSize] || '#2 AWG copper';
+    }
+
+    // Standard service panel sizes
+    var standardBreakers = [100, 125, 150, 200, 225, 400];
+
+    function getConductor(amps) {
+        for (var i = 0; i < conductorTable.length; i++) {
+            if (conductorTable[i].amps >= amps) return conductorTable[i];
+        }
+        return conductorTable[conductorTable.length - 1];
+    }
+
+    function getServiceSize(amps) {
+        if (amps <= 100) return { size: '100A', amps: 100 };
+        if (amps <= 200) return { size: '200A', amps: 200 };
+        if (amps <= 320) return { size: '320A (two 200A panels)', amps: 320 };
+        return { size: '400A', amps: 400 };
+    }
+
+    function getSECable(serviceAmps) {
+        // Common SE cable sizes for residential
+        if (serviceAmps <= 100) return '2-2-2-4 SER (copper) or 4/0-4/0-4/0-2/0 SER (aluminum)';
+        if (serviceAmps <= 150) return '1/0-1/0-1/0-4 SER (copper) or 4/0-4/0-4/0-2/0 SER (aluminum)';
+        if (serviceAmps <= 200) return '2/0-2/0-2/0-1 SER (copper) or 4/0-4/0-4/0-2/0 SER (aluminum)';
+        return 'Consult engineer for parallel conductors';
+    }
+
+    // ══════════════════════════════════════
+    // Method Toggle
+    // ══════════════════════════════════════
     function switchMethod(method) {
-        const btns = document.querySelectorAll('.method-toggle button');
-        btns.forEach(b => b.classList.remove('active'));
+        var btns = document.querySelectorAll('.method-toggle button');
+        btns[0].classList.remove('active');
+        btns[1].classList.remove('active');
         if (method === 'standard') {
             btns[0].classList.add('active');
             document.getElementById('standardForm').style.display = '';
@@ -190,73 +340,115 @@
             document.getElementById('optionalForm').style.display = '';
         }
         document.getElementById('result').classList.remove('show');
+        document.getElementById('compareResult').style.display = 'none';
     }
 
-    function getServiceSize(amps) {
-        if (amps <= 100) return '100A';
-        if (amps <= 200) return '200A';
-        if (amps <= 320) return '320A (two 200A panels)';
-        return '400A';
-    }
-
+    // ══════════════════════════════════════
+    // Show Result (single method)
+    // ══════════════════════════════════════
     function showResult(totalVA, amps, breakdown) {
+        var service = getServiceSize(amps);
+        var conductor = getConductor(amps);
+        var gec = getGEC(conductor.size);
+        var seCable = getSECable(service.amps);
+
         document.getElementById('totalVA').textContent = Math.round(totalVA).toLocaleString() + ' VA';
         document.getElementById('totalAmps').textContent = amps.toFixed(1) + 'A';
-        document.getElementById('serviceSize').textContent = getServiceSize(amps);
+        document.getElementById('serviceSize').textContent = service.size;
 
-        const tbody = document.getElementById('breakdownBody');
+        var tbody = document.getElementById('breakdownBody');
         tbody.innerHTML = '';
-        breakdown.forEach(row => {
+        breakdown.forEach(function(row) {
             tbody.innerHTML += '<tr><td>' + row.item + '</td><td>' + Math.round(row.va).toLocaleString() + '</td></tr>';
         });
         tbody.innerHTML += '<tr><td><strong>Total Demand</strong></td><td><strong>' + Math.round(totalVA).toLocaleString() + ' VA</strong></td></tr>';
+
+        // Conductor sizing section
+        document.getElementById('serviceConductor').textContent = conductor.size + ' copper at 75\u00B0C (' + conductor.amps + 'A)';
+        document.getElementById('gecSize').textContent = gec + ' (Table 250.66)';
+        document.getElementById('seCable').textContent = seCable;
+        document.getElementById('conductorSection').style.display = '';
+
+        // Upgrade guidance
+        var upgradeDiv = document.getElementById('upgradeGuidance');
+        if (amps > 200) {
+            upgradeDiv.innerHTML = '<div class="info-box" style="margin-top:16px;">' +
+                '<strong>Service Over 200A</strong><br>' +
+                'Loads exceeding 200A require either:<br>' +
+                '\u2022 <strong>320A service:</strong> Two 200A panels (most common residential upgrade)<br>' +
+                '\u2022 <strong>400A service:</strong> CT metering and 400A rated equipment<br>' +
+                'Check with your utility for metering requirements and service lateral sizing.' +
+                '</div>';
+            upgradeDiv.style.display = '';
+        } else if (amps > 150 && amps <= 200) {
+            upgradeDiv.innerHTML = '<div class="tip-box" style="margin-top:16px;">' +
+                '<strong>Near 200A limit</strong> — If the homeowner plans to add an EV charger, pool equipment, or other large loads, ' +
+                'consider whether a 200A service will have enough headroom.' +
+                '</div>';
+            upgradeDiv.style.display = '';
+        } else {
+            upgradeDiv.style.display = 'none';
+        }
+
         document.getElementById('result').classList.add('show');
+        document.getElementById('compareResult').style.display = 'none';
     }
 
+    // ══════════════════════════════════════
+    // Standard Method (Part III)
+    // ══════════════════════════════════════
     function calcStandard() {
-        const sqft = parseFloat(document.getElementById('sqft').value) || 0;
-        const saCircuits = parseInt(document.getElementById('smallAppliance').value) || 2;
-        const laundryCircuits = parseInt(document.getElementById('laundry').value) || 1;
+        var sqft = parseFloat(document.getElementById('sqft').value) || 0;
+        var saCircuits = parseInt(document.getElementById('smallAppliance').value) || 2;
+        var laundryCircuits = parseInt(document.getElementById('laundry').value) || 1;
 
-        const rangeVA = parseFloat(document.getElementById('range').value) || 0;
-        const dryerVA = Math.max(parseFloat(document.getElementById('dryer').value) || 0, 5000);
-        const waterHeaterVA = parseFloat(document.getElementById('waterHeater').value) || 0;
-        const dishwasherVA = parseFloat(document.getElementById('dishwasher').value) || 0;
-        const disposalVA = parseFloat(document.getElementById('disposal').value) || 0;
-        const otherFixedVA = parseFloat(document.getElementById('otherFixed').value) || 0;
-        const coolingVA = parseFloat(document.getElementById('cooling').value) || 0;
-        const heatingVA = parseFloat(document.getElementById('heating').value) || 0;
+        var rangeVA = parseFloat(document.getElementById('range').value) || 0;
+        var dryerVA = parseFloat(document.getElementById('dryer').value) || 0;
+        if (dryerVA > 0 && dryerVA < 5000) dryerVA = 5000;
+        var waterHeaterVA = parseFloat(document.getElementById('waterHeater').value) || 0;
+        var dishwasherVA = parseFloat(document.getElementById('dishwasher').value) || 0;
+        var disposalVA = parseFloat(document.getElementById('disposal').value) || 0;
+        var otherFixedVA = parseFloat(document.getElementById('otherFixed').value) || 0;
+        var coolingVA = parseFloat(document.getElementById('cooling').value) || 0;
+        var heatingVA = parseFloat(document.getElementById('heating').value) || 0;
 
         if (sqft <= 0) {
             alert('Enter dwelling square footage.');
             return;
         }
 
-        const breakdown = [];
+        return runStandard(sqft, saCircuits, laundryCircuits, rangeVA, dryerVA,
+            waterHeaterVA, dishwasherVA, disposalVA, otherFixedVA, coolingVA, heatingVA);
+    }
+
+    function runStandard(sqft, saCircuits, laundryCircuits, rangeVA, dryerVA,
+        waterHeaterVA, dishwasherVA, disposalVA, otherFixedVA, coolingVA, heatingVA) {
+
+        var breakdown = [];
 
         // General lighting: 3 VA/sq ft
-        const lightingVA = sqft * 3;
-        const saVA = saCircuits * 1500;
-        const laundryVA = laundryCircuits * 1500;
-        const generalTotal = lightingVA + saVA + laundryVA;
+        var lightingVA = sqft * 3;
+        var saVA = saCircuits * 1500;
+        var laundryVA = laundryCircuits * 1500;
+        var generalTotal = lightingVA + saVA + laundryVA;
 
         // Apply demand factor per Table 220.42
-        let generalDemand;
+        var generalDemand;
         if (generalTotal <= 3000) {
             generalDemand = generalTotal;
         } else {
             generalDemand = 3000 + (generalTotal - 3000) * 0.35;
         }
 
-        breakdown.push({ item: 'General lighting (' + sqft + ' sq ft × 3 VA)', va: lightingVA });
-        breakdown.push({ item: 'Small appliance circuits (' + saCircuits + ' × 1,500 VA)', va: saVA });
-        breakdown.push({ item: 'Laundry circuits (' + laundryCircuits + ' × 1,500 VA)', va: laundryVA });
+        breakdown.push({ item: 'General lighting (' + sqft + ' sq ft \u00D7 3 VA)', va: lightingVA });
+        breakdown.push({ item: 'Small appliance circuits (' + saCircuits + ' \u00D7 1,500 VA)', va: saVA });
+        breakdown.push({ item: 'Laundry circuits (' + laundryCircuits + ' \u00D7 1,500 VA)', va: laundryVA });
         breakdown.push({ item: 'Demand factor applied (Table 220.42)', va: generalDemand });
 
-        let totalDemand = generalDemand;
+        var totalDemand = generalDemand;
 
         // Range demand per Table 220.55 (simplified: single range ≤ 12 kW = 8 kW demand)
-        let rangeDemand = 0;
+        var rangeDemand = 0;
         if (rangeVA > 0) {
             if (rangeVA <= 12000) {
                 rangeDemand = 8000;
@@ -275,49 +467,56 @@
         }
 
         // Fixed appliances - count for 75% demand factor
-        const fixedAppliances = [];
+        var fixedAppliances = [];
         if (waterHeaterVA > 0) fixedAppliances.push({ name: 'Water heater', va: waterHeaterVA });
         if (dishwasherVA > 0) fixedAppliances.push({ name: 'Dishwasher', va: dishwasherVA });
         if (disposalVA > 0) fixedAppliances.push({ name: 'Disposal', va: disposalVA });
         if (otherFixedVA > 0) fixedAppliances.push({ name: 'Other fixed', va: otherFixedVA });
 
-        let fixedTotal = fixedAppliances.reduce((sum, a) => sum + a.va, 0);
-        let fixedDemand = fixedAppliances.length >= 4 ? fixedTotal * 0.75 : fixedTotal;
+        var fixedTotal = fixedAppliances.reduce(function(sum, a) { return sum + a.va; }, 0);
+        var fixedDemand = fixedAppliances.length >= 4 ? fixedTotal * 0.75 : fixedTotal;
 
         if (fixedTotal > 0) {
-            const demandNote = fixedAppliances.length >= 4 ? ' (75% demand, 4+ appliances)' : '';
+            var demandNote = fixedAppliances.length >= 4 ? ' (75% demand, 4+ appliances)' : '';
             breakdown.push({ item: 'Fixed appliances' + demandNote, va: fixedDemand });
             totalDemand += fixedDemand;
         }
 
         // HVAC - larger of heating or cooling (NEC 220.60)
-        const hvacLoad = Math.max(coolingVA, heatingVA);
+        var hvacLoad = Math.max(coolingVA, heatingVA);
         if (hvacLoad > 0) {
-            const hvacType = coolingVA >= heatingVA ? 'Cooling' : 'Heating';
+            var hvacType = coolingVA >= heatingVA ? 'Cooling' : 'Heating';
             breakdown.push({ item: hvacType + ' (larger of heat/cool per 220.60)', va: hvacLoad });
             totalDemand += hvacLoad;
         }
 
-        const amps = totalDemand / 240;
-        showResult(totalDemand, amps, breakdown);
+        var amps = totalDemand / 240;
+        return { totalVA: totalDemand, amps: amps, breakdown: breakdown };
     }
 
+    // ══════════════════════════════════════
+    // Optional Method (Part IV)
+    // ══════════════════════════════════════
     function calcOptional() {
-        const totalConnected = parseFloat(document.getElementById('optTotal').value) || 0;
-        const acVA = parseFloat(document.getElementById('optAC').value) || 0;
-        const heatPumpVA = parseFloat(document.getElementById('optHeatPump').value) || 0;
-        const stripHeatVA = parseFloat(document.getElementById('optStripHeat').value) || 0;
-        const spaceHeatVA = parseFloat(document.getElementById('optSpaceHeat').value) || 0;
+        var totalConnected = parseFloat(document.getElementById('optTotal').value) || 0;
+        var acVA = parseFloat(document.getElementById('optAC').value) || 0;
+        var heatPumpVA = parseFloat(document.getElementById('optHeatPump').value) || 0;
+        var stripHeatVA = parseFloat(document.getElementById('optStripHeat').value) || 0;
+        var spaceHeatVA = parseFloat(document.getElementById('optSpaceHeat').value) || 0;
 
         if (totalConnected <= 0) {
             alert('Enter total connected load.');
             return;
         }
 
-        const breakdown = [];
+        return runOptional(totalConnected, acVA, heatPumpVA, stripHeatVA, spaceHeatVA);
+    }
+
+    function runOptional(totalConnected, acVA, heatPumpVA, stripHeatVA, spaceHeatVA) {
+        var breakdown = [];
 
         // 220.82(B): First 10 kVA at 100%, remainder at 40%
-        let generalDemand;
+        var generalDemand;
         if (totalConnected <= 10000) {
             generalDemand = totalConnected;
         } else {
@@ -327,26 +526,159 @@
         breakdown.push({ item: 'First 10 kVA @ 100%, remainder @ 40%', va: generalDemand });
 
         // 220.82(C): Largest of heating/cooling options
-        const hvacOptions = [
+        var hvacOptions = [
             { name: 'A/C at 100%', va: acVA },
             { name: 'Heat pump compressor at 100%', va: heatPumpVA },
             { name: 'Strip heat at 65%', va: stripHeatVA * 0.65 },
             { name: 'Space heating at 65%', va: spaceHeatVA * 0.65 }
         ];
 
-        let largest = hvacOptions[0];
-        for (const opt of hvacOptions) {
-            if (opt.va > largest.va) largest = opt;
+        var largest = hvacOptions[0];
+        for (var j = 0; j < hvacOptions.length; j++) {
+            if (hvacOptions[j].va > largest.va) largest = hvacOptions[j];
         }
 
-        let totalDemand = generalDemand;
+        var totalDemand = generalDemand;
         if (largest.va > 0) {
             totalDemand += largest.va;
             breakdown.push({ item: largest.name + ' (largest per 220.82(C))', va: largest.va });
         }
 
-        const amps = totalDemand / 240;
-        showResult(totalDemand, amps, breakdown);
+        var amps = totalDemand / 240;
+        return { totalVA: totalDemand, amps: amps, breakdown: breakdown };
+    }
+
+    // Wrapper: calcStandard with showResult
+    var _origCalcStandard = calcStandard;
+    calcStandard = function() {
+        var result = _origCalcStandard();
+        if (result) showResult(result.totalVA, result.amps, result.breakdown);
+    };
+
+    var _origCalcOptional = calcOptional;
+    calcOptional = function() {
+        var result = _origCalcOptional();
+        if (result) showResult(result.totalVA, result.amps, result.breakdown);
+    };
+
+    // ══════════════════════════════════════
+    // Compare Methods
+    // ══════════════════════════════════════
+    function compareMethodsPrompt() {
+        // Need standard form inputs
+        var sqft = parseFloat(document.getElementById('sqft').value) || 0;
+        var optTotal = parseFloat(document.getElementById('optTotal').value) || 0;
+
+        if (sqft <= 0 && optTotal <= 0) {
+            alert('Fill in the Standard method form first. For comparison, also fill in the Optional method form.');
+            return;
+        }
+        if (sqft <= 0) {
+            alert('Fill in the Standard method form (square footage required) to compare both methods.');
+            return;
+        }
+        if (optTotal <= 0) {
+            alert('Fill in the Optional method form (total connected load required) to compare both methods.');
+            return;
+        }
+
+        compareMethods();
+    }
+
+    function compareMethods() {
+        // Run standard
+        var sqft = parseFloat(document.getElementById('sqft').value) || 0;
+        var saCircuits = parseInt(document.getElementById('smallAppliance').value) || 2;
+        var laundryCircuits = parseInt(document.getElementById('laundry').value) || 1;
+        var rangeVA = parseFloat(document.getElementById('range').value) || 0;
+        var dryerVA = parseFloat(document.getElementById('dryer').value) || 0;
+        if (dryerVA > 0 && dryerVA < 5000) dryerVA = 5000;
+        var waterHeaterVA = parseFloat(document.getElementById('waterHeater').value) || 0;
+        var dishwasherVA = parseFloat(document.getElementById('dishwasher').value) || 0;
+        var disposalVA = parseFloat(document.getElementById('disposal').value) || 0;
+        var otherFixedVA = parseFloat(document.getElementById('otherFixed').value) || 0;
+        var coolingVA = parseFloat(document.getElementById('cooling').value) || 0;
+        var heatingVA = parseFloat(document.getElementById('heating').value) || 0;
+
+        var stdResult = runStandard(sqft, saCircuits, laundryCircuits, rangeVA, dryerVA,
+            waterHeaterVA, dishwasherVA, disposalVA, otherFixedVA, coolingVA, heatingVA);
+
+        // Run optional
+        var totalConnected = parseFloat(document.getElementById('optTotal').value) || 0;
+        var acVA = parseFloat(document.getElementById('optAC').value) || 0;
+        var heatPumpVA = parseFloat(document.getElementById('optHeatPump').value) || 0;
+        var stripHeatVA = parseFloat(document.getElementById('optStripHeat').value) || 0;
+        var spaceHeatVA = parseFloat(document.getElementById('optSpaceHeat').value) || 0;
+
+        var optResult = runOptional(totalConnected, acVA, heatPumpVA, stripHeatVA, spaceHeatVA);
+
+        var stdService = getServiceSize(stdResult.amps);
+        var optService = getServiceSize(optResult.amps);
+
+        // Determine which yields lower demand
+        var lower = stdResult.totalVA <= optResult.totalVA ? 'standard' : 'optional';
+
+        var tbody = document.getElementById('compareBody');
+        tbody.innerHTML = '';
+        tbody.innerHTML += '<tr><td>Demand Load</td><td>' + Math.round(stdResult.totalVA).toLocaleString() + ' VA</td><td>' + Math.round(optResult.totalVA).toLocaleString() + ' VA</td></tr>';
+        tbody.innerHTML += '<tr><td>Service Amps</td><td>' + stdResult.amps.toFixed(1) + 'A</td><td>' + optResult.amps.toFixed(1) + 'A</td></tr>';
+        tbody.innerHTML += '<tr><td>Service Size</td><td>' + stdService.size + '</td><td>' + optService.size + '</td></tr>';
+
+        // Highlight lower
+        var diff = Math.abs(stdResult.totalVA - optResult.totalVA);
+        var noteDiv = document.getElementById('compareNote');
+        if (lower === 'optional') {
+            noteDiv.innerHTML = '<div class="tip-box">' +
+                '<strong>Optional method yields ' + Math.round(diff).toLocaleString() + ' VA less demand.</strong> ' +
+                'If this is an existing dwelling with 100A+ service, the Optional method is permitted and results in a lower calculated load.' +
+                '</div>';
+        } else if (diff > 0) {
+            noteDiv.innerHTML = '<div class="info-box">' +
+                '<strong>Standard method yields ' + Math.round(diff).toLocaleString() + ' VA less demand.</strong> ' +
+                'This is uncommon — typically the Optional method produces a lower result. Double-check your Optional method inputs.' +
+                '</div>';
+        } else {
+            noteDiv.innerHTML = '<div class="info-box">Both methods produce the same demand load.</div>';
+        }
+
+        // Show conductor sizing for the method with higher demand (conservative)
+        var useAmps = Math.max(stdResult.amps, optResult.amps);
+        var useService = getServiceSize(useAmps);
+        var conductor = getConductor(useAmps);
+        var gec = getGEC(conductor.size);
+        var seCable = getSECable(useService.amps);
+
+        var condBody = document.getElementById('compareConductorBody');
+        condBody.innerHTML = '';
+        condBody.innerHTML += '<tr><td><strong>Service/Feeder Conductors</strong> <span class="nec-ref">310.16</span></td><td>' + conductor.size + ' copper at 75\u00B0C (' + conductor.amps + 'A)</td></tr>';
+        condBody.innerHTML += '<tr><td><strong>Grounding Electrode Conductor</strong> <span class="nec-ref">250.66</span></td><td>' + gec + ' (Table 250.66)</td></tr>';
+        condBody.innerHTML += '<tr><td><strong>Service Entrance Cable</strong></td><td>' + seCable + '</td></tr>';
+        document.getElementById('compareConductors').style.display = '';
+
+        // Upgrade guidance for compare
+        var upgradeDiv = document.getElementById('compareUpgrade');
+        if (useAmps > 200) {
+            upgradeDiv.innerHTML = '<div class="info-box" style="margin-top:16px;">' +
+                '<strong>Service Over 200A</strong><br>' +
+                'Loads exceeding 200A require either:<br>' +
+                '\u2022 <strong>320A service:</strong> Two 200A panels (most common residential upgrade)<br>' +
+                '\u2022 <strong>400A service:</strong> CT metering and 400A rated equipment<br>' +
+                'Check with your utility for metering requirements and service lateral sizing.' +
+                '</div>';
+            upgradeDiv.style.display = '';
+        } else if (useAmps > 150) {
+            upgradeDiv.innerHTML = '<div class="tip-box" style="margin-top:16px;">' +
+                '<strong>Near 200A limit</strong> — If the homeowner plans to add an EV charger, pool equipment, or other large loads, ' +
+                'consider whether a 200A service will have enough headroom.' +
+                '</div>';
+            upgradeDiv.style.display = '';
+        } else {
+            upgradeDiv.style.display = 'none';
+        }
+
+        document.getElementById('result').classList.remove('show');
+        document.getElementById('compareResult').style.display = '';
+        document.getElementById('compareResult').classList.add('show');
     }
     </script>
     <script src="/js/app.js" defer></script>
