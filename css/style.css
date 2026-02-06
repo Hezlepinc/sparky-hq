@@ -482,6 +482,71 @@ nav a:hover {
     color: var(--text);
 }
 
+/* Install Banner */
+#install-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--dark);
+    color: #ccc;
+    padding: 10px 20px;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+#install-banner span {
+    flex: 1;
+}
+
+#install-btn {
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#install-x {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+/* Calc Header with Share */
+.calc-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn-share {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.btn-share:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 /* Mobile */
 @media (max-width: 600px) {
     .hero {
