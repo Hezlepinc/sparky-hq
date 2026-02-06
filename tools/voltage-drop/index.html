@@ -35,90 +35,80 @@
                 </div>
 
                 <div class="calc-form">
-                    <!-- Row 1: Voltage + Circuit Type -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="voltage">System Voltage</label>
-                            <select id="voltage">
-                                <option value="120">120V</option>
-                                <option value="208">208V</option>
-                                <option value="240" selected>240V</option>
-                                <option value="277">277V</option>
-                                <option value="480">480V</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="circuit">Circuit Type</label>
-                            <select id="circuit">
-                                <option value="1ac" selected>Single Phase AC</option>
-                                <option value="3ac">Three Phase AC</option>
-                                <option value="dc">DC</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="voltage">System Voltage</label>
+                        <select id="voltage">
+                            <option value="120">120V</option>
+                            <option value="208">208V</option>
+                            <option value="240" selected>240V</option>
+                            <option value="277">277V</option>
+                            <option value="480">480V</option>
+                        </select>
                     </div>
 
-                    <!-- Row 1.5: Application -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="application">Circuit Application</label>
-                            <select id="application" onchange="updateAppVDLimit()">
-                                <option value="branch" selected>Branch Circuit (3% VD)</option>
-                                <option value="feeder">Feeder (2% VD)</option>
-                                <option value="combined">Branch + Feeder (5% total)</option>
-                            </select>
-                            <p class="field-note" id="appNote">NEC 210.19(A) Info Note No. 4: max 3% on branch circuits</p>
-                        </div>
+                    <div class="form-group">
+                        <label for="circuit">Circuit Type</label>
+                        <select id="circuit">
+                            <option value="1ac" selected>Single Phase AC</option>
+                            <option value="3ac">Three Phase AC</option>
+                            <option value="dc">DC</option>
+                        </select>
                     </div>
 
-                    <!-- Row 2: Amps + Material -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="amps">Load (Amps)</label>
-                            <input type="number" id="amps" placeholder="e.g. 20" min="0" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label for="material">Conductor Material</label>
-                            <select id="material">
-                                <option value="copper" selected>Copper</option>
-                                <option value="aluminum">Aluminum</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="application">Circuit Application</label>
+                        <select id="application" onchange="updateAppVDLimit()">
+                            <option value="branch" selected>Branch Circuit (3% VD)</option>
+                            <option value="feeder">Feeder (2% VD)</option>
+                            <option value="combined">Branch + Feeder (5% total)</option>
+                        </select>
+                        <p class="field-note" id="appNote">NEC 210.19(A) Info Note No. 4: max 3% on branch circuits</p>
                     </div>
 
-                    <!-- Row 3: Wire Size + Distance (conditionally shown) -->
-                    <div class="form-row">
-                        <div class="form-group" id="wireSizeGroup">
-                            <label for="wireSize">Wire Size</label>
-                            <select id="wireSize">
-                                <option value="14">14 AWG</option>
-                                <option value="12" selected>12 AWG</option>
-                                <option value="10">10 AWG</option>
-                                <option value="8">8 AWG</option>
-                                <option value="6">6 AWG</option>
-                                <option value="4">4 AWG</option>
-                                <option value="3">3 AWG</option>
-                                <option value="2">2 AWG</option>
-                                <option value="1">1 AWG</option>
-                                <option value="1/0">1/0 AWG</option>
-                                <option value="2/0">2/0 AWG</option>
-                                <option value="3/0">3/0 AWG</option>
-                                <option value="4/0">4/0 AWG</option>
-                                <option value="250">250 kcmil</option>
-                                <option value="300">300 kcmil</option>
-                                <option value="350">350 kcmil</option>
-                                <option value="400">400 kcmil</option>
-                                <option value="500">500 kcmil</option>
-                                <option value="600">600 kcmil</option>
-                                <option value="750">750 kcmil</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="distanceGroup">
-                            <label for="distance">One-Way Distance (ft)</label>
-                            <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
-                        </div>
+                    <div class="form-group">
+                        <label for="amps">Load (Amps)</label>
+                        <input type="number" id="amps" placeholder="e.g. 20" min="0" step="0.1">
                     </div>
 
-                    <!-- VD Limit (Max Distance mode) -->
+                    <div class="form-group">
+                        <label for="material">Conductor Material</label>
+                        <select id="material">
+                            <option value="copper" selected>Copper</option>
+                            <option value="aluminum">Aluminum</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="wireSizeGroup">
+                        <label for="wireSize">Wire Size</label>
+                        <select id="wireSize">
+                            <option value="14">14 AWG</option>
+                            <option value="12" selected>12 AWG</option>
+                            <option value="10">10 AWG</option>
+                            <option value="8">8 AWG</option>
+                            <option value="6">6 AWG</option>
+                            <option value="4">4 AWG</option>
+                            <option value="3">3 AWG</option>
+                            <option value="2">2 AWG</option>
+                            <option value="1">1 AWG</option>
+                            <option value="1/0">1/0 AWG</option>
+                            <option value="2/0">2/0 AWG</option>
+                            <option value="3/0">3/0 AWG</option>
+                            <option value="4/0">4/0 AWG</option>
+                            <option value="250">250 kcmil</option>
+                            <option value="300">300 kcmil</option>
+                            <option value="350">350 kcmil</option>
+                            <option value="400">400 kcmil</option>
+                            <option value="500">500 kcmil</option>
+                            <option value="600">600 kcmil</option>
+                            <option value="750">750 kcmil</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="distanceGroup">
+                        <label for="distance">One-Way Distance (ft)</label>
+                        <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
+                    </div>
+
                     <div class="form-group" id="vdLimitGroup">
                         <label for="vdLimit">VD Limit</label>
                         <select id="vdLimit">
