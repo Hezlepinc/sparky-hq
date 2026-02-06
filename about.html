@@ -25,7 +25,32 @@
                 <h1>About Sparky HQ</h1>
                 <p>Sparky HQ is a collection of free electrical calculators built for electricians, estimators, and engineers who need quick NEC-compliant answers on the job site or at the desk.</p>
                 <p>Every tool is based on current NEC requirements and built from real-world experience in the trade. No ads, no signup, no app to download. Open the page, run your calculation, get back to work.</p>
-                <p>Sparky HQ is a project by <a href="https://hezlepinc.com">Hezlepinc</a>.</p>
+
+                <div style="margin-top:40px;">
+                    <h2 style="font-size:1.3rem;margin-bottom:8px;">Contact / Report a Bug</h2>
+                    <p>Found a calculation error, have a tool request, or just want to say what's up? Send it here.</p>
+                    <form action="https://formsubmit.co/john@hezlepinc.com" method="POST" style="max-width:520px;margin-top:20px;">
+                        <input type="hidden" name="_next" value="https://sparky-hq.com/about.html">
+                        <input type="hidden" name="_captcha" value="true">
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:4px;">Email</label>
+                            <input type="email" name="email" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:4px;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:4px;">Subject</label>
+                            <select name="subject" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:4px;font-size:1rem;background:#fff;">
+                                <option value="Bug Report">Bug Report</option>
+                                <option value="Tool Request">Tool Request</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:4px;">Message</label>
+                            <textarea name="message" rows="5" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:4px;font-size:1rem;resize:vertical;font-family:inherit;"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send</button>
+                    </form>
+                </div>
             </div>
         </section>
     </main>
