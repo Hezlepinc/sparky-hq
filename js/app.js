@@ -67,7 +67,7 @@ var ALL_TOOLS = [
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = [];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {
