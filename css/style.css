@@ -33,10 +33,11 @@ body {
     padding: 0 20px;
 }
 
-/* Header */
+/* Header - White background with subtle border */
 .site-header {
-    background: var(--dark);
+    background: var(--white);
     padding: 16px 0;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .site-header .container {
@@ -52,26 +53,27 @@ body {
 }
 
 .logo img {
-    height: 40px;
+    height: 50px;
     width: auto;
 }
 
 nav a {
-    color: var(--white);
+    color: var(--text);
     text-decoration: none;
     margin-left: 24px;
     font-size: 0.95rem;
+    font-weight: 500;
 }
 
 nav a:hover {
     color: var(--yellow);
 }
 
-/* Hero */
+/* Hero - Compact */
 .hero {
     background: var(--darker);
     color: var(--white);
-    padding: 80px 0;
+    padding: 50px 0;
     text-align: center;
 }
 
@@ -79,14 +81,6 @@ nav a:hover {
     font-size: 2.5rem;
     font-weight: 800;
     line-height: 1.2;
-    margin-bottom: 16px;
-}
-
-.hero p {
-    font-size: 1.15rem;
-    color: #ccc;
-    max-width: 600px;
-    margin: 0 auto;
 }
 
 /* Tools Grid */
@@ -133,36 +127,6 @@ nav a:hover {
     line-height: 1.5;
 }
 
-.tool-card.coming-soon {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.tool-card.coming-soon h3::after {
-    content: " (Coming Soon)";
-    font-size: 0.75rem;
-    color: var(--text-light);
-    font-weight: normal;
-}
-
-/* About Brief */
-.about-brief {
-    background: var(--gray);
-    padding: 60px 0;
-    text-align: center;
-}
-
-.about-brief h2 {
-    font-size: 1.5rem;
-    margin-bottom: 12px;
-}
-
-.about-brief p {
-    max-width: 600px;
-    margin: 0 auto;
-    color: var(--text-light);
-}
-
 /* Footer */
 .site-footer {
     background: var(--dark);
@@ -201,6 +165,12 @@ nav a:hover {
     border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 24px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 .form-group {
@@ -246,6 +216,22 @@ nav a:hover {
     background: #e09500;
 }
 
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid #ddd;
+}
+
+.btn-outline:hover {
+    border-color: var(--yellow);
+    background: transparent;
+}
+
 .result {
     background: var(--gray);
     border-radius: var(--radius);
@@ -278,10 +264,177 @@ nav a:hover {
     font-weight: 700;
 }
 
+/* Method Toggle */
+.method-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 2px solid #e5e5e5;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.method-toggle button {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: var(--white);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: background 0.2s, color 0.2s;
+}
+
+.method-toggle button.active {
+    background: var(--yellow);
+    color: var(--dark);
+}
+
+/* Wire Entry Rows (conduit fill) */
+.wire-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr 80px 40px;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 8px;
+}
+
+.wire-entry select,
+.wire-entry input {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.wire-entry .btn-remove {
+    background: none;
+    border: none;
+    color: #dc2626;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+}
+
+.wire-entry .btn-remove:hover {
+    background: #fef2f2;
+    border-radius: 4px;
+}
+
+/* Breakdown Table */
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.breakdown-table th {
+    font-weight: 600;
+    color: var(--text);
+    background: var(--gray);
+}
+
+.breakdown-table td {
+    color: var(--text-light);
+}
+
+.breakdown-table tr:last-child td {
+    border-bottom: none;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* NEC Reference Tag */
+.nec-ref {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+/* About Page */
+.about-page {
+    padding: 60px 0;
+}
+
+.about-page h1 {
+    font-size: 2rem;
+    margin-bottom: 16px;
+}
+
+.about-page p {
+    max-width: 680px;
+    margin-bottom: 16px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+.about-page a {
+    color: var(--yellow);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.about-page a:hover {
+    text-decoration: underline;
+}
+
+/* Checkbox / Toggle Group */
+.checkbox-group {
+    margin-bottom: 16px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-bottom: 6px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    accent-color: var(--yellow);
+}
+
+/* Appliance Checklist (generator sizing) */
+.appliance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+}
+
+/* Result sections */
+.result-section {
+    margin-bottom: 16px;
+}
+
+.result-section h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--dark);
+}
+
 /* Mobile */
 @media (max-width: 600px) {
     .hero {
-        padding: 48px 0;
+        padding: 36px 0;
     }
 
     .hero h1 {
@@ -289,6 +442,22 @@ nav a:hover {
     }
 
     .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .wire-entry {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .wire-entry input[type="number"] {
+        grid-column: 1;
+    }
+
+    .appliance-grid {
         grid-template-columns: 1fr;
     }
 }

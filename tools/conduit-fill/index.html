@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conduit Fill Calculator - NEC Chapter 9 | Sparky HQ</title>
+    <meta name="description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Conduit Fill Calculator <span class="nec-ref">NEC Ch.9 Table 4 &amp; 5</span></h1>
+                <p class="subtitle">Calculate conduit fill percentage. Limits: 1 wire = 53%, 2 wires = 31%, 3+ wires = 40%.</p>
+
+                <div class="calc-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="conduitType">Conduit Type</label>
+                            <select id="conduitType" onchange="updateConduitSizes()">
+                                <option value="EMT">EMT</option>
+                                <option value="IMC">IMC</option>
+                                <option value="RMC">RMC</option>
+                                <option value="PVC40">PVC Schedule 40</option>
+                                <option value="PVC80">PVC Schedule 80</option>
+                                <option value="FMC">FMC (Flex)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="conduitSize">Conduit Size</label>
+                            <select id="conduitSize"></select>
+                        </div>
+                    </div>
+
+                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Conductors</label>
+                    <div id="wireEntries">
+                        <div class="wire-entry">
+                            <select class="wireType" onchange="updateWireSizesInRow(this)">
+                                <option value="THHN">THHN / THWN-2</option>
+                                <option value="THW">THW / THWN</option>
+                                <option value="XHHW">XHHW / XHHW-2</option>
+                                <option value="USE">USE-2 / RHH</option>
+                            </select>
+                            <select class="wireGauge">
+                                <option value="14">14 AWG</option>
+                                <option value="12" selected>12 AWG</option>
+                                <option value="10">10 AWG</option>
+                                <option value="8">8 AWG</option>
+                                <option value="6">6 AWG</option>
+                                <option value="4">4 AWG</option>
+                                <option value="3">3 AWG</option>
+                                <option value="2">2 AWG</option>
+                                <option value="1">1 AWG</option>
+                                <option value="1/0">1/0 AWG</option>
+                                <option value="2/0">2/0 AWG</option>
+                                <option value="3/0">3/0 AWG</option>
+                                <option value="4/0">4/0 AWG</option>
+                                <option value="250">250 kcmil</option>
+                                <option value="300">300 kcmil</option>
+                                <option value="350">350 kcmil</option>
+                                <option value="400">400 kcmil</option>
+                                <option value="500">500 kcmil</option>
+                                <option value="600">600 kcmil</option>
+                                <option value="750">750 kcmil</option>
+                            </select>
+                            <input type="number" class="wireCount" value="3" min="1" placeholder="Qty">
+                            <button class="btn-remove" onclick="removeWireEntry(this)" title="Remove">&times;</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="addWireEntry()" style="margin-top:8px;margin-bottom:16px;">+ Add Wire</button>
+
+                    <br>
+                    <button class="btn" onclick="calculate()">Calculate</button>
+                </div>
+
+                <div class="result" id="result">
+                    <div class="result-section">
+                        <div class="result-value" id="fillPct">—</div>
+                        <div class="result-label">Conduit Fill</div>
+                    </div>
+                    <div class="result-section">
+                        <span id="passStatus"></span>
+                    </div>
+                    <table class="breakdown-table" id="breakdownTable">
+                        <thead>
+                            <tr><th>Conductor</th><th>Area (in²)</th><th>Qty</th><th>Total (in²)</th></tr>
+                        </thead>
+                        <tbody id="breakdownBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments.</p>
+        </div>
+    </footer>
+
+    <script>
+    // NEC Table 4 - Internal area of conduit (sq inches) by trade size
+    const conduitArea = {
+        EMT:   {'1/2':0.304,'3/4':0.533,'1':0.864,'1-1/4':1.496,'1-1/2':2.036,'2':3.356,'2-1/2':5.858,'3':8.846,'3-1/2':11.545,'4':14.753},
+        IMC:   {'1/2':0.342,'3/4':0.586,'1':0.959,'1-1/4':1.647,'1-1/2':2.225,'2':3.630,'2-1/2':5.135,'3':7.922,'3-1/2':10.584,'4':13.631},
+        RMC:   {'1/2':0.314,'3/4':0.549,'1':0.887,'1-1/4':1.526,'1-1/2':2.071,'2':3.408,'2-1/2':4.866,'3':7.499,'3-1/2':10.010,'4':12.882},
+        PVC40: {'1/2':0.285,'3/4':0.508,'1':0.832,'1-1/4':1.453,'1-1/2':1.986,'2':3.291,'2-1/2':4.695,'3':7.268,'3-1/2':9.737,'4':12.554},
+        PVC80: {'1/2':0.217,'3/4':0.409,'1':0.688,'1-1/4':1.237,'1-1/2':1.711,'2':2.874,'2-1/2':4.119,'3':6.442,'3-1/2':8.688,'4':11.258},
+        FMC:   {'3/8':0.110,'1/2':0.218,'3/4':0.404,'1':0.635,'1-1/4':1.19,'1-1/2':1.59,'2':2.61,'2-1/2':4.28,'3':6.38,'3-1/2':8.71,'4':11.10}
+    };
+
+    // NEC Table 5 - Wire area (sq inches) including insulation
+    const wireArea = {
+        THHN: {
+            '14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,
+            '6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,
+            '1':0.1562,'1/0':0.1855,'2/0':0.2223,'3/0':0.2679,
+            '4/0':0.3237,'250':0.3970,'300':0.4608,'350':0.5242,
+            '400':0.5863,'500':0.7073,'600':0.8676,'750':1.0496
+        },
+        THW: {
+            '14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,
+            '6':0.0726,'4':0.1087,'3':0.1263,'2':0.1473,
+            '1':0.1901,'1/0':0.2223,'2/0':0.2624,'3/0':0.3117,
+            '4/0':0.3718,'250':0.4536,'300':0.5214,'350':0.5876,
+            '400':0.6528,'500':0.7794,'600':0.9466,'750':1.1365
+        },
+        XHHW: {
+            '14':0.0097,'12':0.0133,'10':0.0211,'8':0.0366,
+            '6':0.0507,'4':0.0824,'3':0.0973,'2':0.1158,
+            '1':0.1562,'1/0':0.1855,'2/0':0.2223,'3/0':0.2679,
+            '4/0':0.3237,'250':0.3970,'300':0.4608,'350':0.5242,
+            '400':0.5863,'500':0.7073,'600':0.8676,'750':1.0496
+        },
+        USE: {
+            '14':0.0139,'12':0.0181,'10':0.0243,'8':0.0437,
+            '6':0.0726,'4':0.1087,'3':0.1263,'2':0.1473,
+            '1':0.1901,'1/0':0.2223,'2/0':0.2624,'3/0':0.3117,
+            '4/0':0.3718,'250':0.4536,'300':0.5214,'350':0.5876,
+            '400':0.6528,'500':0.7794,'600':0.9466,'750':1.1365
+        }
+    };
+
+    function updateConduitSizes() {
+        const type = document.getElementById('conduitType').value;
+        const select = document.getElementById('conduitSize');
+        const sizes = Object.keys(conduitArea[type]);
+        select.innerHTML = sizes.map(s => '<option value="' + s + '">' + s + '"</option>').join('');
+    }
+
+    function updateWireSizesInRow(el) {
+        // Wire sizes are the same across all types, no action needed
+    }
+
+    function addWireEntry() {
+        const container = document.getElementById('wireEntries');
+        const entry = container.querySelector('.wire-entry').cloneNode(true);
+        entry.querySelector('.wireCount').value = 1;
+        container.appendChild(entry);
+    }
+
+    function removeWireEntry(btn) {
+        const container = document.getElementById('wireEntries');
+        if (container.children.length > 1) {
+            btn.closest('.wire-entry').remove();
+        }
+    }
+
+    function calculate() {
+        const conduitType = document.getElementById('conduitType').value;
+        const conduitSize = document.getElementById('conduitSize').value;
+        const cArea = conduitArea[conduitType][conduitSize];
+
+        const entries = document.querySelectorAll('.wire-entry');
+        let totalWireArea = 0;
+        let totalWireCount = 0;
+        const breakdown = [];
+
+        entries.forEach(entry => {
+            const type = entry.querySelector('.wireType').value;
+            const gauge = entry.querySelector('.wireGauge').value;
+            const count = parseInt(entry.querySelector('.wireCount').value) || 0;
+            const area = wireArea[type][gauge];
+
+            if (count > 0 && area) {
+                const total = area * count;
+                totalWireArea += total;
+                totalWireCount += count;
+                breakdown.push({
+                    label: gauge + (parseInt(gauge) ? ' AWG' : ' kcmil') + ' ' + type,
+                    area: area,
+                    count: count,
+                    total: total
+                });
+            }
+        });
+
+        if (totalWireCount === 0) {
+            alert('Add at least one conductor.');
+            return;
+        }
+
+        // Fill limit based on wire count
+        let fillLimit;
+        if (totalWireCount === 1) fillLimit = 53;
+        else if (totalWireCount === 2) fillLimit = 31;
+        else fillLimit = 40;
+
+        const fillPct = (totalWireArea / cArea) * 100;
+        const pass = fillPct <= fillLimit;
+
+        document.getElementById('fillPct').textContent = fillPct.toFixed(1) + '%';
+        document.getElementById('passStatus').innerHTML = '<span class="' + (pass ? 'result-pass' : 'result-fail') + '">' + (pass ? 'PASS' : 'FAIL') + '</span> — Limit is ' + fillLimit + '% for ' + totalWireCount + ' conductor' + (totalWireCount > 1 ? 's' : '');
+
+        // Breakdown table
+        const tbody = document.getElementById('breakdownBody');
+        tbody.innerHTML = '';
+        breakdown.forEach(row => {
+            tbody.innerHTML += '<tr><td>' + row.label + '</td><td>' + row.area.toFixed(4) + '</td><td>' + row.count + '</td><td>' + row.total.toFixed(4) + '</td></tr>';
+        });
+        tbody.innerHTML += '<tr><td><strong>Total</strong></td><td></td><td>' + totalWireCount + '</td><td><strong>' + totalWireArea.toFixed(4) + ' / ' + cArea.toFixed(4) + '</strong></td></tr>';
+
+        document.getElementById('result').classList.add('show');
+    }
+
+    // Initialize conduit sizes on load
+    updateConduitSizes();
+    </script>
+</body>
+</html>

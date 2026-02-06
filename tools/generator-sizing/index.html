@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Sizing Calculator - Generac Recommendations | Sparky HQ</title>
+    <meta name="description" content="Free generator sizing calculator for electricians. Calculate peak and managed loads with Generac model recommendations. Includes load management and fuel type derate.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Generator Sizing Calculator</h1>
+                <p class="subtitle">Size standby generators based on load analysis. Check "Manage" for loads that can be shed via smart transfer switch or load control modules.</p>
+
+                <div class="calc-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fuelType">Fuel Type</label>
+                            <select id="fuelType">
+                                <option value="propane">Propane (LP)</option>
+                                <option value="natural-gas">Natural Gas</option>
+                            </select>
+                            <p style="font-size:0.8rem;color:#999;margin-top:4px;">Natural gas output is ~10% lower than LP.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="sqft">Home Square Footage (lighting estimate)</label>
+                            <select id="sqft">
+                                <option value="500">Under 1,000 sq ft (500W)</option>
+                                <option value="750">1,000–1,500 sq ft (750W)</option>
+                                <option value="1000" selected>1,500–2,500 sq ft (1,000W)</option>
+                                <option value="1500">2,500–3,500 sq ft (1,500W)</option>
+                                <option value="2000">3,500–5,000 sq ft (2,000W)</option>
+                                <option value="2500">Over 5,000 sq ft (2,500W)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="acSize">Central Air Conditioning</label>
+                        <select id="acSize">
+                            <option value="0">No Central AC</option>
+                            <option value="3500">2-ton (3,500W)</option>
+                            <option value="4500">2.5-ton (4,500W)</option>
+                            <option value="5500" selected>3-ton (5,500W)</option>
+                            <option value="6500">3.5-ton (6,500W)</option>
+                            <option value="7500">4-ton (7,500W)</option>
+                            <option value="9000">5-ton (9,000W)</option>
+                            <option value="12000">Dual units (12,000W)</option>
+                        </select>
+                    </div>
+
+                    <!-- Heating -->
+                    <h3 style="margin-top:24px;margin-bottom:12px;">Heating</h3>
+                    <div id="loadSections">
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-heatpump" class="load-cb" data-watts="0"> Heat Pump (uses AC wattage)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+0W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-heatpump"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-furnace" class="load-cb" data-watts="800"> Gas Furnace (blower)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+800W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-furnace"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-eheat" class="load-cb" data-watts="5000"> Electric Resistance Heat / Heat Strips
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+5,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-eheat"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-spaceheat" class="load-cb" data-watts="3000"> Space Heaters (1–2 units)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+3,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-spaceheat"> Manage
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Essential -->
+                    <h3 style="margin-top:24px;margin-bottom:12px;">Essential Loads</h3>
+                    <div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-fridge" class="load-cb" data-watts="200" checked> Refrigerator
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+200W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-fridge"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-freezer" class="load-cb" data-watts="200"> Standalone Freezer
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+200W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-freezer"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-sump" class="load-cb" data-watts="1500"> Sump Pump
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+1,500W</span>
+                            <span style="width:80px;margin-left:16px;"></span>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-well" class="load-cb" data-watts="1500"> Well Pump
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+1,500W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-well"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-garage" class="load-cb" data-watts="500"> Garage Door Opener
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+500W</span>
+                            <span style="width:80px;margin-left:16px;"></span>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-security" class="load-cb" data-watts="100"> Security System / Cameras
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+100W</span>
+                            <span style="width:80px;margin-left:16px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Large Appliances -->
+                    <h3 style="margin-top:24px;margin-bottom:12px;">Large Appliances</h3>
+                    <div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-waterheater" class="load-cb" data-watts="4500"> Electric Water Heater
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+4,500W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-waterheater" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-dryer" class="load-cb" data-watts="5000"> Electric Dryer
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+5,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-dryer" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-range" class="load-cb" data-watts="3000"> Electric Range/Oven
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+3,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-range" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-dishwasher" class="load-cb" data-watts="1800"> Dishwasher
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+1,800W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-dishwasher"> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-washer" class="load-cb" data-watts="500"> Washing Machine
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+500W</span>
+                            <span style="width:80px;margin-left:16px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- EV & Pool -->
+                    <h3 style="margin-top:24px;margin-bottom:12px;">EV Charging & Pool Equipment</h3>
+                    <div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-ev1" class="load-cb" data-watts="7600"> Level 2 EV Charger (32A / 7.6kW)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+7,600W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-ev1" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-ev2" class="load-cb" data-watts="11500"> Level 2 EV Charger (48A / 11.5kW)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+11,500W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-ev2" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-pool" class="load-cb" data-watts="2000"> Pool Pump
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+2,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-pool" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-poolheat" class="load-cb" data-watts="5500"> Pool Heater (Electric)
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+5,500W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-poolheat" checked> Manage
+                            </label>
+                        </div>
+                        <div class="load-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;cursor:pointer;flex:1;">
+                                <input type="checkbox" id="load-hottub" class="load-cb" data-watts="6000"> Hot Tub / Spa
+                            </label>
+                            <span style="font-size:0.85rem;color:#999;width:80px;text-align:right;">+6,000W</span>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#666;margin-left:16px;cursor:pointer;">
+                                <input type="checkbox" class="mgd-cb" data-for="load-hottub" checked> Manage
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="calculate()" style="margin-top:24px;">Calculate</button>
+                </div>
+
+                <div class="result" id="result">
+                    <div class="form-row">
+                        <div class="result-section">
+                            <div class="result-value" id="peakKW">—</div>
+                            <div class="result-label">Peak Load (with 25% buffer)</div>
+                        </div>
+                        <div class="result-section">
+                            <div class="result-value" id="managedKW">—</div>
+                            <div class="result-label">With Load Management</div>
+                        </div>
+                    </div>
+
+                    <div class="result-section" style="margin-top:16px;">
+                        <h3>Generac Model Recommendation</h3>
+                        <table class="breakdown-table" id="generacTable">
+                            <thead><tr><th>Model</th><th>LP Rating</th><th>NG Rating</th><th>Fit</th></tr></thead>
+                            <tbody id="generacBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="result-section" style="margin-top:16px;" id="managedNote">
+                        <p id="managedText" style="font-size:0.9rem;color:var(--text-light);"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments.</p>
+        </div>
+    </footer>
+
+    <script>
+    // Generac Guardian / Protector series models
+    const generacModels = [
+        { model: 'Guardian 10kW (7224)', lp: 10, ng: 9 },
+        { model: 'Guardian 14kW (7225)', lp: 14, ng: 12.5 },
+        { model: 'Guardian 16kW (7226)', lp: 16, ng: 14 },
+        { model: 'Guardian 18kW (7228)', lp: 18, ng: 16 },
+        { model: 'Guardian 20kW (7038)', lp: 20, ng: 18 },
+        { model: 'Guardian 22kW (7042)', lp: 22, ng: 19.5 },
+        { model: 'Guardian 24kW (7210)', lp: 24, ng: 21.5 },
+        { model: 'Guardian 26kW (7291)', lp: 26, ng: 23 },
+    ];
+
+    function calculate() {
+        const fuelType = document.getElementById('fuelType').value;
+        const fuelDerate = fuelType === 'natural-gas' ? 1.10 : 1.0;
+        const lightingW = parseInt(document.getElementById('sqft').value) || 1000;
+        const acW = parseInt(document.getElementById('acSize').value) || 0;
+
+        let totalW = lightingW + acW;
+        let managedW = 0;
+
+        // Process all load checkboxes
+        document.querySelectorAll('.load-cb').forEach(cb => {
+            if (!cb.checked) return;
+            const watts = parseInt(cb.dataset.watts) || 0;
+            totalW += watts;
+
+            // Check if managed
+            const mgd = document.querySelector('.mgd-cb[data-for="' + cb.id + '"]');
+            if (mgd && mgd.checked) {
+                managedW += watts;
+            }
+        });
+
+        const peakWithBuffer = Math.ceil(totalW * 1.25 * fuelDerate);
+        const managedWithBuffer = Math.ceil((totalW - managedW) * 1.25 * fuelDerate);
+        const peakKW = peakWithBuffer / 1000;
+        const managedKW = managedWithBuffer / 1000;
+
+        document.getElementById('peakKW').textContent = peakKW.toFixed(1) + ' kW';
+        document.getElementById('managedKW').textContent = managedKW.toFixed(1) + ' kW';
+
+        // Generac table
+        const ratingKey = fuelType === 'natural-gas' ? 'ng' : 'lp';
+        const targetKW = managedW > 0 ? managedKW : peakKW;
+        const tbody = document.getElementById('generacBody');
+        tbody.innerHTML = '';
+
+        let recommended = false;
+        generacModels.forEach(m => {
+            const rating = m[ratingKey];
+            let fit = '';
+            let cls = '';
+            if (!recommended && rating >= targetKW) {
+                fit = 'RECOMMENDED';
+                cls = 'result-pass';
+                recommended = true;
+            } else if (rating >= targetKW) {
+                fit = 'Sufficient';
+                cls = '';
+            } else {
+                fit = 'Undersized';
+                cls = 'result-fail';
+            }
+            tbody.innerHTML += '<tr><td>' + m.model + '</td><td>' + m.lp + ' kW</td><td>' + m.ng + ' kW</td><td><span class="' + cls + '">' + fit + '</span></td></tr>';
+        });
+
+        // Managed note
+        const noteEl = document.getElementById('managedText');
+        if (managedW > 0) {
+            noteEl.textContent = 'Load management removes ' + (managedW / 1000).toFixed(1) + ' kW from simultaneous demand. Requires compatible smart transfer switch (e.g., Generac PWRview) or load control modules.';
+            document.getElementById('managedNote').style.display = '';
+        } else {
+            document.getElementById('managedNote').style.display = 'none';
+        }
+
+        document.getElementById('result').classList.add('show');
+    }
+    </script>
+</body>
+</html>

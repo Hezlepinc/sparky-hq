@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voltage Drop Calculator - Free NEC Compliant | Sparky HQ</title>
+    <meta name="description" content="Free voltage drop calculator for electricians. Calculate voltage drop percentage for single-phase and three-phase circuits using NEC Chapter 9 Table 8 resistance values.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Voltage Drop Calculator <span class="nec-ref">NEC Ch.9 Table 8</span></h1>
+                <p class="subtitle">Calculate voltage drop for branch circuits and feeders. Verify compliance with NEC recommendations (3% branch, 5% total).</p>
+
+                <div class="calc-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="voltage">System Voltage</label>
+                            <select id="voltage">
+                                <option value="120">120V</option>
+                                <option value="208">208V</option>
+                                <option value="240" selected>240V</option>
+                                <option value="277">277V</option>
+                                <option value="480">480V</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phase">Phase</label>
+                            <select id="phase">
+                                <option value="1" selected>Single Phase</option>
+                                <option value="3">Three Phase</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="amps">Load (Amps)</label>
+                            <input type="number" id="amps" placeholder="e.g. 20" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="distance">One-Way Distance (ft)</label>
+                            <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="wireSize">Wire Size</label>
+                            <select id="wireSize">
+                                <option value="14">14 AWG</option>
+                                <option value="12" selected>12 AWG</option>
+                                <option value="10">10 AWG</option>
+                                <option value="8">8 AWG</option>
+                                <option value="6">6 AWG</option>
+                                <option value="4">4 AWG</option>
+                                <option value="3">3 AWG</option>
+                                <option value="2">2 AWG</option>
+                                <option value="1">1 AWG</option>
+                                <option value="1/0">1/0 AWG</option>
+                                <option value="2/0">2/0 AWG</option>
+                                <option value="3/0">3/0 AWG</option>
+                                <option value="4/0">4/0 AWG</option>
+                                <option value="250">250 kcmil</option>
+                                <option value="300">300 kcmil</option>
+                                <option value="350">350 kcmil</option>
+                                <option value="400">400 kcmil</option>
+                                <option value="500">500 kcmil</option>
+                                <option value="600">600 kcmil</option>
+                                <option value="750">750 kcmil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="material">Conductor Material</label>
+                            <select id="material">
+                                <option value="copper" selected>Copper</option>
+                                <option value="aluminum">Aluminum</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="calculate()">Calculate</button>
+                </div>
+
+                <div class="result" id="result">
+                    <div class="result-section">
+                        <div class="result-value" id="vdVolts">—</div>
+                        <div class="result-label">Voltage Drop</div>
+                    </div>
+                    <div class="result-section">
+                        <div class="result-value" id="vdPercent">—</div>
+                        <div class="result-label">Percentage Drop</div>
+                    </div>
+                    <table class="breakdown-table">
+                        <tr><td>Delivered Voltage</td><td id="delivered">—</td></tr>
+                        <tr><td>Branch Circuit (3% max)</td><td id="branch3">—</td></tr>
+                        <tr><td>Total Circuit (5% max)</td><td id="total5">—</td></tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments.</p>
+        </div>
+    </footer>
+
+    <script>
+    // NEC Chapter 9 Table 8 - DC Resistance at 75°C (ohms per 1000 ft)
+    // Uncoated copper and aluminum
+    const wireResistance = {
+        copper: {
+            '14': 3.14, '12': 1.98, '10': 1.24, '8': 0.778,
+            '6': 0.491, '4': 0.308, '3': 0.245, '2': 0.194,
+            '1': 0.154, '1/0': 0.122, '2/0': 0.0967, '3/0': 0.0766,
+            '4/0': 0.0608, '250': 0.0515, '300': 0.0429, '350': 0.0367,
+            '400': 0.0321, '500': 0.0258, '600': 0.0214, '750': 0.0171
+        },
+        aluminum: {
+            '14': 5.17, '12': 3.25, '10': 2.04, '8': 1.28,
+            '6': 0.808, '4': 0.508, '3': 0.403, '2': 0.319,
+            '1': 0.253, '1/0': 0.201, '2/0': 0.159, '3/0': 0.126,
+            '4/0': 0.100, '250': 0.0847, '300': 0.0707, '350': 0.0605,
+            '400': 0.0529, '500': 0.0424, '600': 0.0353, '750': 0.0282
+        }
+    };
+
+    function calculate() {
+        const voltage = parseFloat(document.getElementById('voltage').value);
+        const phase = parseInt(document.getElementById('phase').value);
+        const amps = parseFloat(document.getElementById('amps').value);
+        const distance = parseFloat(document.getElementById('distance').value);
+        const wireSize = document.getElementById('wireSize').value;
+        const material = document.getElementById('material').value;
+
+        if (!amps || !distance) {
+            alert('Enter load amps and distance.');
+            return;
+        }
+
+        const R = wireResistance[material][wireSize]; // ohms per 1000 ft
+        const factor = phase === 3 ? 1.732 : 2;
+        const vd = (factor * distance * amps * R) / 1000;
+        const vdPct = (vd / voltage) * 100;
+        const deliveredV = voltage - vd;
+
+        document.getElementById('vdVolts').textContent = vd.toFixed(2) + ' V';
+        document.getElementById('vdPercent').textContent = vdPct.toFixed(2) + '%';
+        document.getElementById('delivered').textContent = deliveredV.toFixed(1) + ' V';
+
+        const pass3 = vdPct <= 3;
+        const pass5 = vdPct <= 5;
+        document.getElementById('branch3').innerHTML = vdPct.toFixed(2) + '% — <span class="' + (pass3 ? 'result-pass' : 'result-fail') + '">' + (pass3 ? 'PASS' : 'FAIL') + '</span>';
+        document.getElementById('total5').innerHTML = vdPct.toFixed(2) + '% — <span class="' + (pass5 ? 'result-pass' : 'result-fail') + '">' + (pass5 ? 'PASS' : 'FAIL') + '</span>';
+
+        document.getElementById('result').classList.add('show');
+    }
+    </script>
+</body>
+</html>

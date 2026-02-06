@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Fill Calculator - NEC 314.16 | Sparky HQ</title>
+    <meta name="description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Counts conductors, devices, clamps, and grounds.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Box Fill Calculator <span class="nec-ref">NEC 314.16</span></h1>
+                <p class="subtitle">Calculate required box volume per NEC 314.16(B) counting rules. Each entry uses the volume allowance from Table 314.16(B).</p>
+
+                <div class="calc-form">
+                    <h3 style="margin-bottom:16px;">Conductors <span class="nec-ref">314.16(B)(1)</span></h3>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">Count each conductor that enters the box. Pigtails and jumpers that originate and terminate inside the box are not counted.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cond14">14 AWG conductors</label>
+                            <input type="number" id="cond14" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="cond12">12 AWG conductors</label>
+                            <input type="number" id="cond12" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cond10">10 AWG conductors</label>
+                            <input type="number" id="cond10" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="cond8">8 AWG conductors</label>
+                            <input type="number" id="cond8" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cond6">6 AWG conductors</label>
+                            <input type="number" id="cond6" value="0" min="0">
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+
+                    <h3 style="margin-bottom:16px;margin-top:24px;">Devices <span class="nec-ref">314.16(B)(4)</span></h3>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">Each device yoke counts as 2× the volume of the largest conductor connected to it.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="devices">Number of device yokes (switches/receptacles)</label>
+                            <input type="number" id="devices" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="deviceSize">Largest conductor to device</label>
+                            <select id="deviceSize">
+                                <option value="14">14 AWG</option>
+                                <option value="12" selected>12 AWG</option>
+                                <option value="10">10 AWG</option>
+                                <option value="8">8 AWG</option>
+                                <option value="6">6 AWG</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom:16px;margin-top:24px;">Clamps <span class="nec-ref">314.16(B)(2)</span></h3>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All internal clamps count as 1× the volume of the largest conductor in the box.</p>
+                    <div class="form-group">
+                        <label for="clamps">Internal cable clamps present?</label>
+                        <select id="clamps">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+
+                    <h3 style="margin-bottom:16px;margin-top:24px;">Equipment Grounding Conductors <span class="nec-ref">314.16(B)(5)</span></h3>
+                    <p style="font-size:0.85rem;color:#666;margin-bottom:12px;">All EGCs count as 1× the volume of the largest EGC entering the box. An additional EGC from a device counts as 1× more.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="egcSize">Largest EGC size</label>
+                            <select id="egcSize">
+                                <option value="14">14 AWG</option>
+                                <option value="12" selected>12 AWG</option>
+                                <option value="10">10 AWG</option>
+                                <option value="8">8 AWG</option>
+                                <option value="6">6 AWG</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="egcPresent">EGCs present?</label>
+                            <select id="egcPresent">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="egcDevice">Additional EGC from device (isolated ground)?</label>
+                        <select id="egcDevice">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" onclick="calculate()">Calculate</button>
+                </div>
+
+                <div class="result" id="result">
+                    <div class="result-section">
+                        <div class="result-value" id="totalCI">—</div>
+                        <div class="result-label">Minimum Box Volume Required</div>
+                    </div>
+                    <table class="breakdown-table" id="breakdownTable">
+                        <thead>
+                            <tr><th>Item</th><th>Count</th><th>Volume Each</th><th>Subtotal</th></tr>
+                        </thead>
+                        <tbody id="breakdownBody"></tbody>
+                    </table>
+                    <div class="result-section" style="margin-top:16px;">
+                        <h3>Recommended Box</h3>
+                        <p id="recBox" style="color:var(--text-light);font-size:0.9rem;">—</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments.</p>
+        </div>
+    </footer>
+
+    <script>
+    // NEC Table 314.16(B) - Volume allowance per conductor (cubic inches)
+    const volumePerConductor = {
+        '14': 2.00,
+        '12': 2.25,
+        '10': 2.50,
+        '8':  3.00,
+        '6':  5.00
+    };
+
+    // Common box sizes and volumes (cubic inches)
+    const standardBoxes = [
+        { name: '4" Square × 1-1/4" Deep (18 cu in)', volume: 18 },
+        { name: '4" Square × 1-1/2" Deep (21 cu in)', volume: 21 },
+        { name: '4" Square × 2-1/8" Deep (30.3 cu in)', volume: 30.3 },
+        { name: '4-11/16" Square × 1-1/2" Deep (29.5 cu in)', volume: 29.5 },
+        { name: '4-11/16" Square × 2-1/8" Deep (42 cu in)', volume: 42 },
+        { name: '3" × 2" × 2" Device Box (10.5 cu in)', volume: 10.5 },
+        { name: '3" × 2" × 2-1/4" Device Box (12.5 cu in)', volume: 12.5 },
+        { name: '3" × 2" × 2-1/2" Device Box (14 cu in)', volume: 14 },
+        { name: '3" × 2" × 2-3/4" Device Box (18 cu in)', volume: 18 },
+        { name: '3" × 2" × 3-1/2" Device Box (25 cu in)', volume: 25 },
+    ];
+
+    function calculate() {
+        const counts = {
+            '14': parseInt(document.getElementById('cond14').value) || 0,
+            '12': parseInt(document.getElementById('cond12').value) || 0,
+            '10': parseInt(document.getElementById('cond10').value) || 0,
+            '8':  parseInt(document.getElementById('cond8').value) || 0,
+            '6':  parseInt(document.getElementById('cond6').value) || 0
+        };
+        const devices = parseInt(document.getElementById('devices').value) || 0;
+        const deviceSize = document.getElementById('deviceSize').value;
+        const hasClamps = parseInt(document.getElementById('clamps').value);
+        const egcSize = document.getElementById('egcSize').value;
+        const egcPresent = parseInt(document.getElementById('egcPresent').value);
+        const egcDevice = parseInt(document.getElementById('egcDevice').value);
+
+        // Find largest conductor in box for clamp allowance
+        let largestSize = '14';
+        const allSizes = ['6','8','10','12','14'];
+        for (const s of allSizes) {
+            if (counts[s] > 0) { largestSize = s; break; }
+        }
+        // Also check device and EGC sizes
+        if (volumePerConductor[deviceSize] > volumePerConductor[largestSize]) largestSize = deviceSize;
+
+        let totalVolume = 0;
+        const breakdown = [];
+
+        // Conductors - 314.16(B)(1)
+        for (const [size, count] of Object.entries(counts)) {
+            if (count > 0) {
+                const vol = volumePerConductor[size];
+                const sub = vol * count;
+                totalVolume += sub;
+                breakdown.push({ item: size + ' AWG conductors', count: count, each: vol, subtotal: sub });
+            }
+        }
+
+        // Clamps - 314.16(B)(2) - 1× largest conductor
+        if (hasClamps) {
+            const vol = volumePerConductor[largestSize];
+            totalVolume += vol;
+            breakdown.push({ item: 'Internal clamps (1× ' + largestSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+        }
+
+        // Devices - 314.16(B)(4) - 2× per yoke
+        if (devices > 0) {
+            const vol = volumePerConductor[deviceSize];
+            const sub = vol * 2 * devices;
+            totalVolume += sub;
+            breakdown.push({ item: 'Device yokes (2× ' + deviceSize + ' AWG each)', count: devices, each: vol * 2, subtotal: sub });
+        }
+
+        // EGC - 314.16(B)(5) - 1× for all grounds
+        if (egcPresent) {
+            const vol = volumePerConductor[egcSize];
+            totalVolume += vol;
+            breakdown.push({ item: 'Equipment grounds (1× ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+        }
+
+        // Additional isolated EGC from device
+        if (egcDevice) {
+            const vol = volumePerConductor[egcSize];
+            totalVolume += vol;
+            breakdown.push({ item: 'Isolated ground (1× ' + egcSize + ' AWG)', count: 1, each: vol, subtotal: vol });
+        }
+
+        document.getElementById('totalCI').textContent = totalVolume.toFixed(1) + ' cu in';
+
+        // Breakdown
+        const tbody = document.getElementById('breakdownBody');
+        tbody.innerHTML = '';
+        breakdown.forEach(row => {
+            tbody.innerHTML += '<tr><td>' + row.item + '</td><td>' + row.count + '</td><td>' + row.each.toFixed(2) + '</td><td>' + row.subtotal.toFixed(2) + '</td></tr>';
+        });
+        tbody.innerHTML += '<tr><td><strong>Total Required</strong></td><td></td><td></td><td><strong>' + totalVolume.toFixed(2) + ' cu in</strong></td></tr>';
+
+        // Recommend box
+        const suitable = standardBoxes.filter(b => b.volume >= totalVolume).sort((a, b) => a.volume - b.volume);
+        if (suitable.length > 0) {
+            document.getElementById('recBox').textContent = suitable[0].name;
+        } else {
+            document.getElementById('recBox').textContent = 'Requires a box larger than standard sizes listed. Consider a 6" square or ganged boxes.';
+        }
+
+        document.getElementById('result').classList.add('show');
+    }
+    </script>
+</body>
+</html>

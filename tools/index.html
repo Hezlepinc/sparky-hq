@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Electrical Tools & Calculators - Sparky HQ</title>
-    <meta name="description" content="Free electrical calculators: conduit fill, box fill, voltage drop, wire sizing. Based on NEC code. Built by a Master Electrician.">
+    <meta name="description" content="Free NEC-based electrical calculators: voltage drop, wire sizing, conduit fill, box fill, dwelling load, generator sizing. No ads, no signup.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="/" class="logo"><img src="/assets/logo-white.png" alt="Sparky HQ" height="40"></a>
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
             <nav>
                 <a href="/tools/">Tools</a>
                 <a href="/about.html">About</a>
@@ -26,21 +26,29 @@
                 <p class="subtitle">All tools are free, work offline, and based on current NEC requirements.</p>
 
                 <div class="grid">
+                    <a href="/tools/voltage-drop/" class="tool-card">
+                        <h3>Voltage Drop Calculator</h3>
+                        <p>Calculate voltage drop and verify NEC 3%/5% compliance. Supports single-phase and three-phase circuits, copper and aluminum.</p>
+                    </a>
+                    <a href="/tools/wire-size/" class="tool-card">
+                        <h3>Wire Size Calculator</h3>
+                        <p>Determine minimum wire size per NEC 310.16 ampacity tables with automatic voltage drop verification.</p>
+                    </a>
                     <a href="/tools/conduit-fill/" class="tool-card">
                         <h3>Conduit Fill Calculator</h3>
-                        <p>Calculate conduit fill percentage per NEC Chapter 9 tables. Supports EMT, IMC, RMC, PVC, and FMC.</p>
+                        <p>Calculate conduit fill percentage per NEC Chapter 9 tables. Supports EMT, IMC, RMC, PVC, and FMC with multiple wire types.</p>
                     </a>
                     <a href="/tools/box-fill/" class="tool-card">
                         <h3>Box Fill Calculator</h3>
-                        <p>Calculate required box size in cubic inches per NEC 314.16. Counts conductors, devices, clamps, and grounds.</p>
+                        <p>Calculate required box volume in cubic inches per NEC 314.16. Counts conductors, devices, clamps, and equipment grounds.</p>
                     </a>
-                    <a href="/tools/voltage-drop/" class="tool-card">
-                        <h3>Voltage Drop Calculator</h3>
-                        <p>Calculate voltage drop for any circuit. Input load, distance, and wire size to verify NEC compliance.</p>
+                    <a href="/tools/residential-load/" class="tool-card">
+                        <h3>Dwelling Unit Load Calculator</h3>
+                        <p>Single-family dwelling load calculation per NEC Article 220. Standard method (Part III) and optional method (Part IV).</p>
                     </a>
-                    <a href="/tools/wire-size/" class="tool-card coming-soon">
-                        <h3>Wire Size Calculator</h3>
-                        <p>Determine the correct wire size based on amperage, distance, and installation method. Coming soon.</p>
+                    <a href="/tools/generator-sizing/" class="tool-card">
+                        <h3>Generator Sizing Calculator</h3>
+                        <p>Size standby generators with load management calculations and Generac model recommendations.</p>
                     </a>
                 </div>
             </div>
@@ -49,7 +57,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2026 Sparky HQ. Built by a Master Electrician.</p>
+            <p>&copy; 2026 Sparky HQ.</p>
             <p>Tools are for reference only. Always verify with the current NEC and local amendments.</p>
         </div>
     </footer>
