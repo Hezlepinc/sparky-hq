@@ -70,7 +70,7 @@ var ALL_TOOLS = [
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = ['/tools/voltage-drop/'];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {
