@@ -41,7 +41,7 @@
                         </div>
                         <div class="form-group">
                             <label for="amps">Load (Amps)</label>
-                            <input type="number" id="amps" placeholder="e.g. 40" min="0" step="0.1">
+                            <input type="number" id="amps" placeholder="e.g. 40" min="0" step="0.1" oninput="updateTempInfo()">
                         </div>
                     </div>
 
@@ -84,11 +84,12 @@
                     <!-- Row 4: Temp Rating + VD Limit -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="tempRating">Conductor Temperature Rating <span class="nec-ref">110.14(C)</span></label>
+                            <label for="tempRating">Termination Temperature Rating <span class="nec-ref">110.14(C)</span></label>
                             <select id="tempRating" onchange="updateTempInfo()">
-                                <option value="60">60°C</option>
-                                <option value="75" selected>75°C</option>
-                                <option value="90">90°C</option>
+                                <option value="auto" selected>Unknown — Apply 110.14(C)</option>
+                                <option value="60">60°C (all terminations rated 60°C)</option>
+                                <option value="75">75°C (all terminations rated 75°C+)</option>
+                                <option value="90">90°C (derating start point only)</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -263,14 +264,25 @@
     //  TEMPERATURE INFO
     // ══════════════════════════════════════
 
+    // ── Resolve effective temperature rating ──
+    // 110.14(C)(1)(a): ≤100A or #14–#1 conductors → 60°C
+    // 110.14(C)(1)(b): >100A or larger than #1 AWG → 75°C
+    function getEffectiveTempRating() {
+        var selected = document.getElementById('tempRating').value;
+        if (selected !== 'auto') return selected;
+
+        var amps = parseFloat(document.getElementById('amps').value) || 0;
+        return (amps > 100) ? '75' : '60';
+    }
+
     var tempInfoText = {
         '60': {
             type: 'info',
-            html: '<strong>60\u00B0C \u2014 Standard</strong><br>Use when wiring with <strong>NM-B (Romex)</strong> or when terminals are rated 60\u00B0C only. This is the default for most residential branch circuits using NM cable. Per NEC 110.14(C), ampacity is based on the lowest temperature rating in the circuit.'
+            html: '<strong>60\u00B0C terminations</strong><br>Ampacity is based on the 60\u00B0C column of NEC 310.16. Applies when wiring with <strong>NM-B (Romex)</strong> or when any termination in the circuit is rated 60\u00B0C only.'
         },
         '75': {
             type: 'info',
-            html: '<strong>75\u00B0C \u2014 Verify your terminals</strong><br>Use when <strong>both</strong> the conductor insulation <strong>and</strong> all terminations (breaker, device, equipment) are rated 75\u00B0C or higher. Common with THHN/THWN in conduit. Per NEC 110.14(C)(1)(a), circuits \u2264100A with #14\u2013#1 conductors: use 60\u00B0C unless all terminals are rated 75\u00B0C+.'
+            html: '<strong>75\u00B0C terminations</strong><br>Ampacity is based on the 75\u00B0C column of NEC 310.16. Use when <strong>all</strong> terminations (breaker, device, equipment) and the conductor insulation are rated 75\u00B0C or higher. Common with THHN/THWN in conduit with modern breakers.'
         },
         '90': {
             type: 'warning',
@@ -279,11 +291,40 @@
     };
 
     function updateTempInfo() {
-        var val = document.getElementById('tempRating').value;
-        var info = tempInfoText[val];
+        var selected = document.getElementById('tempRating').value;
         var el = document.getElementById('tempInfo');
-        var cls = info.type === 'warning' ? 'warning-box' : 'info-box';
-        el.innerHTML = '<div class="' + cls + '">' + info.html + '</div>';
+
+        if (selected !== 'auto') {
+            var info = tempInfoText[selected];
+            var cls = info.type === 'warning' ? 'warning-box' : 'info-box';
+            el.innerHTML = '<div class="' + cls + '">' + info.html + '</div>';
+            return;
+        }
+
+        // Auto mode — show 110.14(C) resolution
+        var amps = parseFloat(document.getElementById('amps').value) || 0;
+        var effective = getEffectiveTempRating();
+
+        var html = '<div class="info-box">';
+        html += '<strong>110.14(C) \u2014 Automatic termination rating</strong><br>';
+        if (amps <= 0) {
+            html += 'Enter load amps to determine the effective temperature rating.<br>';
+            html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
+            html += '\u2022 Circuits \u2264100A or conductors #14\u2013#1: <strong>60\u00B0C</strong> per 110.14(C)(1)(a)<br>';
+            html += '\u2022 Circuits >100A or conductors larger than #1: <strong>75\u00B0C</strong> per 110.14(C)(1)(b)';
+            html += '</span>';
+        } else {
+            if (effective === '60') {
+                html += 'Circuit is \u2264100A \u2192 using <strong>60\u00B0C</strong> ampacity column per 110.14(C)(1)(a).<br>';
+                html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
+                html += 'If you know all terminations are rated 75\u00B0C+, select "75\u00B0C" above for higher ampacity values.';
+                html += '</span>';
+            } else {
+                html += 'Circuit is >100A \u2192 using <strong>75\u00B0C</strong> ampacity column per 110.14(C)(1)(b).';
+            }
+        }
+        html += '</div>';
+        el.innerHTML = html;
     }
 
     function updateVDLimit() {
@@ -354,8 +395,7 @@
         return parseFloat(val);
     }
 
-    function getDeratingFactor() {
-        var tempRating = document.getElementById('tempRating').value;
+    function getDeratingFactor(tempRating) {
         var ambientTemp = document.getElementById('ambientTemp').value;
         var cccCount = document.getElementById('cccCount').value;
 
@@ -375,7 +415,7 @@
         var phase = parseInt(document.getElementById('phase').value);
         var distance = parseFloat(document.getElementById('distance').value);
         var material = document.getElementById('material').value;
-        var tempRating = document.getElementById('tempRating').value;
+        var tempRating = getEffectiveTempRating();
         var tempIdx = getTempIndex(tempRating);
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
         var vdLimitPct = getVDLimit();
@@ -387,7 +427,7 @@
         }
 
         // Derating
-        var derating = getDeratingFactor();
+        var derating = getDeratingFactor(tempRating);
         var hasDerating = derating.combined < 1.0;
         var effectiveAmps = amps; // The amps the wire must carry (unchanged)
         // For derating, we need a wire whose derated ampacity >= load amps
