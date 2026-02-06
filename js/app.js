@@ -60,8 +60,94 @@ window.addEventListener('load', () => {
     setTimeout(showInstallBanner, 1500);
 });
 
+// ── Admin Tool Lock ──
+// Tools listed here show "Coming Soon" to visitors. Admin can toggle.
+const DISABLED_TOOLS = [
+    '/tools/wire-size/',
+    '/tools/conduit-fill/',
+    '/tools/box-fill/',
+    '/tools/residential-load/',
+    '/tools/generator-sizing/'
+];
+const ADMIN_KEY = 'sparky-admin';
+
+function isAdmin() {
+    return localStorage.getItem(ADMIN_KEY) === '1';
+}
+
+function checkToolLock() {
+    const path = window.location.pathname.replace(/\/$/, '/');
+    const locked = DISABLED_TOOLS.some(function(t) { return path.indexOf(t) !== -1; });
+    if (!locked || isAdmin()) return;
+
+    // Replace page content with coming soon message
+    const main = document.querySelector('main') || document.querySelector('.calc-page');
+    if (main) {
+        main.innerHTML =
+            '<div style="max-width:600px;margin:80px auto;text-align:center;padding:0 24px;">' +
+            '<h1 style="font-size:2rem;margin-bottom:12px;">Coming Soon</h1>' +
+            '<p style="color:#5a5a5a;font-size:1.05rem;line-height:1.7;margin-bottom:24px;">' +
+            'This tool is currently being built. Check back soon.</p>' +
+            '<a href="/" style="color:#D4910D;font-weight:600;text-decoration:none;">&larr; Back to Sparky HQ</a>' +
+            '</div>';
+    }
+}
+
+// Lock cards on homepage/tools index
+function lockCards() {
+    if (isAdmin()) return;
+    var cards = document.querySelectorAll('.tool-card');
+    cards.forEach(function(card) {
+        var href = card.getAttribute('href') || '';
+        var locked = DISABLED_TOOLS.some(function(t) { return href.indexOf(t) !== -1; });
+        if (locked) {
+            card.style.opacity = '0.55';
+            card.style.pointerEvents = 'none';
+            var badge = document.createElement('span');
+            badge.textContent = 'Coming Soon';
+            badge.style.cssText = 'display:inline-block;background:#f2f1ef;color:#888;font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:10px;margin-top:8px;';
+            var body = card.querySelector('.card-body');
+            if (body) body.appendChild(badge);
+        }
+    });
+}
+
+// Admin panel: nav link to /admin.html or keyboard shortcut
+// Ctrl+Shift+A opens admin login
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        if (isAdmin()) {
+            localStorage.removeItem(ADMIN_KEY);
+            alert('Logged out. Refresh to see changes.');
+            return;
+        }
+        var user = prompt('Username:');
+        var pass = prompt('Password:');
+        if (user === 'johnhezlep' && pass === 'admin123') {
+            localStorage.setItem(ADMIN_KEY, '1');
+            alert('Logged in. Refresh to see all tools.');
+        } else {
+            alert('Invalid credentials.');
+        }
+    }
+});
+
 // ── Share Button on Calculator Pages ──
 document.addEventListener('DOMContentLoaded', () => {
+    // Check tool lock first
+    checkToolLock();
+    lockCards();
+
+    // Admin indicator
+    if (isAdmin()) {
+        var indicator = document.createElement('div');
+        indicator.style.cssText = 'position:fixed;bottom:12px;right:12px;background:#1c1c1c;color:#D4910D;padding:6px 14px;border-radius:6px;font-size:0.75rem;font-weight:600;z-index:9999;cursor:pointer;opacity:0.85;';
+        indicator.textContent = 'Admin Mode';
+        indicator.title = 'Ctrl+Shift+A to log out';
+        document.body.appendChild(indicator);
+    }
+
     const calcPage = document.querySelector('.calc-page');
     if (!calcPage) return;
 
