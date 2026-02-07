@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sparky-hq-v16';
+const CACHE_NAME = 'sparky-hq-v17';
 const PRECACHE = [
     '/',
     '/css/style.css?v=12',
@@ -46,6 +46,27 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+    const url = new URL(e.request.url);
+
+    // Network-first for HTML pages (navigation + same-origin page requests)
+    // This ensures users always get the latest content on refresh
+    const isPage = e.request.mode === 'navigate' ||
+        (e.request.headers.get('accept') || '').includes('text/html');
+
+    if (isPage && url.origin === self.location.origin) {
+        e.respondWith(
+            fetch(e.request).then((response) => {
+                if (response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                }
+                return response;
+            }).catch(() => caches.match(e.request))
+        );
+        return;
+    }
+
+    // Cache-first for static assets (CSS, JS, images) — fast offline support
     e.respondWith(
         caches.match(e.request).then((cached) => {
             const fetched = fetch(e.request).then((response) => {
