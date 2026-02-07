@@ -21,9 +21,9 @@
     </script>
     <script type="module">
     import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
     window.THREE = THREE;
-    window.OrbitControls = OrbitControls;
+    window.TrackballControls = TrackballControls;
     </script>
 </head>
 <body>
@@ -1039,7 +1039,7 @@
 
     function init3DViewer() {
         if (viewer3d.initialized) return true;
-        if (typeof THREE === 'undefined' || typeof OrbitControls === 'undefined') {
+        if (typeof THREE === 'undefined' || typeof TrackballControls === 'undefined') {
             // Three.js not loaded — show fallback
             var fallback = document.getElementById('viewer-3d-fallback');
             if (fallback) { fallback.style.display = 'flex'; }
@@ -1061,9 +1061,12 @@
         viewer3d.renderer.setSize(w, h);
         viewer3d.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        viewer3d.controls = new OrbitControls(viewer3d.camera, canvas);
-        viewer3d.controls.enableDamping = true;
-        viewer3d.controls.dampingFactor = 0.1;
+        viewer3d.controls = new TrackballControls(viewer3d.camera, canvas);
+        viewer3d.controls.rotateSpeed = 3.0;
+        viewer3d.controls.zoomSpeed = 1.5;
+        viewer3d.controls.panSpeed = 0.8;
+        viewer3d.controls.staticMoving = false;
+        viewer3d.controls.dynamicDampingFactor = 0.15;
 
         // Lighting
         var ambient = new THREE.AmbientLight(0xffffff, 0.5);
@@ -1309,6 +1312,7 @@
         viewer3d.camera.aspect = w / h;
         viewer3d.camera.updateProjectionMatrix();
         viewer3d.renderer.setSize(w, h);
+        if (viewer3d.controls) viewer3d.controls.handleResize();
     });
     </script>
     <script src="/js/app.js" defer></script>
