@@ -74,15 +74,29 @@
                             <input type="number" id="distance" placeholder="e.g. 150" min="0" step="1">
                         </div>
                         <div class="form-group">
-                            <label for="material">Conductor Material</label>
-                            <select id="material">
-                                <option value="copper" selected>Copper</option>
-                                <option value="aluminum">Aluminum</option>
+                            <label for="conductor">Conductor Type</label>
+                            <select id="conductor" onchange="updateTempInfo()">
+                                <optgroup label="Copper">
+                                    <option value="thhn-cu" selected>THHN / THWN-2</option>
+                                    <option value="thw-cu">THW / THWN</option>
+                                    <option value="xhhw-cu">XHHW / XHHW-2</option>
+                                    <option value="use-cu">USE-2 / RHH</option>
+                                    <option value="nm-cu">NM-B (Romex)</option>
+                                    <option value="uf-cu">UF-B</option>
+                                    <option value="se-cu">SE Cable (SEU/SER)</option>
+                                </optgroup>
+                                <optgroup label="Aluminum">
+                                    <option value="thhn-al">THHN / THWN-2</option>
+                                    <option value="thw-al">THW / THWN</option>
+                                    <option value="xhhw-al">XHHW / XHHW-2</option>
+                                    <option value="use-al">USE-2 / RHH</option>
+                                    <option value="se-al">SE Cable (SEU/SER)</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Row 4: OCPD + Termination Rating -->
+                    <!-- Row 4: OCPD -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="ocpd">OCPD / Breaker Size <span class="nec-ref">110.14(C)</span></label>
@@ -115,15 +129,7 @@
                             </select>
                             <p class="field-note">Determines circuit rating for 110.14(C) and EGC sizing per 250.122</p>
                         </div>
-                        <div class="form-group">
-                            <label for="tempRating">Termination Temperature Rating <span class="nec-ref">110.14(C)</span></label>
-                            <select id="tempRating" onchange="updateTempInfo()">
-                                <option value="auto" selected>Unknown — Apply 110.14(C)</option>
-                                <option value="60">60°C (all terminations rated 60°C)</option>
-                                <option value="75">75°C (all terminations rated 75°C+)</option>
-                                <option value="90">90°C (derating start point only)</option>
-                            </select>
-                        </div>
+                        <div class="form-group"></div>
                     </div>
 
                     <!-- Temperature Info Box -->
@@ -269,76 +275,86 @@
     };
 
     // ══════════════════════════════════════
-    //  TEMPERATURE INFO
+    //  CONDUCTOR TYPES & TEMPERATURE
     // ══════════════════════════════════════
 
-    // ── Resolve effective temperature rating ──
-    // 110.14(C)(1)(a): Circuits rated ≤100A or marked for #14–#1 → 60°C
-    // 110.14(C)(1)(b): Circuits rated >100A or marked for larger than #1 → 75°C
-    // "Circuit rated" = OCPD rating, not load amps
-    function getEffectiveTempRating() {
-        var selected = document.getElementById('tempRating').value;
-        if (selected !== 'auto') return selected;
+    // Each conductor type: material, insulation rating (derating start), ampacity cap
+    // cap = null means 110.14(C) applies; cap = 60 means hard-capped at 60°C column
+    var conductorTypes = {
+        'thhn-cu':  { material: 'copper',   insulation: 90, cap: null },
+        'thw-cu':   { material: 'copper',   insulation: 75, cap: null },
+        'xhhw-cu':  { material: 'copper',   insulation: 90, cap: null },
+        'use-cu':   { material: 'copper',   insulation: 90, cap: null },
+        'nm-cu':    { material: 'copper',   insulation: 90, cap: 60 },
+        'uf-cu':    { material: 'copper',   insulation: 60, cap: 60 },
+        'se-cu':    { material: 'copper',   insulation: 75, cap: null },
+        'thhn-al':  { material: 'aluminum', insulation: 90, cap: null },
+        'thw-al':   { material: 'aluminum', insulation: 75, cap: null },
+        'xhhw-al':  { material: 'aluminum', insulation: 90, cap: null },
+        'use-al':   { material: 'aluminum', insulation: 90, cap: null },
+        'se-al':    { material: 'aluminum', insulation: 75, cap: null }
+    };
 
-        // Primary: use OCPD rating (this IS the circuit rating per 110.14(C))
+    function getConductor() {
+        return conductorTypes[document.getElementById('conductor').value];
+    }
+
+    // Effective ampacity column temp (string '60' or '75')
+    // Accounts for cable-specific caps (NM-B/UF-B) and 110.14(C)
+    function getEffectiveTempRating() {
+        var cond = getConductor();
+
+        // Cable-specific cap overrides everything
+        if (cond.cap !== null) return String(cond.cap);
+
+        // 110.14(C) based on OCPD rating
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
         if (ocpdVal) return (ocpdVal > 100) ? '75' : '60';
 
-        // Fallback: use load amps if OCPD not specified
+        // Fallback: use load amps
         var amps = parseFloat(document.getElementById('amps').value) || 0;
         return (amps > 100) ? '75' : '60';
     }
 
-    var tempInfoText = {
-        '60': {
-            type: 'info',
-            html: '<strong>60\u00B0C terminations</strong><br>Ampacity is based on the 60\u00B0C column of NEC 310.16. Applies when wiring with <strong>NM-B (Romex)</strong> or when any termination in the circuit is rated 60\u00B0C only.'
-        },
-        '75': {
-            type: 'info',
-            html: '<strong>75\u00B0C terminations</strong><br>Ampacity is based on the 75\u00B0C column of NEC 310.16. Use when <strong>all</strong> terminations (breaker, device, equipment) and the conductor insulation are rated 75\u00B0C or higher. Common with THHN/THWN in conduit with modern breakers.'
-        },
-        '90': {
-            type: 'warning',
-            html: '<strong>90\u00B0C \u2014 Derating calculations only</strong><br>The 90\u00B0C ampacity column is used <strong>only as a starting point</strong> for ampacity correction and adjustment factors (conduit fill per 310.15(C)(1), ambient temperature per 310.15(B)). After applying derating, the final ampacity <strong>cannot exceed</strong> the 75\u00B0C (or 60\u00B0C) column value based on the terminal temperature rating.'
-        }
-    };
-
     function updateTempInfo() {
-        var selected = document.getElementById('tempRating').value;
         var el = document.getElementById('tempInfo');
-
-        if (selected !== 'auto') {
-            var info = tempInfoText[selected];
-            var cls = info.type === 'warning' ? 'warning-box' : 'info-box';
-            el.innerHTML = '<div class="' + cls + '">' + info.html + '</div>';
-            return;
-        }
-
-        // Auto mode — show 110.14(C) resolution based on OCPD
+        var condId = document.getElementById('conductor').value;
+        var cond = conductorTypes[condId];
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
-        var effective = getEffectiveTempRating();
 
         var html = '<div class="info-box">';
-        html += '<strong>110.14(C) \u2014 Automatic termination rating</strong><br>';
 
-        if (ocpdVal) {
-            if (effective === '60') {
-                html += 'OCPD is ' + ocpdVal + 'A (\u2264100A) \u2192 using <strong>60\u00B0C</strong> ampacity column per 110.14(C)(1)(a).<br>';
-                html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
-                html += 'If you know all terminations are rated 75\u00B0C+, select "75\u00B0C" above for higher ampacity values.';
-                html += '</span>';
+        if (cond.cap === 60) {
+            // NM-B or UF-B — fixed at 60°C
+            if (condId === 'nm-cu') {
+                html += '<strong>NM-B \u2014 60\u00B0C ampacity</strong> per NEC 334.80.<br>';
+                html += 'Conductor insulation is rated 90\u00B0C, which is used as the starting point for derating calculations per 310.15(B).';
             } else {
-                html += 'OCPD is ' + ocpdVal + 'A (>100A) \u2192 using <strong>75\u00B0C</strong> ampacity column per 110.14(C)(1)(b).';
+                html += '<strong>UF-B \u2014 60\u00B0C ampacity</strong> per NEC 340.80.<br>';
+                html += 'UF-B insulation is rated 60\u00B0C.';
             }
         } else {
-            html += 'Select a breaker size to determine the circuit rating.<br>';
-            html += '<span style="color:var(--text-muted);font-size:0.85rem;">';
-            html += '\u2022 Circuits rated \u2264100A: <strong>60\u00B0C</strong> per 110.14(C)(1)(a)<br>';
-            html += '\u2022 Circuits rated >100A: <strong>75\u00B0C</strong> per 110.14(C)(1)(b)<br>';
-            html += 'The breaker/OCPD rating is the circuit rating \u2014 not the load amps.';
-            html += '</span>';
+            // 110.14(C) applies
+            html += '<strong>110.14(C) \u2014 Termination temperature</strong><br>';
+            if (ocpdVal) {
+                if (ocpdVal > 100) {
+                    html += 'OCPD is ' + ocpdVal + 'A (>100A) \u2192 <strong>75\u00B0C</strong> ampacity column per 110.14(C)(1)(b).';
+                } else {
+                    html += 'OCPD is ' + ocpdVal + 'A (\u2264100A) \u2192 <strong>60\u00B0C</strong> ampacity column per 110.14(C)(1)(a).';
+                }
+            } else {
+                var amps = parseFloat(document.getElementById('amps').value) || 0;
+                if (amps > 100) {
+                    html += 'Load >100A \u2192 assuming <strong>75\u00B0C</strong> ampacity column. Select a breaker size for accuracy.';
+                } else {
+                    html += 'Using <strong>60\u00B0C</strong> ampacity column for \u2264100A circuits. Select a breaker size for accuracy.';
+                }
+            }
+            if (cond.insulation === 90) {
+                html += '<br><span style="color:var(--text-muted);font-size:0.85rem;">Insulation rated 90\u00B0C \u2014 used as derating starting point per 310.15(B).</span>';
+            }
         }
+
         html += '</div>';
         el.innerHTML = html;
     }
@@ -460,9 +476,13 @@
         var voltage = parseFloat(document.getElementById('voltage').value);
         var phase = parseInt(document.getElementById('phase').value);
         var distance = parseFloat(document.getElementById('distance').value);
-        var material = document.getElementById('material').value;
+        var condId = document.getElementById('conductor').value;
+        var cond = conductorTypes[condId];
+        var material = cond.material;
         var tempRating = getEffectiveTempRating();
         var tempIdx = getTempIndex(tempRating);
+        var deratingStartTemp = String(cond.insulation);
+        var derTempIdx = getTempIndex(deratingStartTemp);
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
         var vdLimitPct = getVDLimit();
         var application = document.getElementById('application').value;
@@ -471,29 +491,31 @@
             return;
         }
 
-        // Derating
-        var derating = getDeratingFactor(tempRating);
+        // Derating — correction factors use insulation rating as starting point
+        var derating = getDeratingFactor(deratingStartTemp);
         var hasDerating = derating.combined < 1.0;
-        var effectiveAmps = amps; // The amps the wire must carry (unchanged)
-        // For derating, we need a wire whose derated ampacity >= load amps
 
         // Find minimum wire size by ampacity (considering derating)
         var minByAmpacity = null;
         var startIdx = (material === 'aluminum') ? 1 : 0;
         for (var i = startIdx; i < wireSizes.length; i++) {
             var size = wireSizes[i];
-            var amp = getAmpacity(size, material, tempIdx);
-            if (amp !== null) {
-                var deratedAmp = amp * derating.combined;
-                // If using 90C for derating, cap at 75C column value
-                if (tempRating === '90' && hasDerating) {
-                    var cap75 = getAmpacity(size, material, 1); // 75C column
-                    if (cap75 !== null) deratedAmp = Math.min(deratedAmp, cap75);
-                }
-                if (deratedAmp >= amps) {
-                    minByAmpacity = size;
-                    break;
-                }
+            var deratedAmp;
+            if (hasDerating && derTempIdx !== tempIdx) {
+                // Start at insulation column, apply derating, cap at effective temp
+                var ampAtInsul = getAmpacity(size, material, derTempIdx);
+                if (ampAtInsul === null) continue;
+                deratedAmp = ampAtInsul * derating.combined;
+                var ampCap = getAmpacity(size, material, tempIdx);
+                if (ampCap !== null) deratedAmp = Math.min(deratedAmp, ampCap);
+            } else {
+                var amp = getAmpacity(size, material, tempIdx);
+                if (amp === null) continue;
+                deratedAmp = hasDerating ? amp * derating.combined : amp;
+            }
+            if (deratedAmp >= amps) {
+                minByAmpacity = size;
+                break;
             }
         }
 
@@ -531,10 +553,15 @@
         }
 
         var recAmpacity = getAmpacity(recommended, material, tempIdx);
-        var recDeratedAmpacity = recAmpacity * derating.combined;
-        if (tempRating === '90' && hasDerating) {
-            var cap75 = getAmpacity(recommended, material, 1);
-            if (cap75 !== null) recDeratedAmpacity = Math.min(recDeratedAmpacity, cap75);
+        var recDeratedAmpacity;
+        if (hasDerating && derTempIdx !== tempIdx) {
+            var recAmpInsul = getAmpacity(recommended, material, derTempIdx);
+            recDeratedAmpacity = recAmpInsul * derating.combined;
+            if (recAmpacity !== null) recDeratedAmpacity = Math.min(recDeratedAmpacity, recAmpacity);
+        } else if (hasDerating) {
+            recDeratedAmpacity = recAmpacity * derating.combined;
+        } else {
+            recDeratedAmpacity = recAmpacity;
         }
         var recVD = calcVD(amps, distance, recommended, material, voltage, phase);
         var recVDPct = (recVD / voltage) * 100;
@@ -586,8 +613,15 @@
             html += '<strong>Derating Applied:</strong> ';
             if (derating.temp < 1.0) html += 'Ambient temp correction: ' + (derating.temp * 100).toFixed(0) + '%. ';
             if (derating.ccc < 1.0) html += 'Conduit fill adjustment: ' + (derating.ccc * 100).toFixed(0) + '%. ';
-            html += 'Combined: ' + (derating.combined * 100).toFixed(0) + '% of ' + tempRating + '\u00B0C ampacity.';
-            if (tempRating === '90') html += ' Final ampacity capped at 75\u00B0C column per NEC 110.14(C).';
+            html += 'Combined: ' + (derating.combined * 100).toFixed(0) + '% of ' + deratingStartTemp + '\u00B0C ampacity.';
+            if (derTempIdx !== tempIdx) {
+                html += ' Final ampacity capped at ' + tempRating + '\u00B0C column';
+                if (cond.cap === 60) {
+                    html += ' per NEC ' + (condId === 'nm-cu' ? '334.80' : '340.80') + '.';
+                } else {
+                    html += ' per NEC 110.14(C).';
+                }
+            }
             html += '</div>';
         }
 
@@ -647,8 +681,16 @@
         html += '<table class="breakdown-table" style="font-size:0.85rem;">';
         html += '<tr><td>Step 1: Ampacity</td><td>' + sizeLabel(minByAmpacity) + ' rated ' + getAmpacity(minByAmpacity, material, tempIdx) + 'A at ' + tempRating + '\u00B0C';
         if (hasDerating) {
-            var minDerated = getAmpacity(minByAmpacity, material, tempIdx) * derating.combined;
-            html += ' \u2192 ' + minDerated.toFixed(0) + 'A after derating';
+            var minDeratedVal;
+            if (derTempIdx !== tempIdx) {
+                var minAmpInsul = getAmpacity(minByAmpacity, material, derTempIdx);
+                minDeratedVal = minAmpInsul * derating.combined;
+                var minAmpCap = getAmpacity(minByAmpacity, material, tempIdx);
+                if (minAmpCap !== null) minDeratedVal = Math.min(minDeratedVal, minAmpCap);
+            } else {
+                minDeratedVal = getAmpacity(minByAmpacity, material, tempIdx) * derating.combined;
+            }
+            html += ' \u2192 ' + minDeratedVal.toFixed(0) + 'A after derating';
         }
         html += ' \u2265 ' + amps + 'A load</td></tr>';
 
