@@ -62,7 +62,7 @@ var ALL_TOOLS = [
     { path: '/tools/wire-size/',       name: 'Wire Size' },
     { path: '/tools/conduit-fill/',    name: 'Conduit Fill' },
     { path: '/tools/box-fill/',        name: 'Box Fill' },
-    { path: '/tools/residential-load/', name: 'Dwelling Load Calc' },
+    { path: '/tools/residential-load/', name: 'Dwelling Load' },
     { path: '/tools/generator-sizing/', name: 'Generator Sizing' },
     { path: '/tools/circuit-design/',  name: 'Circuit Design' },
     { path: '/tools/ohms-law/',        name: 'Ohms Law' },
@@ -70,7 +70,7 @@ var ALL_TOOLS = [
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/'];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {
