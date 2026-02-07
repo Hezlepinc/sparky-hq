@@ -36,6 +36,7 @@
                         <button onclick="setMode('3saddle')">3-Point Saddle</button>
                         <button onclick="setMode('4saddle')">4-Point Saddle</button>
                         <button onclick="setMode('stub')">90&deg; Stub</button>
+                        <button onclick="setMode('planner')">Plan a Stick</button>
                     </div>
 
                     <!-- Offset & Saddle Inputs -->
@@ -77,6 +78,23 @@
                                 <option value="2">2"</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Plan a Stick Inputs -->
+                    <div id="inputs-planner" style="display:none;">
+                        <div class="form-group">
+                            <label for="stick-length">Stick Length (inches)</label>
+                            <input type="number" id="stick-length" value="120" min="1" step="1">
+                            <p class="field-note">Standard 10ft stick = 120". Adjust if cutting shorter.</p>
+                        </div>
+                        <div id="planner-canvas-wrap" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;position:relative;touch-action:none;overflow:hidden;">
+                            <svg id="planner-svg" viewBox="0 0 500 280" preserveAspectRatio="xMidYMid meet" style="width:100%;display:block;"></svg>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                            <button class="btn btn-outline" onclick="undoPoint()" style="font-size:0.85rem;">Undo</button>
+                            <button class="btn btn-outline" onclick="clearPlanner()" style="font-size:0.85rem;">Clear Canvas</button>
+                        </div>
+                        <p class="field-note">Tap or click on the canvas to place waypoints. The conduit path draws between them. Drag points to adjust.</p>
                     </div>
 
                     <div class="apply-section">
@@ -180,7 +198,7 @@
     function setMode(mode) {
         currentMode = mode;
         var btns = document.querySelectorAll('#mode-toggle button');
-        var labels = { 'offset': 'Offset', '3saddle': '3-Point Saddle', '4saddle': '4-Point Saddle', 'stub': '90\u00B0 Stub' };
+        var labels = { 'offset': 'Offset', '3saddle': '3-Point Saddle', '4saddle': '4-Point Saddle', 'stub': '90\u00B0 Stub', 'planner': 'Plan a Stick' };
         for (var i = 0; i < btns.length; i++) {
             btns[i].classList.remove('active');
             if (btns[i].textContent.indexOf(labels[mode]) !== -1 || btns[i].textContent === labels[mode]) {
@@ -191,19 +209,25 @@
         // Show/hide inputs
         var bendInputs = document.getElementById('inputs-bend');
         var stubInputs = document.getElementById('inputs-stub');
+        var plannerInputs = document.getElementById('inputs-planner');
         var infoOffset = document.getElementById('info-offset');
         var infoStub = document.getElementById('info-stub');
 
+        bendInputs.style.display = 'none';
+        stubInputs.style.display = 'none';
+        plannerInputs.style.display = 'none';
+        infoOffset.style.display = 'none';
+        infoStub.style.display = 'none';
+
         if (mode === 'stub') {
-            bendInputs.style.display = 'none';
             stubInputs.style.display = '';
-            infoOffset.style.display = 'none';
             infoStub.style.display = '';
+        } else if (mode === 'planner') {
+            plannerInputs.style.display = '';
+            initPlanner();
         } else {
             bendInputs.style.display = '';
-            stubInputs.style.display = 'none';
             infoOffset.style.display = '';
-            infoStub.style.display = 'none';
         }
 
         // Update labels based on mode
@@ -220,7 +244,6 @@
         } else if (mode === '4saddle') {
             obLabel.textContent = 'Obstruction Height (inches)';
             obNote.textContent = 'Height of the obstruction. Uses 22.5\u00B0 and 45\u00B0 bends.';
-            // 4-point saddle doesn't use the angle selector
         }
 
         // Show/hide angle selector for 4-point saddle
@@ -265,10 +288,25 @@
         var resultEl = document.getElementById('result');
         resultEl.classList.remove('show');
         resultEl.innerHTML = '';
+        if (currentMode === 'planner') {
+            clearPlanner();
+        }
     }
 
     function applyCalc() {
         var rules = [];
+
+        if (currentMode === 'planner') {
+            if (plannerPoints.length < 2) {
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Place at least 2 points to define a path.' });
+            }
+            var result = SparkyValidate.check(rules);
+            SparkyValidate.showMessages('validation-messages', result);
+            if (!result.valid) return;
+            SparkyValidate.logApply();
+            calcPlanner();
+            return;
+        }
 
         if (currentMode === 'stub') {
             var stubLen = parseFloat(document.getElementById('stub-length').value);
@@ -436,6 +474,409 @@
         var resultEl = document.getElementById('result');
         resultEl.innerHTML = html;
         resultEl.classList.add('show');
+    }
+
+    // ══════════════════════════════════════
+    //  PLAN A STICK — Interactive Planner
+    // ══════════════════════════════════════
+
+    var plannerPoints = [];      // [{x, y}] in real-inch coordinates
+    var CANVAS_W = 500;
+    var CANVAS_H = 280;
+    var PLANNER_PAD = 40;        // SVG padding for labels
+    var plannerInited = false;
+    var draggingIdx = -1;        // index of point being dragged, -1 = none
+    var plannerScale = 1;        // pixels per inch
+    var plannerOffsetX = 0;
+    var plannerOffsetY = 0;
+    var plannerResultOverlay = []; // bend results to overlay after calc
+
+    var STANDARD_ANGLES = [10, 22.5, 30, 45, 60, 90];
+
+    function initPlanner() {
+        if (plannerInited) return;
+        plannerInited = true;
+        plannerPoints = [{ x: 0, y: 0 }];
+        plannerResultOverlay = [];
+
+        var svg = document.getElementById('planner-svg');
+        svg.addEventListener('pointerdown', onPlannerDown);
+        svg.addEventListener('pointermove', onPlannerMove);
+        svg.addEventListener('pointerup', onPlannerUp);
+        svg.addEventListener('pointerleave', onPlannerUp);
+
+        renderPlanner();
+    }
+
+    function clearPlanner() {
+        plannerPoints = [{ x: 0, y: 0 }];
+        plannerResultOverlay = [];
+        draggingIdx = -1;
+        renderPlanner();
+    }
+
+    function undoPoint() {
+        if (plannerPoints.length > 1) {
+            plannerPoints.pop();
+            plannerResultOverlay = [];
+            renderPlanner();
+        }
+    }
+
+    // ── Coordinate transforms ──
+
+    function autoScale() {
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (var i = 0; i < plannerPoints.length; i++) {
+            var p = plannerPoints[i];
+            if (p.x < minX) minX = p.x;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.y > maxY) maxY = p.y;
+        }
+        // Add minimum range so single-point doesn't break
+        var rangeX = Math.max(maxX - minX, 24);
+        var rangeY = Math.max(maxY - minY, 24);
+
+        var availW = CANVAS_W - PLANNER_PAD * 2;
+        var availH = CANVAS_H - PLANNER_PAD * 2;
+        plannerScale = Math.min(availW / rangeX, availH / rangeY);
+
+        // Center the drawing
+        var cx = (minX + maxX) / 2;
+        var cy = (minY + maxY) / 2;
+        plannerOffsetX = CANVAS_W / 2 - cx * plannerScale;
+        // Y is inverted: real y-up → SVG y-down
+        plannerOffsetY = CANVAS_H / 2 + cy * plannerScale;
+    }
+
+    function realToSvg(rx, ry) {
+        return {
+            x: rx * plannerScale + plannerOffsetX,
+            y: -ry * plannerScale + plannerOffsetY
+        };
+    }
+
+    function svgToReal(sx, sy) {
+        return {
+            x: (sx - plannerOffsetX) / plannerScale,
+            y: -(sy - plannerOffsetY) / plannerScale
+        };
+    }
+
+    function getSvgPoint(e) {
+        var svg = document.getElementById('planner-svg');
+        var rect = svg.getBoundingClientRect();
+        var scaleX = CANVAS_W / rect.width;
+        var scaleY = CANVAS_H / rect.height;
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+    }
+
+    // ── Pointer events ──
+
+    function onPlannerDown(e) {
+        e.preventDefault();
+        var svgPt = getSvgPoint(e);
+        // Check if near an existing point (hit radius 20px in SVG coords)
+        var hitR = 20;
+        for (var i = 0; i < plannerPoints.length; i++) {
+            var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
+            var dx = svgPt.x - sp.x;
+            var dy = svgPt.y - sp.y;
+            if (Math.sqrt(dx * dx + dy * dy) < hitR) {
+                draggingIdx = i;
+                return;
+            }
+        }
+        // Add new point
+        var real = svgToReal(svgPt.x, svgPt.y);
+        plannerPoints.push({ x: Math.round(real.x * 4) / 4, y: Math.round(real.y * 4) / 4 });
+        plannerResultOverlay = [];
+        renderPlanner();
+    }
+
+    function onPlannerMove(e) {
+        if (draggingIdx < 0) return;
+        e.preventDefault();
+        var svgPt = getSvgPoint(e);
+        var real = svgToReal(svgPt.x, svgPt.y);
+        plannerPoints[draggingIdx].x = Math.round(real.x * 4) / 4;
+        plannerPoints[draggingIdx].y = Math.round(real.y * 4) / 4;
+        plannerResultOverlay = [];
+        renderPlanner();
+    }
+
+    function onPlannerUp(e) {
+        draggingIdx = -1;
+    }
+
+    // ── Rendering ──
+
+    function renderPlanner() {
+        autoScale();
+        var svg = document.getElementById('planner-svg');
+        var parts = [];
+
+        // Background
+        parts.push('<rect width="' + CANVAS_W + '" height="' + CANVAS_H + '" fill="#fafaf8"/>');
+
+        // Grid — compute visible real-inch range
+        var topLeft = svgToReal(0, 0);
+        var botRight = svgToReal(CANVAS_W, CANVAS_H);
+        var gridMinX = Math.floor(Math.min(topLeft.x, botRight.x));
+        var gridMaxX = Math.ceil(Math.max(topLeft.x, botRight.x));
+        var gridMinY = Math.floor(Math.min(topLeft.y, botRight.y));
+        var gridMaxY = Math.ceil(Math.max(topLeft.y, botRight.y));
+
+        // Determine grid step based on zoom: show 1" lines only if scale > 4px/in
+        var step = 1;
+        if (plannerScale < 2) step = 12;
+        else if (plannerScale < 4) step = 6;
+        var majorStep = step < 6 ? 6 : 12;
+
+        for (var gx = Math.floor(gridMinX / step) * step; gx <= gridMaxX; gx += step) {
+            var sx = realToSvg(gx, 0).x;
+            var isMajor = (gx % majorStep === 0);
+            parts.push('<line x1="' + sx + '" y1="0" x2="' + sx + '" y2="' + CANVAS_H + '" stroke="' + (isMajor ? '#ddd' : '#eee') + '" stroke-width="' + (isMajor ? 1 : 0.5) + '"/>');
+        }
+        for (var gy = Math.floor(gridMinY / step) * step; gy <= gridMaxY; gy += step) {
+            var sy = realToSvg(0, gy).y;
+            var isMajorY = (gy % majorStep === 0);
+            parts.push('<line x1="0" y1="' + sy + '" x2="' + CANVAS_W + '" y2="' + sy + '" stroke="' + (isMajorY ? '#ddd' : '#eee') + '" stroke-width="' + (isMajorY ? 1 : 0.5) + '"/>');
+        }
+
+        // Draw conduit path
+        if (plannerPoints.length > 1) {
+            var pathD = '';
+            for (var i = 0; i < plannerPoints.length; i++) {
+                var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
+                pathD += (i === 0 ? 'M' : 'L') + sp.x.toFixed(1) + ',' + sp.y.toFixed(1);
+            }
+            parts.push('<path d="' + pathD + '" fill="none" stroke="#D4910D" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>');
+
+            // Segment length labels
+            for (var i = 0; i < plannerPoints.length - 1; i++) {
+                var a = plannerPoints[i], b = plannerPoints[i + 1];
+                var dx = b.x - a.x, dy = b.y - a.y;
+                var segLen = Math.sqrt(dx * dx + dy * dy);
+                if (segLen < 1) continue;
+                var midSvg = realToSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
+                // Offset label perpendicular to segment
+                var nx = -dy / segLen * 12, ny = dx / segLen * 12;
+                parts.push('<text x="' + (midSvg.x + nx).toFixed(1) + '" y="' + (midSvg.y - ny).toFixed(1) + '" text-anchor="middle" dominant-baseline="middle" fill="#5a5a5a" font-size="10" font-weight="600">' + fmt(segLen) + '"</text>');
+            }
+        }
+
+        // Waypoints
+        for (var i = 0; i < plannerPoints.length; i++) {
+            var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
+            var isStart = (i === 0);
+            parts.push('<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) + '" r="' + (isStart ? 7 : 6) + '" fill="' + (isStart ? '#D4910D' : '#fff') + '" stroke="#D4910D" stroke-width="2.5"/>');
+            if (isStart) {
+                parts.push('<text x="' + (sp.x + 12).toFixed(1) + '" y="' + (sp.y - 10).toFixed(1) + '" fill="#D4910D" font-size="10" font-weight="700">START</text>');
+            }
+        }
+
+        // Overlay bend results if calculated
+        if (plannerResultOverlay.length > 0) {
+            for (var i = 0; i < plannerResultOverlay.length; i++) {
+                var ov = plannerResultOverlay[i];
+                var sp = realToSvg(ov.px, ov.py);
+                // Angle label
+                parts.push('<text x="' + sp.x.toFixed(1) + '" y="' + (sp.y - 16).toFixed(1) + '" text-anchor="middle" fill="#b87c0a" font-size="11" font-weight="700">' + ov.snappedAngle + '\u00B0 ' + ov.direction + '</text>');
+                // Mark position label
+                parts.push('<text x="' + sp.x.toFixed(1) + '" y="' + (sp.y + 22).toFixed(1) + '" text-anchor="middle" fill="#2c2c2c" font-size="9" font-weight="600">Mark: ' + fmt(ov.markFromEnd) + '"</text>');
+            }
+        }
+
+        svg.innerHTML = parts.join('');
+    }
+
+    // ── Path analysis ──
+
+    function snapAngle(angle) {
+        var best = STANDARD_ANGLES[0];
+        var bestDiff = Math.abs(angle - best);
+        for (var i = 1; i < STANDARD_ANGLES.length; i++) {
+            var diff = Math.abs(angle - STANDARD_ANGLES[i]);
+            if (diff < bestDiff) { best = STANDARD_ANGLES[i]; bestDiff = diff; }
+        }
+        return { snapped: best, original: angle, diff: bestDiff };
+    }
+
+    function segmentLength(a, b) {
+        var dx = b.x - a.x, dy = b.y - a.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function angleBetweenVectors(v1x, v1y, v2x, v2y) {
+        var dot = v1x * v2x + v1y * v2y;
+        var mag1 = Math.sqrt(v1x * v1x + v1y * v1y);
+        var mag2 = Math.sqrt(v2x * v2x + v2y * v2y);
+        if (mag1 === 0 || mag2 === 0) return 0;
+        var cosA = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+        return Math.acos(cosA) * 180 / Math.PI;
+    }
+
+    function getShrinkForAngle(angle) {
+        // Return shrink per inch of offset for standard angles
+        var shrinkMap = { 10: 0.0625, 22.5: 0.1875, 30: 0.25, 45: 0.375, 60: 0.5, 90: 0 };
+        return shrinkMap[angle] || 0;
+    }
+
+    function analyzePath(points) {
+        var bends = [];
+        var cumulativeLen = 0; // running length along the conduit from start
+
+        for (var i = 1; i < points.length - 1; i++) {
+            var prev = points[i - 1], curr = points[i], next = points[i + 1];
+
+            // Vectors
+            var inX = curr.x - prev.x, inY = curr.y - prev.y;
+            var outX = next.x - curr.x, outY = next.y - curr.y;
+
+            // Angle between incoming and outgoing (interior angle)
+            var interiorAngle = angleBetweenVectors(inX, inY, outX, outY);
+            // Bend angle = deviation from straight line
+            var bendAngle = 180 - interiorAngle;
+
+            if (bendAngle < 2) continue; // essentially straight, no bend
+
+            var snap = snapAngle(bendAngle);
+
+            // Cumulative conduit length to this point
+            cumulativeLen += segmentLength(prev, curr);
+
+            // Determine bend direction using cross product (2D)
+            var cross = inX * outY - inY * outX;
+            var direction = cross >= 0 ? 'Up' : 'Down';
+
+            bends.push({
+                pointIdx: i,
+                px: curr.x,
+                py: curr.y,
+                markFromEnd: cumulativeLen,
+                originalAngle: Math.round(bendAngle * 10) / 10,
+                snappedAngle: snap.snapped,
+                angleDiff: Math.round(snap.diff * 10) / 10,
+                direction: direction,
+                shrink: getShrinkForAngle(snap.snapped)
+            });
+        }
+        return bends;
+    }
+
+    function calcPlanner() {
+        var stickLen = parseFloat(document.getElementById('stick-length').value) || 120;
+        var bends = analyzePath(plannerPoints);
+
+        // Calculate total conduit path length (sum of segments)
+        var totalPathLen = 0;
+        for (var i = 0; i < plannerPoints.length - 1; i++) {
+            totalPathLen += segmentLength(plannerPoints[i], plannerPoints[i + 1]);
+        }
+
+        // Calculate total shrink
+        var totalShrink = 0;
+        for (var i = 0; i < bends.length; i++) {
+            // Shrink is roughly proportional to the offset amount
+            // For a simple estimate, use the bend's deviation height
+            // The shrink per inch values are per inch of offset height
+            // We approximate offset height from adjacent segments and bend angle
+            var b = bends[i];
+            var prev = plannerPoints[b.pointIdx - 1];
+            var curr = plannerPoints[b.pointIdx];
+            var next = plannerPoints[b.pointIdx + 1];
+
+            // Height of offset = shortest segment × sin(bend angle)
+            var seg1 = segmentLength(prev, curr);
+            var seg2 = segmentLength(curr, next);
+            var shortSeg = Math.min(seg1, seg2);
+            var offsetHeight = shortSeg * Math.sin(b.snappedAngle * Math.PI / 180);
+            var bendShrink = offsetHeight * b.shrink;
+            b.bendShrink = bendShrink;
+            totalShrink += bendShrink;
+        }
+
+        var conduitNeeded = totalPathLen + totalShrink;
+
+        // Store overlay data for rendering
+        plannerResultOverlay = bends;
+        renderPlanner();
+
+        // Build results HTML
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Stick Planner Results</div>';
+
+        if (bends.length === 0) {
+            html += '<div class="info-box"><strong>Straight Run</strong><br>Your path has no bends. Total run: ' + fmt(totalPathLen) + '".</div>';
+        } else {
+            html += '<table class="breakdown-table">';
+            html += '<tr><th>Step</th><th>Mark From Start</th><th>Bend Angle</th><th>Direction</th><th>Notes</th></tr>';
+
+            for (var i = 0; i < bends.length; i++) {
+                var b = bends[i];
+                var notes = '';
+                if (b.angleDiff > 1) {
+                    notes = 'Drawn: ' + b.originalAngle + '\u00B0. Snapped to ' + b.snappedAngle + '\u00B0.';
+                }
+                html += '<tr>';
+                html += '<td>' + (i + 1) + '</td>';
+                html += '<td style="font-weight:700;">' + fmt(b.markFromEnd) + '" (' + toFraction(b.markFromEnd) + ')</td>';
+                html += '<td>' + b.snappedAngle + '\u00B0</td>';
+                html += '<td>' + b.direction + '</td>';
+                html += '<td style="font-size:0.82rem;color:var(--text-muted);">' + notes + '</td>';
+                html += '</tr>';
+            }
+            html += '</table>';
+        }
+
+        // Summary
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;">';
+        html += '<table class="breakdown-table" style="margin:0;">';
+        html += '<tr><td>Path Length (drawn)</td><td>' + fmt(totalPathLen) + '"</td></tr>';
+        html += '<tr><td>Total Shrink</td><td>' + fmt(totalShrink) + '"</td></tr>';
+        html += '<tr><td>Conduit Needed (approx)</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(conduitNeeded) + '" (' + toFraction(conduitNeeded) + ')</td></tr>';
+        html += '<tr><td>Stick Length</td><td>' + stickLen + '"</td></tr>';
+        html += '</table>';
+        html += '</div>';
+
+        // Warnings
+        if (conduitNeeded > stickLen) {
+            html += '<div class="warning-box" style="margin-top:12px;"><strong>Warning</strong><br>This path needs ' + fmt(conduitNeeded) + '" of conduit. Your stick is only ' + stickLen + '". Consider a longer stick or a coupling.</div>';
+        }
+
+        // Check for small segments
+        var smallSegWarns = [];
+        for (var i = 0; i < plannerPoints.length - 1; i++) {
+            var sl = segmentLength(plannerPoints[i], plannerPoints[i + 1]);
+            if (sl < 2) {
+                smallSegWarns.push('Segment ' + (i + 1) + ' is only ' + fmt(sl) + '" — points may be too close.');
+            }
+        }
+        if (smallSegWarns.length > 0) {
+            html += '<div class="caution-box" style="margin-top:12px;"><strong>Heads Up</strong><br>' + smallSegWarns.join('<br>') + '</div>';
+        }
+
+        // Angle snap notes
+        var snapNotes = [];
+        for (var i = 0; i < bends.length; i++) {
+            if (bends[i].angleDiff > 1) {
+                snapNotes.push('Bend ' + (i + 1) + ': Drawn ' + bends[i].originalAngle + '\u00B0 \u2192 snapped to ' + bends[i].snappedAngle + '\u00B0 (nearest standard).');
+            }
+        }
+        if (snapNotes.length > 0) {
+            html += '<div class="info-box" style="margin-top:12px;"><strong>Angle Adjustments</strong><br>' + snapNotes.join('<br>') + '</div>';
+        }
+
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
+        html += '<strong>How to use:</strong> Measure from the start end of your stick. Mark each position, then bend at the listed angle and direction. Account for shrink when cutting your stick.';
+        html += '</div>';
+
+        showResult(html);
     }
     </script>
     <script src="/js/app.js" defer></script>
