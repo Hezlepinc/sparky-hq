@@ -10,6 +10,7 @@ if ('serviceWorker' in navigator) {
 var GC_SITE = 'sparky-hq'; // ← your goatcounter site code
 (function() {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+    if (localStorage.getItem('sparky_unlock') === '1') return; // skip owner traffic
     var s = document.createElement('script');
     s.async = true;
     s.dataset.goatcounter = 'https://' + GC_SITE + '.goatcounter.com/count';
