@@ -31,26 +31,56 @@
                 <p class="subtitle">Enter any two known values. Leave the other two blank and hit Apply.</p>
 
                 <div class="calc-form">
-                    <div class="form-group" id="grp-voltage">
-                        <label for="voltage">Voltage (V)</label>
-                        <input type="number" id="voltage" placeholder="Volts" min="0" step="any" oninput="lockFields()">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:24px;align-items:start;">
+                        <div>
+                            <div class="form-group" id="grp-voltage">
+                                <label for="voltage">Voltage (V)</label>
+                                <input type="number" id="voltage" placeholder="Volts" min="0" step="any" oninput="lockFields()">
+                            </div>
+                            <div class="form-group" id="grp-current">
+                                <label for="current">Current (A)</label>
+                                <input type="number" id="current" placeholder="Amps" min="0" step="any" oninput="lockFields()">
+                            </div>
+                            <div class="form-group" id="grp-resistance">
+                                <label for="resistance">Resistance (&Omega;)</label>
+                                <input type="number" id="resistance" placeholder="Ohms" min="0" step="any" oninput="lockFields()">
+                            </div>
+                            <div class="form-group" id="grp-power">
+                                <label for="power">Power (W)</label>
+                                <input type="number" id="power" placeholder="Watts" min="0" step="any" oninput="lockFields()">
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:center;padding:8px 0;">
+                            <svg id="ohm-wheel" viewBox="0 0 260 260" style="width:100%;max-width:280px;display:block;" aria-label="Ohm's Law formula wheel">
+                                <circle cx="130" cy="130" r="112" fill="#fafaf8" stroke="#e2e0dc" stroke-width="2"/>
+                                <line x1="130" y1="18" x2="130" y2="242" stroke="#e2e0dc" stroke-width="1"/>
+                                <line x1="18" y1="130" x2="242" y2="130" stroke="#e2e0dc" stroke-width="1"/>
+                                <circle cx="130" cy="130" r="36" fill="#D4910D"/>
+                                <line x1="130" y1="94" x2="130" y2="166" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+                                <line x1="94" y1="130" x2="166" y2="130" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+                                <text x="113" y="124" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">V</text>
+                                <text x="138" y="124" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">I</text>
+                                <text x="113" y="153" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">P</text>
+                                <text x="138" y="153" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">R</text>
+                                <text x="72" y="46" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">VOLTS</text>
+                                <text x="72" y="64" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">I &#215; R</text>
+                                <text x="72" y="79" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; I</text>
+                                <text x="72" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10">&#8730;(P&#215;R)</text>
+                                <text x="188" y="46" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">AMPS</text>
+                                <text x="188" y="64" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#247; R</text>
+                                <text x="188" y="79" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; V</text>
+                                <text x="188" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10">&#8730;(P&#247;R)</text>
+                                <text x="72" y="173" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">WATTS</text>
+                                <text x="72" y="191" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#215; I</text>
+                                <text x="72" y="206" text-anchor="middle" fill="#5a5a5a" font-size="10">I&#178; &#215; R</text>
+                                <text x="72" y="220" text-anchor="middle" fill="#5a5a5a" font-size="10">V&#178; &#247; R</text>
+                                <text x="188" y="173" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">OHMS</text>
+                                <text x="188" y="191" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#247; I</text>
+                                <text x="188" y="206" text-anchor="middle" fill="#5a5a5a" font-size="10">V&#178; &#247; P</text>
+                                <text x="188" y="220" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; I&#178;</text>
+                            </svg>
+                        </div>
                     </div>
-
-                    <div class="form-group" id="grp-current">
-                        <label for="current">Current (A)</label>
-                        <input type="number" id="current" placeholder="Amps" min="0" step="any" oninput="lockFields()">
-                    </div>
-
-                    <div class="form-group" id="grp-resistance">
-                        <label for="resistance">Resistance (&Omega;)</label>
-                        <input type="number" id="resistance" placeholder="Ohms" min="0" step="any" oninput="lockFields()">
-                    </div>
-
-                    <div class="form-group" id="grp-power">
-                        <label for="power">Power (W)</label>
-                        <input type="number" id="power" placeholder="Watts" min="0" step="any" oninput="lockFields()">
-                    </div>
-
                     <div class="apply-section">
                         <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -63,12 +93,9 @@
                 <div id="validation-messages"></div>
                 <div class="result" id="result"></div>
 
-                <div class="info-box" style="margin-top:24px;">
-                    <strong>Quick Reference</strong><br>
-                    <span style="font-family:'Courier New',monospace;font-size:0.88rem;line-height:1.8;">
-                        V = I &times; R &nbsp;&nbsp;&bull;&nbsp;&nbsp; I = V / R &nbsp;&nbsp;&bull;&nbsp;&nbsp; R = V / I<br>
-                        P = V &times; I &nbsp;&nbsp;&bull;&nbsp;&nbsp; P = I&sup2; &times; R &nbsp;&nbsp;&bull;&nbsp;&nbsp; P = V&sup2; / R
-                    </span>
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>How to use</strong><br>
+                    Enter any two known values and leave the others blank. The wheel shows all 12 formulas &mdash; the calculator picks the right one automatically.
                 </div>
             </div>
         </section>
