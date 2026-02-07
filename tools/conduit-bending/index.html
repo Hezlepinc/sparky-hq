@@ -50,7 +50,7 @@
                         <button onclick="setMode('3saddle')">3-Pt Saddle</button>
                         <button onclick="setMode('4saddle')">4-Pt Saddle</button>
                         <button onclick="setMode('stub')">90&deg;</button>
-                        <button onclick="setMode('planner')">Plan a Stick</button>
+                        <button onclick="setMode('planner')">Plan a Stick <span style="font-size:0.65em;background:var(--accent);color:#fff;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px;">BETA</span></button>
                     </div>
 
                     <!-- Offset & Saddle Inputs -->
@@ -246,7 +246,7 @@
     function setMode(mode) {
         currentMode = mode;
         var btns = document.querySelectorAll('#mode-toggle button');
-        var labels = { 'offset': 'Offset', '3saddle': '3-Pt Saddle', '4saddle': '4-Pt Saddle', 'stub': '90\u00B0', 'planner': 'Plan a Stick' };
+        var labels = { 'offset': 'Offset', '3saddle': '3-Pt Saddle', '4saddle': '4-Pt Saddle', 'stub': '90\u00B0', 'planner': 'Plan a Stick (Beta)' };
         for (var i = 0; i < btns.length; i++) {
             btns[i].classList.remove('active');
             if (btns[i].textContent.indexOf(labels[mode]) !== -1 || btns[i].textContent === labels[mode]) {
@@ -1097,7 +1097,7 @@
         viewer3d.controls = new TrackballControls(viewer3d.camera, canvas);
         viewer3d.controls.rotateSpeed = 3.0;
         viewer3d.controls.zoomSpeed = 1.5;
-        viewer3d.controls.panSpeed = 0.8;
+        viewer3d.controls.noPan = true;
         viewer3d.controls.staticMoving = false;
         viewer3d.controls.dynamicDampingFactor = 0.15;
 
