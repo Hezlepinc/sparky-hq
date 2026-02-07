@@ -1203,9 +1203,9 @@
                 var mult = MULTIPLIERS['22.5'];
                 var dist = b.height * mult;
                 markEvents.push({ pos: b.position - 1.5 * dist, angle: 22.5, direction: 'up', rotation: rot });
-                markEvents.push({ pos: b.position - 0.5 * dist, angle: 22.5, direction: 'up', rotation: 0 });
+                markEvents.push({ pos: b.position - 0.5 * dist, angle: 22.5, direction: 'down', rotation: 0 });
                 markEvents.push({ pos: b.position + 0.5 * dist, angle: 22.5, direction: 'down', rotation: 0 });
-                markEvents.push({ pos: b.position + 1.5 * dist, angle: 22.5, direction: 'down', rotation: 0 });
+                markEvents.push({ pos: b.position + 1.5 * dist, angle: 22.5, direction: 'up', rotation: 0 });
             } else if (b.type === 'kick') {
                 markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, rotation: rot });
             }
