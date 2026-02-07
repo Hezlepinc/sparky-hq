@@ -1148,8 +1148,13 @@
         }
         if (viewer3d.startMarker) {
             viewer3d.scene.remove(viewer3d.startMarker);
-            viewer3d.startMarker.geometry.dispose();
-            viewer3d.startMarker.material.dispose();
+            viewer3d.startMarker.traverse(function(child) {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (child.material.map) child.material.map.dispose();
+                    child.material.dispose();
+                }
+            });
             viewer3d.startMarker = null;
         }
 
@@ -1163,14 +1168,29 @@
         viewer3d.pipeMesh = new THREE.Mesh(geometry, material);
         viewer3d.scene.add(viewer3d.pipeMesh);
 
-        // Start-point marker (green ring at cut end)
-        var ringGeo = new THREE.TorusGeometry(0.8, 0.15, 8, 24);
-        var ringMat = new THREE.MeshStandardMaterial({ color: 0x27ae60, metalness: 0.4, roughness: 0.4 });
-        viewer3d.startMarker = new THREE.Mesh(ringGeo, ringMat);
-        viewer3d.startMarker.position.copy(pathPoints[0]);
-        // Orient ring to face along pipe direction
-        var pipeDir = new THREE.Vector3().subVectors(pathPoints[1], pathPoints[0]).normalize();
-        viewer3d.startMarker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), pipeDir);
+        // Start-point label: leader line + "START" text
+        var startGroup = new THREE.Group();
+        var lineGeo = new THREE.CylinderGeometry(0.06, 0.06, 3, 6);
+        var lineMat = new THREE.MeshBasicMaterial({ color: 0x27ae60 });
+        var lineMesh = new THREE.Mesh(lineGeo, lineMat);
+        lineMesh.position.set(0, -1.5, 0);
+        startGroup.add(lineMesh);
+        var canvas = document.createElement('canvas');
+        canvas.width = 160; canvas.height = 56;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#27ae60';
+        ctx.font = 'bold 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('START', 80, 28);
+        var texture = new THREE.CanvasTexture(canvas);
+        var spriteMat = new THREE.SpriteMaterial({ map: texture });
+        var sprite = new THREE.Sprite(spriteMat);
+        sprite.scale.set(4, 1.4, 1);
+        sprite.position.set(0, -4.2, 0);
+        startGroup.add(sprite);
+        startGroup.position.copy(pathPoints[0]);
+        viewer3d.startMarker = startGroup;
         viewer3d.scene.add(viewer3d.startMarker);
 
         // Auto-frame camera
@@ -1219,8 +1239,13 @@
         }
         if (viewer3d.startMarker) {
             viewer3d.scene.remove(viewer3d.startMarker);
-            viewer3d.startMarker.geometry.dispose();
-            viewer3d.startMarker.material.dispose();
+            viewer3d.startMarker.traverse(function(child) {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (child.material.map) child.material.map.dispose();
+                    child.material.dispose();
+                }
+            });
             viewer3d.startMarker = null;
         }
         if (viewer3d.renderer) {
