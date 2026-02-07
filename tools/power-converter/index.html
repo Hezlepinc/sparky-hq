@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Converter - kW, kVA, Amps, HP | Sparky HQ</title>
+    <meta name="description" content="Free power converter for electricians. Convert between kW, kVA, amps, HP, and watts for single-phase, three-phase, and DC circuits.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/power-converter/">
+    <meta property="og:title" content="Power Converter - kW, kVA, Amps, HP | Sparky HQ">
+    <meta property="og:description" content="Free power converter for electricians. Convert between kW, kVA, amps, HP, and watts for single-phase, three-phase, and DC circuits.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/power-converter/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Power Converter - kW, kVA, Amps, HP | Sparky HQ">
+    <meta name="twitter:description" content="Free power converter for electricians. Convert between kW, kVA, amps, HP, and watts for single-phase, three-phase, and DC circuits.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+    <script src="/js/validate.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Power Converter <span class="nec-ref">kW &middot; kVA &middot; Amps &middot; HP</span></h1>
+                <p class="subtitle">Enter voltage plus any one power or current value. The rest will be calculated automatically.</p>
+
+                <div class="calc-form">
+                    <div class="form-group">
+                        <label for="phase">Phase</label>
+                        <select id="phase" onchange="phaseChanged()">
+                            <option value="1ph">Single-Phase</option>
+                            <option value="3ph">Three-Phase</option>
+                            <option value="dc">DC</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                        <div class="form-group" id="grp-voltage">
+                            <label for="voltage">Voltage (V)</label>
+                            <input type="number" id="voltage" placeholder="Volts" min="0" step="any">
+                        </div>
+                        <div class="form-group" id="grp-current">
+                            <label for="current">Current (A)</label>
+                            <input type="number" id="current" placeholder="Amps" min="0" step="any">
+                        </div>
+                        <div class="form-group" id="grp-kw">
+                            <label for="kw">Power (kW)</label>
+                            <input type="number" id="kw" placeholder="Kilowatts" min="0" step="any">
+                        </div>
+                        <div class="form-group" id="grp-kva">
+                            <label for="kva">Power (kVA)</label>
+                            <input type="number" id="kva" placeholder="Kilovolt-Amps" min="0" step="any">
+                        </div>
+                        <div class="form-group" id="grp-hp">
+                            <label for="hp">Power (HP)</label>
+                            <input type="number" id="hp" placeholder="Horsepower" min="0" step="any">
+                        </div>
+                        <div class="form-group" id="grp-pf">
+                            <label for="pf">Power Factor</label>
+                            <input type="number" id="pf" placeholder="0.85" min="0" max="1" step="0.01" value="0.85">
+                        </div>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>Power Factor Guide</strong><br>
+                    Power factor is typically 0.80&ndash;0.95 for motors. Use 1.0 for resistive loads (heaters, incandescent lights). Default is 0.85 for general motor loads.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  POWER CONVERTER
+    // ══════════════════════════════════════
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        if (Math.abs(n) >= 1) return n.toFixed(3).replace(/\.?0+$/, '');
+        if (Math.abs(n) >= 0.001) return n.toFixed(6).replace(/\.?0+$/, '');
+        return n.toExponential(3);
+    }
+
+    function phaseChanged() {
+        var phase = document.getElementById('phase').value;
+        var isDC = phase === 'dc';
+        document.getElementById('kva').disabled = isDC;
+        document.getElementById('pf').disabled = isDC;
+        document.getElementById('grp-kva').style.opacity = isDC ? '0.4' : '';
+        document.getElementById('grp-pf').style.opacity = isDC ? '0.4' : '';
+        if (isDC) {
+            document.getElementById('kva').value = '';
+            document.getElementById('pf').value = '';
+        }
+    }
+
+    function clearAll() {
+        var ids = ['voltage','current','kw','kva','hp','pf'];
+        for (var i = 0; i < ids.length; i++) {
+            document.getElementById(ids[i]).value = '';
+            document.getElementById(ids[i]).disabled = false;
+            document.getElementById('grp-' + ids[i]).style.opacity = '';
+        }
+        document.getElementById('pf').value = '0.85';
+        document.getElementById('phase').value = '1ph';
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+        phaseChanged();
+    }
+
+    function getVal(id) {
+        var raw = document.getElementById(id).value.trim();
+        if (raw === '') return null;
+        var v = parseFloat(raw);
+        return isNaN(v) ? null : v;
+    }
+
+    function applyCalc() {
+        var phase = document.getElementById('phase').value;
+        var isDC = phase === 'dc';
+        var V = getVal('voltage');
+        var I = getVal('current');
+        var kW = getVal('kw');
+        var kVA = isDC ? null : getVal('kva');
+        var HP = getVal('hp');
+        var PF = isDC ? null : getVal('pf');
+
+        // Validation
+        var rules = [];
+
+        // Voltage is always required
+        rules.push({ rule: 'required', value: V, label: 'Voltage' });
+        if (V !== null) {
+            rules.push({ rule: 'gt', value: V, min: 0, label: 'Voltage' });
+        }
+
+        // Need at least one of I, kW, kVA, HP
+        var powerInputs = [I, kW, kVA, HP].filter(function(v) { return v !== null; });
+        if (powerInputs.length === 0) {
+            rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter at least one value: Current, kW, kVA, or HP' });
+        }
+        if (powerInputs.length > 1) {
+            rules.push({ rule: 'custom', test: true, level: 'warning', msg: 'Multiple power/current values entered. Only the first one found (I > kW > kVA > HP) will be used.' });
+        }
+
+        // Validate entered values > 0
+        if (I !== null && I <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Current must be greater than 0' });
+        if (kW !== null && kW <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'kW must be greater than 0' });
+        if (kVA !== null && kVA <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'kVA must be greater than 0' });
+        if (HP !== null && HP <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'HP must be greater than 0' });
+
+        // PF validation for AC
+        if (!isDC) {
+            if (PF === null || PF === undefined) {
+                PF = 0.85; // default
+            }
+            if (PF <= 0 || PF > 1) {
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Power factor must be between 0 and 1' });
+            }
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate(phase, V, I, kW, kVA, HP, PF);
+    }
+
+    function calculate(phase, V, I, kW, kVA, HP, PF) {
+        var formulasUsed = [];
+        var multiplier = phase === '3ph' ? 1.732 : 1;
+        var phaseLabel = phase === '3ph' ? 'Three-Phase' : (phase === 'dc' ? 'DC' : 'Single-Phase');
+        var isDC = phase === 'dc';
+
+        // Priority: I > kW > kVA > HP — use the first non-null as the known value
+        if (I !== null) {
+            // Known: V and I
+            if (isDC) {
+                kW = V * I / 1000;
+                HP = kW / 0.746;
+                formulasUsed.push('kW = V &times; I / 1000 = ' + fmt(V) + ' &times; ' + fmt(I) + ' / 1000 = ' + fmt(kW));
+                formulasUsed.push('HP = kW / 0.746 = ' + fmt(kW) + ' / 0.746 = ' + fmt(HP));
+            } else {
+                kVA = V * I * multiplier / 1000;
+                kW = kVA * PF;
+                HP = kW / 0.746;
+                if (phase === '3ph') {
+                    formulasUsed.push('kVA = V &times; I &times; 1.732 / 1000 = ' + fmt(V) + ' &times; ' + fmt(I) + ' &times; 1.732 / 1000 = ' + fmt(kVA));
+                } else {
+                    formulasUsed.push('kVA = V &times; I / 1000 = ' + fmt(V) + ' &times; ' + fmt(I) + ' / 1000 = ' + fmt(kVA));
+                }
+                formulasUsed.push('kW = kVA &times; PF = ' + fmt(kVA) + ' &times; ' + fmt(PF) + ' = ' + fmt(kW));
+                formulasUsed.push('HP = kW / 0.746 = ' + fmt(kW) + ' / 0.746 = ' + fmt(HP));
+            }
+        } else if (kW !== null) {
+            // Known: V and kW
+            if (isDC) {
+                I = kW * 1000 / V;
+                HP = kW / 0.746;
+                formulasUsed.push('I = kW &times; 1000 / V = ' + fmt(kW) + ' &times; 1000 / ' + fmt(V) + ' = ' + fmt(I));
+                formulasUsed.push('HP = kW / 0.746 = ' + fmt(kW) + ' / 0.746 = ' + fmt(HP));
+            } else {
+                kVA = kW / PF;
+                I = kVA * 1000 / (V * multiplier);
+                HP = kW / 0.746;
+                formulasUsed.push('kVA = kW / PF = ' + fmt(kW) + ' / ' + fmt(PF) + ' = ' + fmt(kVA));
+                if (phase === '3ph') {
+                    formulasUsed.push('I = kVA &times; 1000 / (V &times; 1.732) = ' + fmt(kVA) + ' &times; 1000 / (' + fmt(V) + ' &times; 1.732) = ' + fmt(I));
+                } else {
+                    formulasUsed.push('I = kVA &times; 1000 / V = ' + fmt(kVA) + ' &times; 1000 / ' + fmt(V) + ' = ' + fmt(I));
+                }
+                formulasUsed.push('HP = kW / 0.746 = ' + fmt(kW) + ' / 0.746 = ' + fmt(HP));
+            }
+        } else if (kVA !== null && !isDC) {
+            // Known: V and kVA (AC only)
+            kW = kVA * PF;
+            I = kVA * 1000 / (V * multiplier);
+            HP = kW / 0.746;
+            formulasUsed.push('kW = kVA &times; PF = ' + fmt(kVA) + ' &times; ' + fmt(PF) + ' = ' + fmt(kW));
+            if (phase === '3ph') {
+                formulasUsed.push('I = kVA &times; 1000 / (V &times; 1.732) = ' + fmt(kVA) + ' &times; 1000 / (' + fmt(V) + ' &times; 1.732) = ' + fmt(I));
+            } else {
+                formulasUsed.push('I = kVA &times; 1000 / V = ' + fmt(kVA) + ' &times; 1000 / ' + fmt(V) + ' = ' + fmt(I));
+            }
+            formulasUsed.push('HP = kW / 0.746 = ' + fmt(kW) + ' / 0.746 = ' + fmt(HP));
+        } else if (HP !== null) {
+            // Known: V and HP
+            kW = HP * 0.746;
+            if (isDC) {
+                I = kW * 1000 / V;
+                formulasUsed.push('kW = HP &times; 0.746 = ' + fmt(HP) + ' &times; 0.746 = ' + fmt(kW));
+                formulasUsed.push('I = kW &times; 1000 / V = ' + fmt(kW) + ' &times; 1000 / ' + fmt(V) + ' = ' + fmt(I));
+            } else {
+                kVA = kW / PF;
+                I = kVA * 1000 / (V * multiplier);
+                formulasUsed.push('kW = HP &times; 0.746 = ' + fmt(HP) + ' &times; 0.746 = ' + fmt(kW));
+                formulasUsed.push('kVA = kW / PF = ' + fmt(kW) + ' / ' + fmt(PF) + ' = ' + fmt(kVA));
+                if (phase === '3ph') {
+                    formulasUsed.push('I = kVA &times; 1000 / (V &times; 1.732) = ' + fmt(kVA) + ' &times; 1000 / (' + fmt(V) + ' &times; 1.732) = ' + fmt(I));
+                } else {
+                    formulasUsed.push('I = kVA &times; 1000 / V = ' + fmt(kVA) + ' &times; 1000 / ' + fmt(V) + ' = ' + fmt(I));
+                }
+            }
+        }
+
+        // Watts for display
+        var watts = kW * 1000;
+
+        // Build results
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response &mdash; ' + phaseLabel + '</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Voltage</td><td>' + fmt(V) + ' V</td></tr>';
+        html += '<tr><td>Current</td><td>' + fmt(I) + ' A</td></tr>';
+        html += '<tr><td>Power (Watts)</td><td>' + fmt(watts) + ' W</td></tr>';
+        html += '<tr><td>Power (kW)</td><td>' + fmt(kW) + ' kW</td></tr>';
+        if (!isDC) {
+            html += '<tr><td>Apparent Power (kVA)</td><td>' + fmt(kVA) + ' kVA</td></tr>';
+            html += '<tr><td>Power Factor</td><td>' + fmt(PF) + '</td></tr>';
+        }
+        html += '<tr><td>Horsepower</td><td>' + fmt(HP) + ' HP</td></tr>';
+        html += '</table>';
+
+        // Show Your Work
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details style="cursor:pointer;">';
+        html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+        html += '<div style="margin-top:12px;">';
+        for (var i = 0; i < formulasUsed.length; i++) {
+            html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">' + formulasUsed[i] + '</div>';
+        }
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

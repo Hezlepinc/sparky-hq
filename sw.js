@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sparky-hq-v27';
+const CACHE_NAME = 'sparky-hq-v28';
 const PRECACHE = [
     '/',
     '/css/style.css?v=12',
@@ -16,6 +16,10 @@ const PRECACHE = [
     '/tools/generator-sizing/',
     '/tools/ohms-law/',
     '/tools/conduit-bending/',
+    '/tools/power-converter/',
+    '/tools/formula-sheet/',
+    '/tools/transformer-sizing/',
+    '/tools/ampacity-derating/',
     '/tables/',
     '/tables/motor-fla/',
     '/tables/ampacity/',

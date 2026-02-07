@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ampacity Derating Calculator - NEC 310.15 | Sparky HQ</title>
+    <meta name="description" content="Free ampacity derating calculator. Apply NEC 310.15 temperature correction and conduit fill adjustment factors to base ampacity values from NEC 310.16.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/ampacity-derating/">
+    <meta property="og:title" content="Ampacity Derating Calculator - NEC 310.15 | Sparky HQ">
+    <meta property="og:description" content="Free ampacity derating calculator. Apply NEC 310.15 temperature correction and conduit fill adjustment factors to base ampacity values from NEC 310.16.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/ampacity-derating/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ampacity Derating Calculator - NEC 310.15 | Sparky HQ">
+    <meta name="twitter:description" content="Free ampacity derating calculator. Apply NEC 310.15 temperature correction and conduit fill adjustment factors to base ampacity values from NEC 310.16.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+    <script src="/js/validate.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Ampacity Derating Calculator <span class="nec-ref">NEC 310.15</span></h1>
+                <p class="subtitle">Apply temperature correction and conduit fill adjustment factors to NEC 310.16 base ampacity.</p>
+
+                <div class="calc-form">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                        <div class="form-group">
+                            <label for="wireType">Wire Insulation Type</label>
+                            <select id="wireType" onchange="wireTypeChanged()">
+                                <option value="THHN" data-rating="90">THHN / THWN-2 (90&deg;C)</option>
+                                <option value="THW" data-rating="75">THW / THWN (75&deg;C)</option>
+                                <option value="XHHW" data-rating="90">XHHW / XHHW-2 (90&deg;C)</option>
+                                <option value="USE" data-rating="75">USE-2 / RHH (75&deg;C)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="wireSize">Wire Size</label>
+                            <select id="wireSize">
+                                <option value="14">14 AWG</option>
+                                <option value="12" selected>12 AWG</option>
+                                <option value="10">10 AWG</option>
+                                <option value="8">8 AWG</option>
+                                <option value="6">6 AWG</option>
+                                <option value="4">4 AWG</option>
+                                <option value="3">3 AWG</option>
+                                <option value="2">2 AWG</option>
+                                <option value="1">1 AWG</option>
+                                <option value="1/0">1/0 AWG</option>
+                                <option value="2/0">2/0 AWG</option>
+                                <option value="3/0">3/0 AWG</option>
+                                <option value="4/0">4/0 AWG</option>
+                                <option value="250">250 kcmil</option>
+                                <option value="300">300 kcmil</option>
+                                <option value="350">350 kcmil</option>
+                                <option value="400">400 kcmil</option>
+                                <option value="500">500 kcmil</option>
+                                <option value="600">600 kcmil</option>
+                                <option value="700">700 kcmil</option>
+                                <option value="750">750 kcmil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="conductors">Current-Carrying Conductors in Raceway</label>
+                            <input type="number" id="conductors" value="3" min="1" max="100" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="ambientTemp">Ambient Temperature</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="number" id="ambientTemp" value="86" min="50" max="185" step="1" style="flex:1;">
+                                <select id="tempUnit" onchange="tempUnitChanged()" style="width:70px;">
+                                    <option value="F" selected>&deg;F</option>
+                                    <option value="C">&deg;C</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:8px;">
+                        <label for="tempRating">Insulation Temperature Rating</label>
+                        <select id="tempRating">
+                            <option value="60">60&deg;C</option>
+                            <option value="75">75&deg;C</option>
+                            <option value="90" selected>90&deg;C</option>
+                        </select>
+                        <p class="field-note" style="margin-top:4px;font-size:0.8rem;color:var(--text-light);">Auto-set by wire type. Override only if your termination rating differs.</p>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>Important Notes</strong><br>
+                    Most terminations are rated 75&deg;C. Use the 90&deg;C column as the starting ampacity for derating, but the final derated value must not exceed the 75&deg;C column value unless both terminations are rated 90&deg;C. Equipment grounding conductors and neutrals carrying only unbalanced loads are not counted as current-carrying conductors.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  AMPACITY DERATING CALCULATOR
+    //  NEC 310.15, 310.16
+    // ══════════════════════════════════════
+
+    // NEC Table 310.16 — Base ampacity (copper conductors)
+    // Keys: wire size → { 60: amp, 75: amp, 90: amp }
+    var AMPACITY_310_16 = {
+        '14':  { 60: 15,  75: 20,  90: 25  },
+        '12':  { 60: 20,  75: 25,  90: 30  },
+        '10':  { 60: 30,  75: 35,  90: 40  },
+        '8':   { 60: 40,  75: 50,  90: 55  },
+        '6':   { 60: 55,  75: 65,  90: 75  },
+        '4':   { 60: 70,  75: 85,  90: 95  },
+        '3':   { 60: 85,  75: 100, 90: 115 },
+        '2':   { 60: 95,  75: 115, 90: 130 },
+        '1':   { 60: 110, 75: 130, 90: 145 },
+        '1/0': { 60: 125, 75: 150, 90: 170 },
+        '2/0': { 60: 145, 75: 175, 90: 195 },
+        '3/0': { 60: 165, 75: 200, 90: 225 },
+        '4/0': { 60: 195, 75: 230, 90: 260 },
+        '250': { 60: 215, 75: 255, 90: 290 },
+        '300': { 60: 240, 75: 285, 90: 320 },
+        '350': { 60: 260, 75: 310, 90: 350 },
+        '400': { 60: 280, 75: 335, 90: 380 },
+        '500': { 60: 320, 75: 380, 90: 430 },
+        '600': { 60: 350, 75: 420, 90: 475 },
+        '700': { 60: 385, 75: 460, 90: 520 },
+        '750': { 60: 400, 75: 475, 90: 535 }
+    };
+
+    // NEC Table 310.15(B)(1) — Temperature correction factors
+    // Ambient temp ranges in °C → correction factor by insulation rating
+    var TEMP_CORRECTION = [
+        { minC: 10, maxC: 15, f60: 1.29, f75: 1.20, f90: 1.15 },
+        { minC: 16, maxC: 20, f60: 1.22, f75: 1.15, f90: 1.11 },
+        { minC: 21, maxC: 25, f60: 1.15, f75: 1.11, f90: 1.08 },
+        { minC: 26, maxC: 30, f60: 1.00, f75: 1.00, f90: 1.00 },
+        { minC: 31, maxC: 35, f60: 0.91, f75: 0.94, f90: 0.96 },
+        { minC: 36, maxC: 40, f60: 0.82, f75: 0.88, f90: 0.91 },
+        { minC: 41, maxC: 45, f60: 0.71, f75: 0.82, f90: 0.87 },
+        { minC: 46, maxC: 50, f60: 0.58, f75: 0.75, f90: 0.82 },
+        { minC: 51, maxC: 55, f60: 0.41, f75: 0.67, f90: 0.76 },
+        { minC: 56, maxC: 60, f60: 0.00, f75: 0.58, f90: 0.71 },
+        { minC: 61, maxC: 65, f60: 0.00, f75: 0.47, f90: 0.65 },
+        { minC: 66, maxC: 70, f60: 0.00, f75: 0.33, f90: 0.58 },
+        { minC: 71, maxC: 75, f60: 0.00, f75: 0.00, f90: 0.50 },
+        { minC: 76, maxC: 80, f60: 0.00, f75: 0.00, f90: 0.41 },
+        { minC: 81, maxC: 85, f60: 0.00, f75: 0.00, f90: 0.29 }
+    ];
+
+    // NEC Table 310.15(B)(3)(a) — Adjustment factors for more than 3 CCCs
+    function getAdjustmentFactor(conductors) {
+        if (conductors <= 3) return 1.00;
+        if (conductors <= 6) return 0.80;
+        if (conductors <= 9) return 0.70;
+        if (conductors <= 20) return 0.50;
+        if (conductors <= 30) return 0.45;
+        if (conductors <= 40) return 0.40;
+        return 0.35; // 41+
+    }
+
+    function getAdjustmentRange(conductors) {
+        if (conductors <= 3) return '1\u20133';
+        if (conductors <= 6) return '4\u20136';
+        if (conductors <= 9) return '7\u20139';
+        if (conductors <= 20) return '10\u201320';
+        if (conductors <= 30) return '21\u201330';
+        if (conductors <= 40) return '31\u201340';
+        return '41+';
+    }
+
+    function getTempCorrectionFactor(ambientC, rating) {
+        var key = 'f' + rating;
+        for (var i = 0; i < TEMP_CORRECTION.length; i++) {
+            var row = TEMP_CORRECTION[i];
+            if (ambientC >= row.minC && ambientC <= row.maxC) {
+                return row[key];
+            }
+        }
+        // Below minimum or above maximum
+        if (ambientC < 10) return TEMP_CORRECTION[0][key]; // below table, use highest factor
+        return 0.00; // above table range
+    }
+
+    function fToC(f) {
+        return (f - 32) * 5 / 9;
+    }
+
+    function cToF(c) {
+        return c * 9 / 5 + 32;
+    }
+
+    function wireTypeChanged() {
+        var sel = document.getElementById('wireType');
+        var rating = sel.options[sel.selectedIndex].getAttribute('data-rating');
+        document.getElementById('tempRating').value = rating;
+    }
+
+    function tempUnitChanged() {
+        var unit = document.getElementById('tempUnit').value;
+        var input = document.getElementById('ambientTemp');
+        var currentVal = parseFloat(input.value);
+        if (isNaN(currentVal)) return;
+
+        if (unit === 'C') {
+            // Was F, convert to C
+            input.value = Math.round(fToC(currentVal));
+            input.min = '10';
+            input.max = '85';
+        } else {
+            // Was C, convert to F
+            input.value = Math.round(cToF(currentVal));
+            input.min = '50';
+            input.max = '185';
+        }
+    }
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1) return n.toFixed(2).replace(/\.?0+$/, '');
+        return n.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    function clearAll() {
+        document.getElementById('wireType').value = 'THHN';
+        document.getElementById('wireSize').value = '12';
+        document.getElementById('conductors').value = '3';
+        document.getElementById('ambientTemp').value = '86';
+        document.getElementById('tempUnit').value = 'F';
+        document.getElementById('tempRating').value = '90';
+        document.getElementById('ambientTemp').min = '50';
+        document.getElementById('ambientTemp').max = '185';
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function applyCalc() {
+        var wireSize = document.getElementById('wireSize').value;
+        var conductors = parseInt(document.getElementById('conductors').value) || 0;
+        var ambientTemp = parseFloat(document.getElementById('ambientTemp').value);
+        var tempUnit = document.getElementById('tempUnit').value;
+        var tempRating = parseInt(document.getElementById('tempRating').value);
+
+        var rules = [];
+        rules.push({ rule: 'required', value: conductors, label: 'Number of conductors' });
+        rules.push({ rule: 'gt', value: conductors, min: 0, label: 'Number of conductors' });
+        rules.push({ rule: 'required', value: ambientTemp, label: 'Ambient temperature' });
+
+        if (isNaN(ambientTemp)) {
+            rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter a valid ambient temperature' });
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+
+        // Convert to Celsius for lookup
+        var ambientC = tempUnit === 'F' ? fToC(ambientTemp) : ambientTemp;
+        var ambientF = tempUnit === 'C' ? cToF(ambientTemp) : ambientTemp;
+
+        calculate(wireSize, conductors, ambientC, ambientF, tempRating);
+    }
+
+    function calculate(wireSize, conductors, ambientC, ambientF, tempRating) {
+        var ampData = AMPACITY_310_16[wireSize];
+        if (!ampData) return;
+
+        var baseAmpacity = ampData[tempRating];
+        var tempFactor = getTempCorrectionFactor(ambientC, tempRating);
+        var adjFactor = getAdjustmentFactor(conductors);
+        var adjRange = getAdjustmentRange(conductors);
+        var deratedAmpacity = baseAmpacity * tempFactor * adjFactor;
+
+        var wireType = document.getElementById('wireType').options[document.getElementById('wireType').selectedIndex].text;
+        var sizeLabel = parseInt(wireSize) >= 250 ? wireSize + ' kcmil' : '#' + wireSize + ' AWG';
+
+        // Build results
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Wire</td><td>' + sizeLabel + ' ' + wireType + '</td></tr>';
+        html += '<tr><td>Base Ampacity (NEC 310.16, ' + tempRating + '&deg;C column)</td><td>' + baseAmpacity + ' A</td></tr>';
+        html += '<tr><td>Ambient Temperature</td><td>' + Math.round(ambientF) + '&deg;F (' + Math.round(ambientC) + '&deg;C)</td></tr>';
+        html += '<tr><td>Temperature Correction Factor</td><td>&times; ' + fmt(tempFactor) + '</td></tr>';
+        html += '<tr><td>Conductors in Raceway</td><td>' + conductors + ' (' + adjRange + ' range)</td></tr>';
+        html += '<tr><td>Adjustment Factor (310.15(B)(3)(a))</td><td>&times; ' + fmt(adjFactor) + '</td></tr>';
+        html += '<tr style="font-weight:700;font-size:1.05rem;"><td>Derated Ampacity</td><td>' + fmt(deratedAmpacity) + ' A</td></tr>';
+        html += '</table>';
+
+        // Info boxes
+        html += '<div class="info-box" style="margin-top:16px;">';
+        html += '<strong>Temperature Correction</strong> (NEC Table 310.15(B)(1))<br>';
+        if (ambientC >= 26 && ambientC <= 30) {
+            html += 'Ambient temperature is within the standard 30&deg;C (86&deg;F) range. No temperature correction needed (factor = 1.00).';
+        } else if (ambientC > 30) {
+            html += 'Ambient temperature exceeds 30&deg;C (86&deg;F). The correction factor of ' + fmt(tempFactor) + ' reduces the allowable ampacity because the conductor cannot dissipate heat as effectively.';
+        } else {
+            html += 'Ambient temperature is below 30&deg;C (86&deg;F). The correction factor of ' + fmt(tempFactor) + ' allows increased ampacity because the conductor can dissipate heat more easily.';
+        }
+        html += '</div>';
+
+        if (conductors > 3) {
+            html += '<div class="info-box">';
+            html += '<strong>Conduit Fill Adjustment</strong> (NEC Table 310.15(B)(3)(a))<br>';
+            html += 'With ' + conductors + ' current-carrying conductors in the raceway, the adjustment factor is ' + fmt(adjFactor) + '. More conductors means more heat buildup, requiring lower ampacity per conductor.';
+            html += '</div>';
+        }
+
+        if (tempFactor === 0) {
+            html += '<div class="warning-box">';
+            html += '<strong>Temperature exceeds insulation rating</strong><br>';
+            html += 'The ambient temperature exceeds the maximum for ' + tempRating + '&deg;C insulation. This conductor cannot be used at this temperature.';
+            html += '</div>';
+        }
+
+        // Show Your Work
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details style="cursor:pointer;">';
+        html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+        html += '<div style="margin-top:12px;">';
+        html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">';
+        html += 'Base Ampacity = ' + baseAmpacity + ' A (' + sizeLabel + ', ' + tempRating + '&deg;C column)';
+        html += '</div>';
+        html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">';
+        html += 'Temp Correction = ' + fmt(tempFactor) + ' (ambient ' + Math.round(ambientC) + '&deg;C, ' + tempRating + '&deg;C insulation)';
+        html += '</div>';
+        html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">';
+        html += 'Adjustment Factor = ' + fmt(adjFactor) + ' (' + conductors + ' conductors, ' + adjRange + ' range)';
+        html += '</div>';
+        html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">';
+        html += 'Derated = ' + baseAmpacity + ' &times; ' + fmt(tempFactor) + ' &times; ' + fmt(adjFactor) + ' = ' + fmt(deratedAmpacity) + ' A';
+        html += '</div>';
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Sizing Calculator - kVA, FLA | Sparky HQ</title>
+    <meta name="description" content="Free transformer sizing calculator. Calculate kVA rating, primary and secondary full-load amps, turns ratio, and recommended standard transformer sizes.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/transformer-sizing/">
+    <meta property="og:title" content="Transformer Sizing Calculator - kVA, FLA | Sparky HQ">
+    <meta property="og:description" content="Free transformer sizing calculator. Calculate kVA rating, primary and secondary full-load amps, turns ratio, and recommended standard transformer sizes.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/transformer-sizing/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Transformer Sizing Calculator - kVA, FLA | Sparky HQ">
+    <meta name="twitter:description" content="Free transformer sizing calculator. Calculate kVA rating, primary and secondary full-load amps, turns ratio, and recommended standard transformer sizes.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+    <script src="/js/validate.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Transformer Sizing Calculator <span class="nec-ref">kVA &middot; Primary &middot; Secondary</span></h1>
+                <p class="subtitle">Enter kVA rating or load amps with primary and secondary voltages to calculate full-load amps and recommended transformer size.</p>
+
+                <div class="calc-form">
+                    <div class="form-group">
+                        <label for="phase">Phase</label>
+                        <select id="phase">
+                            <option value="1ph">Single-Phase</option>
+                            <option value="3ph">Three-Phase</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                        <div class="form-group">
+                            <label for="kva">kVA Rating <span style="font-weight:400;color:var(--text-light);font-size:0.82rem;">(or leave blank to calculate)</span></label>
+                            <input type="number" id="kva" placeholder="e.g. 75" min="0" step="any">
+                        </div>
+                        <div class="form-group">
+                            <label for="vpri">Primary Voltage (V)</label>
+                            <input type="number" id="vpri" placeholder="e.g. 480" min="0" step="any">
+                        </div>
+                        <div class="form-group">
+                            <label for="vsec">Secondary Voltage (V)</label>
+                            <input type="number" id="vsec" placeholder="e.g. 208" min="0" step="any">
+                        </div>
+                        <div class="form-group">
+                            <label for="loadamps">Load Amps <span style="font-weight:400;color:var(--text-light);font-size:0.82rem;">(secondary side, optional)</span></label>
+                            <input type="number" id="loadamps" placeholder="To calculate kVA" min="0" step="any">
+                        </div>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>Standard Transformer Sizes (kVA)</strong><br>
+                    15, 25, 37.5, 45, 50, 75, 100, 112.5, 150, 167, 200, 225, 250, 300, 333, 500, 750, 1000, 1500, 2000, 2500. Always round up to the next standard size.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  TRANSFORMER SIZING CALCULATOR
+    // ══════════════════════════════════════
+
+    var STANDARD_KVA = [15, 25, 37.5, 45, 50, 75, 100, 112.5, 150, 167, 200, 225, 250, 300, 333, 500, 750, 1000, 1500, 2000, 2500];
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 1 });
+        if (Math.abs(n) >= 1) return n.toFixed(2).replace(/\.?0+$/, '');
+        if (Math.abs(n) >= 0.001) return n.toFixed(4).replace(/\.?0+$/, '');
+        return n.toExponential(3);
+    }
+
+    function getVal(id) {
+        var raw = document.getElementById(id).value.trim();
+        if (raw === '') return null;
+        var v = parseFloat(raw);
+        return isNaN(v) ? null : v;
+    }
+
+    function clearAll() {
+        var ids = ['kva','vpri','vsec','loadamps'];
+        for (var i = 0; i < ids.length; i++) {
+            document.getElementById(ids[i]).value = '';
+        }
+        document.getElementById('phase').value = '1ph';
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function nextStandardKVA(kva) {
+        for (var i = 0; i < STANDARD_KVA.length; i++) {
+            if (STANDARD_KVA[i] >= kva) return STANDARD_KVA[i];
+        }
+        return null; // exceeds standard sizes
+    }
+
+    function applyCalc() {
+        var phase = document.getElementById('phase').value;
+        var kVA = getVal('kva');
+        var Vpri = getVal('vpri');
+        var Vsec = getVal('vsec');
+        var loadAmps = getVal('loadamps');
+
+        var rules = [];
+
+        // Need both voltages
+        rules.push({ rule: 'required', value: Vpri, label: 'Primary Voltage' });
+        rules.push({ rule: 'required', value: Vsec, label: 'Secondary Voltage' });
+        if (Vpri !== null) rules.push({ rule: 'gt', value: Vpri, min: 0, label: 'Primary Voltage' });
+        if (Vsec !== null) rules.push({ rule: 'gt', value: Vsec, min: 0, label: 'Secondary Voltage' });
+
+        // Need either kVA or load amps
+        if (kVA === null && loadAmps === null) {
+            rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter either kVA rating or load amps' });
+        }
+        if (kVA !== null && kVA <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'kVA must be greater than 0' });
+        if (loadAmps !== null && loadAmps <= 0) rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Load amps must be greater than 0' });
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate(phase, kVA, Vpri, Vsec, loadAmps);
+    }
+
+    function calculate(phase, kVA, Vpri, Vsec, loadAmps) {
+        var multiplier = phase === '3ph' ? 1.732 : 1;
+        var phaseLabel = phase === '3ph' ? 'Three-Phase' : 'Single-Phase';
+        var formulasUsed = [];
+        var calculatedFromLoad = false;
+        var recommendedKVA = null;
+
+        // If kVA not provided, calculate from load amps
+        if (kVA === null && loadAmps !== null) {
+            kVA = Vsec * loadAmps * multiplier / 1000;
+            calculatedFromLoad = true;
+            if (phase === '3ph') {
+                formulasUsed.push('kVA = V<sub>sec</sub> &times; I<sub>load</sub> &times; 1.732 / 1000 = ' + fmt(Vsec) + ' &times; ' + fmt(loadAmps) + ' &times; 1.732 / 1000 = ' + fmt(kVA));
+            } else {
+                formulasUsed.push('kVA = V<sub>sec</sub> &times; I<sub>load</sub> / 1000 = ' + fmt(Vsec) + ' &times; ' + fmt(loadAmps) + ' / 1000 = ' + fmt(kVA));
+            }
+            recommendedKVA = nextStandardKVA(kVA);
+        }
+
+        // Calculate FLA on both sides
+        var Ipri = kVA * 1000 / (Vpri * multiplier);
+        var Isec = kVA * 1000 / (Vsec * multiplier);
+        var turnsRatio = Vpri / Vsec;
+
+        if (phase === '3ph') {
+            formulasUsed.push('I<sub>pri</sub> = kVA &times; 1000 / (V<sub>pri</sub> &times; 1.732) = ' + fmt(kVA) + ' &times; 1000 / (' + fmt(Vpri) + ' &times; 1.732) = ' + fmt(Ipri) + ' A');
+            formulasUsed.push('I<sub>sec</sub> = kVA &times; 1000 / (V<sub>sec</sub> &times; 1.732) = ' + fmt(kVA) + ' &times; 1000 / (' + fmt(Vsec) + ' &times; 1.732) = ' + fmt(Isec) + ' A');
+        } else {
+            formulasUsed.push('I<sub>pri</sub> = kVA &times; 1000 / V<sub>pri</sub> = ' + fmt(kVA) + ' &times; 1000 / ' + fmt(Vpri) + ' = ' + fmt(Ipri) + ' A');
+            formulasUsed.push('I<sub>sec</sub> = kVA &times; 1000 / V<sub>sec</sub> = ' + fmt(kVA) + ' &times; 1000 / ' + fmt(Vsec) + ' = ' + fmt(Isec) + ' A');
+        }
+        formulasUsed.push('Turns Ratio = V<sub>pri</sub> / V<sub>sec</sub> = ' + fmt(Vpri) + ' / ' + fmt(Vsec) + ' = ' + fmt(turnsRatio) + ':1');
+
+        // Build results
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response &mdash; ' + phaseLabel + '</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>kVA Rating</td><td>' + fmt(kVA) + ' kVA' + (calculatedFromLoad ? ' (calculated from load)' : '') + '</td></tr>';
+        if (recommendedKVA !== null) {
+            html += '<tr style="font-weight:700;"><td>Recommended Standard Size</td><td>' + fmt(recommendedKVA) + ' kVA</td></tr>';
+        }
+        html += '<tr><td>Primary Voltage</td><td>' + fmt(Vpri) + ' V</td></tr>';
+        html += '<tr><td>Secondary Voltage</td><td>' + fmt(Vsec) + ' V</td></tr>';
+        html += '<tr><td>Primary FLA</td><td>' + fmt(Ipri) + ' A</td></tr>';
+        html += '<tr><td>Secondary FLA</td><td>' + fmt(Isec) + ' A</td></tr>';
+        html += '<tr><td>Turns Ratio</td><td>' + fmt(turnsRatio) + ':1</td></tr>';
+        html += '</table>';
+
+        // If calculated from load, show recommended size info
+        if (calculatedFromLoad && recommendedKVA !== null) {
+            // Recalculate FLA at the recommended standard size
+            var recIpri = recommendedKVA * 1000 / (Vpri * multiplier);
+            var recIsec = recommendedKVA * 1000 / (Vsec * multiplier);
+
+            html += '<div class="info-box" style="margin-top:16px;">';
+            html += '<strong>Standard ' + fmt(recommendedKVA) + ' kVA Transformer</strong><br>';
+            html += 'Primary FLA: ' + fmt(recIpri) + ' A &nbsp;|&nbsp; Secondary FLA: ' + fmt(recIsec) + ' A';
+            html += '</div>';
+        }
+        if (calculatedFromLoad && recommendedKVA === null) {
+            html += '<div class="warning-box" style="margin-top:16px;">';
+            html += '<strong>Exceeds standard sizes</strong><br>';
+            html += 'Calculated kVA (' + fmt(kVA) + ') exceeds the largest standard size (2500 kVA). Consult the manufacturer.';
+            html += '</div>';
+        }
+
+        // Show Your Work
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details style="cursor:pointer;">';
+        html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+        html += '<div style="margin-top:12px;">';
+        for (var i = 0; i < formulasUsed.length; i++) {
+            html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">' + formulasUsed[i] + '</div>';
+        }
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

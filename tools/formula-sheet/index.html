@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical Formula Cheat Sheet - Printable | Sparky HQ</title>
+    <meta name="description" content="Free printable electrical formula cheat sheet. Ohm's Law, single and three-phase power, motor formulas, transformer formulas, and NEC quick rules.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/formula-sheet/">
+    <meta property="og:title" content="Electrical Formula Cheat Sheet - Printable | Sparky HQ">
+    <meta property="og:description" content="Free printable electrical formula cheat sheet. Ohm's Law, single and three-phase power, motor formulas, transformer formulas, and NEC quick rules.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/formula-sheet/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Electrical Formula Cheat Sheet - Printable | Sparky HQ">
+    <meta name="twitter:description" content="Free printable electrical formula cheat sheet. Ohm's Law, single and three-phase power, motor formulas, transformer formulas, and NEC quick rules.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+    <style>
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .formula-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+        }
+        .formula-card h2 {
+            font-size: 1.05rem;
+            margin: 0 0 14px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--text);
+        }
+        .formula-card h2 span {
+            font-weight: 400;
+            font-size: 0.82rem;
+            color: var(--text-light);
+        }
+        .formula-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .formula-list li {
+            padding: 6px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.92rem;
+            border-bottom: 1px solid #f0efed;
+        }
+        .formula-list li:last-child {
+            border-bottom: none;
+        }
+        .formula-list .formula-note {
+            font-family: -apple-system, system-ui, sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+        .print-btn-wrap {
+            text-align: right;
+            margin-bottom: 16px;
+        }
+        @media print {
+            .site-header, .site-footer, .disclaimer-box, .print-btn-wrap, #install-banner { display: none !important; }
+            .calc-page { padding: 0 !important; }
+            .formula-card { break-inside: avoid; border: 1px solid #ccc; }
+            .formula-grid { gap: 16px; }
+            body { font-size: 11pt; }
+            h1 { font-size: 16pt !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Electrical Formula Cheat Sheet <span class="nec-ref">Quick Reference</span></h1>
+                <p class="subtitle">Essential electrical formulas in one place. Print-friendly layout for your toolbox.</p>
+
+                <div class="print-btn-wrap">
+                    <button class="btn" onclick="window.print()">Print This Sheet</button>
+                </div>
+
+                <div class="formula-grid">
+
+                    <!-- Ohm's Law -->
+                    <div class="formula-card">
+                        <h2>Ohm's Law</h2>
+                        <ul class="formula-list">
+                            <li>V = I &times; R</li>
+                            <li>I = V / R</li>
+                            <li>R = V / I</li>
+                            <li>P = V &times; I</li>
+                            <li>P = I&sup2; &times; R</li>
+                            <li>P = V&sup2; / R</li>
+                        </ul>
+                        <div style="margin-top:12px;text-align:center;">
+                            <svg id="ohm-wheel" viewBox="0 0 340 340" style="width:100%;max-width:280px;display:inline-block;" aria-label="Ohm's Law formula wheel"></svg>
+                        </div>
+                    </div>
+
+                    <!-- Single-Phase Power -->
+                    <div class="formula-card">
+                        <h2>Single-Phase Power</h2>
+                        <ul class="formula-list">
+                            <li>kVA = V &times; I / 1000</li>
+                            <li>kW = kVA &times; PF</li>
+                            <li>I = kVA &times; 1000 / V</li>
+                            <li>I = kW &times; 1000 / (V &times; PF)</li>
+                            <li>kW = V &times; I &times; PF / 1000</li>
+                        </ul>
+                    </div>
+
+                    <!-- Three-Phase Power -->
+                    <div class="formula-card">
+                        <h2>Three-Phase Power</h2>
+                        <ul class="formula-list">
+                            <li>kVA = V &times; I &times; 1.732 / 1000</li>
+                            <li>kW = kVA &times; PF</li>
+                            <li>I = kVA &times; 1000 / (V &times; 1.732)</li>
+                            <li>I = kW &times; 1000 / (V &times; 1.732 &times; PF)</li>
+                            <li>kW = V &times; I &times; 1.732 &times; PF / 1000</li>
+                        </ul>
+                    </div>
+
+                    <!-- Motor Formulas -->
+                    <div class="formula-card">
+                        <h2>Motor Formulas</h2>
+                        <ul class="formula-list">
+                            <li>HP = kW / 0.746</li>
+                            <li>kW = HP &times; 0.746</li>
+                            <li>Efficiency = Output / Input &times; 100</li>
+                            <li>Torque (lb-ft) = HP &times; 5252 / RPM</li>
+                            <li>Sync RPM = 120 &times; Freq / Poles</li>
+                            <li>Slip = (Sync RPM - Actual) / Sync RPM</li>
+                        </ul>
+                        <p class="formula-note" style="margin-top:8px;">FLA: Use NEC Tables 430.247&ndash;430.250 for motor full-load current, not nameplate.</p>
+                    </div>
+
+                    <!-- Transformer Formulas -->
+                    <div class="formula-card">
+                        <h2>Transformer Formulas</h2>
+                        <ul class="formula-list">
+                            <li>kVA = V &times; I / 1000 <span class="formula-note">(1&phi;)</span></li>
+                            <li>kVA = V &times; I &times; 1.732 / 1000 <span class="formula-note">(3&phi;)</span></li>
+                            <li>I = kVA &times; 1000 / V <span class="formula-note">(1&phi;)</span></li>
+                            <li>I = kVA &times; 1000 / (V &times; 1.732) <span class="formula-note">(3&phi;)</span></li>
+                            <li>Turns Ratio = V<sub>pri</sub> / V<sub>sec</sub></li>
+                            <li>V<sub>pri</sub> &times; I<sub>pri</sub> = V<sub>sec</sub> &times; I<sub>sec</sub></li>
+                        </ul>
+                    </div>
+
+                    <!-- NEC Quick Rules -->
+                    <div class="formula-card">
+                        <h2>NEC Quick Rules</h2>
+                        <ul class="formula-list">
+                            <li>Continuous load: 125% <span class="formula-note">(210.20, 215.3)</span></li>
+                            <li>Motor conductor: 125% FLC <span class="formula-note">(430.22)</span></li>
+                            <li>Motor OCPD: varies by type <span class="formula-note">(430.52)</span></li>
+                            <li>Voltage drop: 3% branch, 5% total <span class="formula-note">(210.19 Info Note)</span></li>
+                        </ul>
+                        <p style="margin-top:10px;font-size:0.82rem;color:var(--text-light);"><strong>Standard breaker sizes (240.6):</strong><br>15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600</p>
+                    </div>
+
+                    <!-- Conduit & Box Fill -->
+                    <div class="formula-card">
+                        <h2>Conduit &amp; Box Fill</h2>
+                        <ul class="formula-list">
+                            <li>1 wire: 53% fill <span class="formula-note">(Ch.9 Table 1)</span></li>
+                            <li>2 wires: 31% fill <span class="formula-note">(Ch.9 Table 1)</span></li>
+                            <li>3+ wires: 40% fill <span class="formula-note">(Ch.9 Table 1)</span></li>
+                            <li>Nipple (&le;24"): 60% fill <span class="formula-note">(Ch.9 Note 4)</span></li>
+                        </ul>
+                        <p style="margin-top:10px;font-size:0.82rem;color:var(--text-light);"><strong>Box fill (314.16):</strong> Each conductor = 1&times; largest conductor volume. Clamps = 1&times;. Devices = 2&times;. EGC = 1&times; largest.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  OHM'S LAW WHEEL (same as ohms-law page)
+    // ══════════════════════════════════════
+
+    var WH = { cx:170, cy:170, iR:46, oR:128, cR:22, vR:36, lR:146 };
+
+    var QUADS = [
+        { v:'V', lbl:'VOLTS', col:'#b8860b', bg:'#fef7ea',
+          f:['I\u00d7R','P\u00f7I','\u221a(P\u00d7R)'], a:-180, rot:-45 },
+        { v:'I', lbl:'AMPS', col:'#2a7ab5', bg:'#eef6ff',
+          f:['V\u00f7R','P\u00f7V','\u221a(P\u00f7R)'], a:-90, rot:45 },
+        { v:'R', lbl:'OHMS', col:'#2e8b57', bg:'#f0faf0',
+          f:['V\u00f7I','V\u00b2\u00f7P','P\u00f7I\u00b2'], a:0, rot:-45 },
+        { v:'P', lbl:'WATTS', col:'#c0542e', bg:'#fff4f0',
+          f:['V\u00d7I','I\u00b2\u00d7R','V\u00b2\u00f7R'], a:90, rot:45 }
+    ];
+
+    function _svg(tag, a) {
+        var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (var k in a) el.setAttribute(k, a[k]);
+        return el;
+    }
+
+    function _arc(a1, a2) {
+        var R=Math.PI/180, c=WH.cx, d=WH.cy, ir=WH.iR, or_=WH.oR;
+        return 'M'+(c+ir*Math.cos(a1*R)).toFixed(1)+','+(d+ir*Math.sin(a1*R)).toFixed(1)+
+               'L'+(c+or_*Math.cos(a1*R)).toFixed(1)+','+(d+or_*Math.sin(a1*R)).toFixed(1)+
+               'A'+or_+','+or_+' 0 0,1 '+(c+or_*Math.cos(a2*R)).toFixed(1)+','+(d+or_*Math.sin(a2*R)).toFixed(1)+
+               'L'+(c+ir*Math.cos(a2*R)).toFixed(1)+','+(d+ir*Math.sin(a2*R)).toFixed(1)+
+               'A'+ir+','+ir+' 0 0,0 '+(c+ir*Math.cos(a1*R)).toFixed(1)+','+(d+ir*Math.sin(a1*R)).toFixed(1)+'Z';
+    }
+
+    (function buildWheel() {
+        var svg = document.getElementById('ohm-wheel');
+        if (!svg) return;
+        var DEG = Math.PI/180, midR = (WH.iR+WH.oR)/2;
+
+        QUADS.forEach(function(q, qi) {
+            for (var si = 0; si < 3; si++) {
+                var a1 = q.a + si*30, a2 = a1 + 30;
+                svg.appendChild(_svg('path', {
+                    d:_arc(a1,a2), fill:q.bg,
+                    stroke:'#e2e0dc', 'stroke-width':'1'
+                }));
+
+                var ma = (a1+a2)/2*DEG;
+                var tx = WH.cx + midR*Math.cos(ma), ty = WH.cy + midR*Math.sin(ma);
+                var txt = _svg('text', {
+                    x:tx.toFixed(1), y:ty.toFixed(1),
+                    'text-anchor':'middle', 'dominant-baseline':'central',
+                    fill: si===0 ? '#2c2c2c' : '#5a5a5a',
+                    'font-size': si===0 ? '11' : '9.5',
+                    'font-weight': si===0 ? '700' : '400',
+                    'font-family':'-apple-system,sans-serif'
+                });
+                txt.textContent = q.f[si];
+                svg.appendChild(txt);
+            }
+
+            var ca = (q.a+45)*DEG;
+            var vx = WH.cx+WH.vR*Math.cos(ca), vy = WH.cy+WH.vR*Math.sin(ca);
+            var vt = _svg('text', {
+                x:vx.toFixed(1), y:vy.toFixed(1),
+                'text-anchor':'middle', 'dominant-baseline':'central',
+                fill:q.col, 'font-size':'18', 'font-weight':'800',
+                'font-family':'-apple-system,sans-serif',
+                transform:'rotate('+q.rot+','+vx.toFixed(1)+','+vy.toFixed(1)+')'
+            });
+            vt.textContent = q.v;
+            svg.appendChild(vt);
+
+            var lx = WH.cx+WH.lR*Math.cos(ca), ly = WH.cy+WH.lR*Math.sin(ca);
+            var lt = _svg('text', {
+                x:lx.toFixed(1), y:ly.toFixed(1),
+                'text-anchor':'middle', 'dominant-baseline':'central',
+                fill:q.col, 'font-size':'10', 'font-weight':'700',
+                'letter-spacing':'1', 'font-family':'-apple-system,sans-serif',
+                transform:'rotate('+q.rot+','+lx.toFixed(1)+','+ly.toFixed(1)+')'
+            });
+            lt.textContent = q.lbl;
+            svg.appendChild(lt);
+        });
+
+        svg.appendChild(_svg('line', {
+            x1:WH.cx, y1:WH.cy-WH.oR, x2:WH.cx, y2:WH.cy+WH.oR,
+            stroke:'#d0cec9', 'stroke-width':'2'
+        }));
+        svg.appendChild(_svg('line', {
+            x1:WH.cx-WH.oR, y1:WH.cy, x2:WH.cx+WH.oR, y2:WH.cy,
+            stroke:'#d0cec9', 'stroke-width':'2'
+        }));
+
+        svg.appendChild(_svg('circle', { cx:WH.cx, cy:WH.cy, r:WH.cR, fill:'#D4910D' }));
+        var c1 = _svg('text', {
+            x:WH.cx, y:WH.cy-5, 'text-anchor':'middle',
+            fill:'#fff', 'font-size':'8.5', 'font-weight':'700',
+            'font-family':'-apple-system,sans-serif', 'letter-spacing':'0.5'
+        });
+        c1.textContent = "OHM'S";
+        svg.appendChild(c1);
+        var c2 = _svg('text', {
+            x:WH.cx, y:WH.cy+7, 'text-anchor':'middle',
+            fill:'#fff', 'font-size':'8.5', 'font-weight':'700',
+            'font-family':'-apple-system,sans-serif', 'letter-spacing':'0.5'
+        });
+        c2.textContent = 'LAW';
+        svg.appendChild(c2);
+    })();
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>
