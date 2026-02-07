@@ -51,33 +51,71 @@
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:center;padding:8px 0;">
-                            <svg id="ohm-wheel" viewBox="0 0 260 260" style="width:100%;max-width:280px;display:block;" aria-label="Ohm's Law formula wheel">
-                                <circle cx="130" cy="130" r="112" fill="#fafaf8" stroke="#e2e0dc" stroke-width="2"/>
-                                <line x1="130" y1="18" x2="130" y2="242" stroke="#e2e0dc" stroke-width="1"/>
-                                <line x1="18" y1="130" x2="242" y2="130" stroke="#e2e0dc" stroke-width="1"/>
-                                <circle cx="130" cy="130" r="36" fill="#D4910D"/>
-                                <line x1="130" y1="94" x2="130" y2="166" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-                                <line x1="94" y1="130" x2="166" y2="130" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
-                                <text x="113" y="124" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">V</text>
-                                <text x="138" y="124" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">I</text>
-                                <text x="113" y="153" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">P</text>
-                                <text x="138" y="153" fill="#fff" font-size="17" font-weight="800" font-family="-apple-system,sans-serif">R</text>
-                                <text x="72" y="46" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">VOLTS</text>
-                                <text x="72" y="64" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">I &#215; R</text>
-                                <text x="72" y="79" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; I</text>
-                                <text x="72" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10">&#8730;(P&#215;R)</text>
-                                <text x="188" y="46" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">AMPS</text>
-                                <text x="188" y="64" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#247; R</text>
-                                <text x="188" y="79" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; V</text>
-                                <text x="188" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10">&#8730;(P&#247;R)</text>
-                                <text x="72" y="173" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">WATTS</text>
-                                <text x="72" y="191" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#215; I</text>
-                                <text x="72" y="206" text-anchor="middle" fill="#5a5a5a" font-size="10">I&#178; &#215; R</text>
-                                <text x="72" y="220" text-anchor="middle" fill="#5a5a5a" font-size="10">V&#178; &#247; R</text>
-                                <text x="188" y="173" text-anchor="middle" fill="#D4910D" font-size="10" font-weight="700" letter-spacing="1">OHMS</text>
-                                <text x="188" y="191" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="600">V &#247; I</text>
-                                <text x="188" y="206" text-anchor="middle" fill="#5a5a5a" font-size="10">V&#178; &#247; P</text>
-                                <text x="188" y="220" text-anchor="middle" fill="#5a5a5a" font-size="10">P &#247; I&#178;</text>
+                            <svg id="ohm-wheel" viewBox="0 0 300 300" style="width:100%;max-width:300px;display:block;" aria-label="Ohm's Law formula wheel">
+                                <defs>
+                                    <!-- Quadrant clip paths for colored backgrounds -->
+                                    <clipPath id="q-tl"><path d="M150,150 L150,16 A134,134 0 0,0 16,150 Z"/></clipPath>
+                                    <clipPath id="q-tr"><path d="M150,150 L284,150 A134,134 0 0,0 150,16 Z"/></clipPath>
+                                    <clipPath id="q-bl"><path d="M150,150 L16,150 A134,134 0 0,0 150,284 Z"/></clipPath>
+                                    <clipPath id="q-br"><path d="M150,150 L150,284 A134,134 0 0,0 284,150 Z"/></clipPath>
+                                </defs>
+
+                                <!-- Outer circle -->
+                                <circle cx="150" cy="150" r="134" fill="#fafaf8" stroke="#e2e0dc" stroke-width="2"/>
+
+                                <!-- Color-coded quadrant fills -->
+                                <circle cx="150" cy="150" r="133" fill="#fef7ea" clip-path="url(#q-tl)"/><!-- Volts: warm gold -->
+                                <circle cx="150" cy="150" r="133" fill="#eef6ff" clip-path="url(#q-tr)"/><!-- Amps: cool blue -->
+                                <circle cx="150" cy="150" r="133" fill="#fff4f0" clip-path="url(#q-bl)"/><!-- Watts: warm red -->
+                                <circle cx="150" cy="150" r="133" fill="#f0faf0" clip-path="url(#q-br)"/><!-- Ohms: green -->
+
+                                <!-- Divider lines -->
+                                <line x1="150" y1="16" x2="150" y2="284" stroke="#e2e0dc" stroke-width="1.5"/>
+                                <line x1="16" y1="150" x2="284" y2="150" stroke="#e2e0dc" stroke-width="1.5"/>
+
+                                <!-- Middle ring (variable label ring) -->
+                                <circle cx="150" cy="150" r="62" fill="none" stroke="#e2e0dc" stroke-width="1"/>
+
+                                <!-- Center circle with Ohm's Law core -->
+                                <circle cx="150" cy="150" r="32" fill="#D4910D"/>
+                                <text x="150" y="145" text-anchor="middle" fill="#fff" font-size="11" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">OHM'S</text>
+                                <text x="150" y="159" text-anchor="middle" fill="#fff" font-size="11" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">LAW</text>
+
+                                <!-- Variable labels in the middle ring -->
+                                <!-- Voltage (top-left) -->
+                                <text x="107" y="107" text-anchor="middle" fill="#b8860b" font-size="20" font-weight="800" font-family="-apple-system,sans-serif">V</text>
+                                <!-- Current (top-right) -->
+                                <text x="193" y="107" text-anchor="middle" fill="#2a7ab5" font-size="20" font-weight="800" font-family="-apple-system,sans-serif">I</text>
+                                <!-- Power (bottom-left) -->
+                                <text x="107" y="205" text-anchor="middle" fill="#c0542e" font-size="20" font-weight="800" font-family="-apple-system,sans-serif">P</text>
+                                <!-- Resistance (bottom-right) -->
+                                <text x="193" y="205" text-anchor="middle" fill="#2e8b57" font-size="20" font-weight="800" font-family="-apple-system,sans-serif">R</text>
+
+                                <!-- Quadrant labels (outer ring, near edge) -->
+                                <text x="75" y="38" text-anchor="middle" fill="#b8860b" font-size="10" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">VOLTS</text>
+                                <text x="225" y="38" text-anchor="middle" fill="#2a7ab5" font-size="10" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">AMPS</text>
+                                <text x="75" y="275" text-anchor="middle" fill="#c0542e" font-size="10" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">WATTS</text>
+                                <text x="225" y="275" text-anchor="middle" fill="#2e8b57" font-size="10" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">OHMS</text>
+
+                                <!-- Formulas: VOLTS quadrant (top-left) -->
+                                <text x="75" y="56" text-anchor="middle" fill="#2c2c2c" font-size="12" font-weight="700" font-family="-apple-system,sans-serif">I &#215; R</text>
+                                <text x="75" y="72" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">P &#247; I</text>
+                                <text x="75" y="87" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">&#8730;(P&#215;R)</text>
+
+                                <!-- Formulas: AMPS quadrant (top-right) -->
+                                <text x="225" y="56" text-anchor="middle" fill="#2c2c2c" font-size="12" font-weight="700" font-family="-apple-system,sans-serif">V &#247; R</text>
+                                <text x="225" y="72" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">P &#247; V</text>
+                                <text x="225" y="87" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">&#8730;(P&#247;R)</text>
+
+                                <!-- Formulas: WATTS quadrant (bottom-left) -->
+                                <text x="75" y="226" text-anchor="middle" fill="#2c2c2c" font-size="12" font-weight="700" font-family="-apple-system,sans-serif">V &#215; I</text>
+                                <text x="75" y="242" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">I&#178; &#215; R</text>
+                                <text x="75" y="257" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">V&#178; &#247; R</text>
+
+                                <!-- Formulas: OHMS quadrant (bottom-right) -->
+                                <text x="225" y="226" text-anchor="middle" fill="#2c2c2c" font-size="12" font-weight="700" font-family="-apple-system,sans-serif">V &#247; I</text>
+                                <text x="225" y="242" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">V&#178; &#247; P</text>
+                                <text x="225" y="257" text-anchor="middle" fill="#5a5a5a" font-size="11" font-family="-apple-system,sans-serif">P &#247; I&#178;</text>
                             </svg>
                         </div>
                     </div>
@@ -172,6 +210,7 @@
         var resultEl = document.getElementById('result');
         resultEl.classList.remove('show');
         resultEl.innerHTML = '';
+        resetWheel();
     }
 
     function applyCalc() {
@@ -276,6 +315,63 @@
         var resultEl = document.getElementById('result');
         resultEl.innerHTML = html;
         resultEl.classList.add('show');
+
+        // Highlight the calculated quadrants on the wheel
+        highlightWheel(filled);
+    }
+
+    function highlightWheel(filled) {
+        // Map: which variable was calculated → which quadrant to highlight
+        var quadrantMap = {
+            voltage:    'q-tl',
+            current:    'q-tr',
+            power:      'q-bl',
+            resistance: 'q-br'
+        };
+        var svg = document.getElementById('ohm-wheel');
+        if (!svg) return;
+
+        // Reset all quadrant fills to their base colors
+        var baseColors = { 'q-tl': '#fef7ea', 'q-tr': '#eef6ff', 'q-bl': '#fff4f0', 'q-br': '#f0faf0' };
+        var pulseColors = { 'q-tl': '#fde9b8', 'q-tr': '#d0e8ff', 'q-bl': '#ffddd0', 'q-br': '#c8eec8' };
+        var quadrants = svg.querySelectorAll('[clip-path]');
+        quadrants.forEach(function(el) {
+            var cp = el.getAttribute('clip-path');
+            for (var id in baseColors) {
+                if (cp.indexOf(id) !== -1) {
+                    el.setAttribute('fill', baseColors[id]);
+                    el.style.transition = 'fill 0.3s ease';
+                }
+            }
+        });
+
+        // Highlight the quadrants for calculated (not filled) variables
+        var allFields = ['voltage', 'current', 'resistance', 'power'];
+        allFields.forEach(function(f) {
+            if (filled.indexOf(f) === -1) {
+                var qId = quadrantMap[f];
+                quadrants.forEach(function(el) {
+                    if (el.getAttribute('clip-path').indexOf(qId) !== -1) {
+                        el.setAttribute('fill', pulseColors[qId]);
+                    }
+                });
+            }
+        });
+    }
+
+    function resetWheel() {
+        var svg = document.getElementById('ohm-wheel');
+        if (!svg) return;
+        var baseColors = { 'q-tl': '#fef7ea', 'q-tr': '#eef6ff', 'q-bl': '#fff4f0', 'q-br': '#f0faf0' };
+        var quadrants = svg.querySelectorAll('[clip-path]');
+        quadrants.forEach(function(el) {
+            var cp = el.getAttribute('clip-path');
+            for (var id in baseColors) {
+                if (cp.indexOf(id) !== -1) {
+                    el.setAttribute('fill', baseColors[id]);
+                }
+            }
+        });
     }
     </script>
     <script src="/js/app.js" defer></script>
