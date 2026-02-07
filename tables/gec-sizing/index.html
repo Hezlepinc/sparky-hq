@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEC Sizing Table (NEC 250.66) | Sparky HQ</title>
+    <meta name="description" content="Grounding electrode conductor sizing per NEC 250.66. Minimum GEC size by largest service-entrance conductor for copper and aluminum.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <div class="ref-nav"><a href="/tables/">Tables</a> &rsaquo; GEC Sizing</div>
+                <h1>Grounding Electrode Conductor Sizing <span class="nec-ref">NEC 250.66</span></h1>
+                <p class="subtitle">Minimum size grounding electrode conductor based on the largest service-entrance conductor or equivalent area for each phase.</p>
+
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Largest Service-Entrance Conductor<br>or Equivalent Area per Phase (Copper)</th>
+                                <th>Largest Service-Entrance Conductor<br>or Equivalent Area per Phase (Aluminum)</th>
+                                <th>Copper GEC</th>
+                                <th>Aluminum or Cu-Clad Al GEC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>2 AWG or smaller</td>
+                                <td>1/0 AWG or smaller</td>
+                                <td>8 AWG</td>
+                                <td>6 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>1 AWG or 1/0 AWG</td>
+                                <td>2/0 AWG or 3/0 AWG</td>
+                                <td>6 AWG</td>
+                                <td>4 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>2/0 AWG or 3/0 AWG</td>
+                                <td>4/0 AWG or 250 kcmil</td>
+                                <td>4 AWG</td>
+                                <td>2 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>Over 3/0 AWG through 350 kcmil</td>
+                                <td>Over 250 kcmil through 500 kcmil</td>
+                                <td>2 AWG</td>
+                                <td>1/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>Over 350 kcmil through 600 kcmil</td>
+                                <td>Over 500 kcmil through 900 kcmil</td>
+                                <td>1/0 AWG</td>
+                                <td>3/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>Over 600 kcmil through 1100 kcmil</td>
+                                <td>Over 900 kcmil through 1750 kcmil</td>
+                                <td>2/0 AWG</td>
+                                <td>4/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>Over 1100 kcmil</td>
+                                <td>Over 1750 kcmil</td>
+                                <td>3/0 AWG</td>
+                                <td>250 kcmil</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="table-note">For parallel service-entrance conductors, use the equivalent area of a single conductor per phase. Example: two 3/0 AWG per phase = combined area equivalent — look up the total circular mil area and find the single-conductor row that matches.</p>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Sole Connection Exceptions</h2>
+                <p class="field-note" style="margin-bottom:12px;">When the GEC connects to only one type of electrode, these maximum sizes apply instead of the full table above.</p>
+
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Electrode Type</th>
+                                <th>Max Copper GEC</th>
+                                <th>Max Aluminum GEC</th>
+                                <th>NEC Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>Ground rod or pipe electrode</td>
+                                <td>6 AWG</td>
+                                <td>4 AWG</td>
+                                <td>250.66(A)</td>
+                            </tr>
+                            <tr>
+                                <td>Concrete-encased electrode (Ufer)</td>
+                                <td>4 AWG</td>
+                                <td>4 AWG</td>
+                                <td>250.66(B)</td>
+                            </tr>
+                            <tr>
+                                <td>Ground ring</td>
+                                <td>Same as ring conductor</td>
+                                <td>Same as ring conductor</td>
+                                <td>250.66(C)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="table-note">These caps only apply when the GEC is the sole connection to that specific electrode type. If the GEC also connects to other electrodes, size per the full table above.</p>
+
+                <div class="info-box" style="margin-top:24px;">
+                    <strong>GEC vs. EGC — What's the Difference?</strong><br>
+                    The <strong>GEC</strong> (this table, 250.66) runs from the service equipment to the grounding electrode system — it bonds the electrical system to earth. The <strong>EGC</strong> (<a href="/tables/egc-sizing/" style="color:var(--accent);font-weight:600;text-decoration:none;">250.122</a>) runs with circuit conductors back to the panel — it provides a fault return path. Different purpose, different sizing rules.
+                </div>
+
+                <div class="caution-box">
+                    <strong>Common Mistake</strong><br>
+                    Sizing the GEC based on the breaker size instead of the service-entrance conductor size. A 200A service with 4/0 copper service-entrance conductors requires a #4 copper GEC (from the table above), not #6 (which would come from the 250.122 EGC table for 200A).
+                </div>
+
+                <div class="tip-box">
+                    <strong>Ground Rod Exception</strong><br>
+                    Running a 200A service to a ground rod? Per 250.66(A), the GEC to that rod never needs to be larger than #6 copper, regardless of the service-entrance conductor size. This is the most commonly used exception on residential services.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>
