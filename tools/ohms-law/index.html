@@ -30,24 +30,24 @@
                 <p class="subtitle">Enter any two known values. Leave the other two blank and hit Apply.</p>
 
                 <div class="calc-form">
-                    <div class="form-group">
+                    <div class="form-group" id="grp-voltage">
                         <label for="voltage">Voltage (V)</label>
-                        <input type="number" id="voltage" placeholder="Volts" min="0" step="any">
+                        <input type="number" id="voltage" placeholder="Volts" min="0" step="any" oninput="lockFields()">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="grp-current">
                         <label for="current">Current (A)</label>
-                        <input type="number" id="current" placeholder="Amps" min="0" step="any">
+                        <input type="number" id="current" placeholder="Amps" min="0" step="any" oninput="lockFields()">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="grp-resistance">
                         <label for="resistance">Resistance (&Omega;)</label>
-                        <input type="number" id="resistance" placeholder="Ohms" min="0" step="any">
+                        <input type="number" id="resistance" placeholder="Ohms" min="0" step="any" oninput="lockFields()">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="grp-power">
                         <label for="power">Power (W)</label>
-                        <input type="number" id="power" placeholder="Watts" min="0" step="any">
+                        <input type="number" id="power" placeholder="Watts" min="0" step="any" oninput="lockFields()">
                     </div>
 
                     <div class="apply-section">
@@ -88,6 +88,27 @@
     //  OHM'S LAW CALCULATOR
     // ══════════════════════════════════════
 
+    var fields = ['voltage','current','resistance','power'];
+
+    function lockFields() {
+        var filled = [];
+        for (var i = 0; i < fields.length; i++) {
+            if (document.getElementById(fields[i]).value.trim() !== '') filled.push(fields[i]);
+        }
+        for (var i = 0; i < fields.length; i++) {
+            var id = fields[i];
+            var input = document.getElementById(id);
+            var group = document.getElementById('grp-' + id);
+            if (filled.length >= 2 && filled.indexOf(id) === -1) {
+                input.disabled = true;
+                group.style.opacity = '0.4';
+            } else {
+                input.disabled = false;
+                group.style.opacity = '';
+            }
+        }
+    }
+
     function getInputs() {
         var fields = ['voltage','current','resistance','power'];
         var vals = {};
@@ -113,10 +134,12 @@
     }
 
     function clearAll() {
-        document.getElementById('voltage').value = '';
-        document.getElementById('current').value = '';
-        document.getElementById('resistance').value = '';
-        document.getElementById('power').value = '';
+        for (var i = 0; i < fields.length; i++) {
+            var input = document.getElementById(fields[i]);
+            input.value = '';
+            input.disabled = false;
+            document.getElementById('grp-' + fields[i]).style.opacity = '';
+        }
         SparkyValidate.clearMessages('validation-messages');
         var resultEl = document.getElementById('result');
         resultEl.classList.remove('show');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sparky-hq-v11';
+const CACHE_NAME = 'sparky-hq-v12';
 const PRECACHE = [
     '/',
     '/css/style.css?v=11',
