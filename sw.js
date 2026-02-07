@@ -1,7 +1,7 @@
-const CACHE_NAME = 'sparky-hq-v6';
+const CACHE_NAME = 'sparky-hq-v7';
 const PRECACHE = [
     '/',
-    '/css/style.css?v=10',
+    '/css/style.css?v=11',
     '/js/app.js',
     '/js/validate.js',
     '/assets/logo.png',
