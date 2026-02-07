@@ -69,6 +69,38 @@
                         </select>
                     </div>
 
+                    <div class="form-group" id="ocpdGroup" style="display:none;">
+                        <label for="ocpd">OCPD / Breaker Size <span class="nec-ref">250.122</span></label>
+                        <select id="ocpd">
+                            <option value="">— Not specified —</option>
+                            <option value="15">15A</option>
+                            <option value="20">20A</option>
+                            <option value="25">25A</option>
+                            <option value="30">30A</option>
+                            <option value="35">35A</option>
+                            <option value="40">40A</option>
+                            <option value="50">50A</option>
+                            <option value="60">60A</option>
+                            <option value="70">70A</option>
+                            <option value="80">80A</option>
+                            <option value="100">100A</option>
+                            <option value="125">125A</option>
+                            <option value="150">150A</option>
+                            <option value="200">200A</option>
+                            <option value="225">225A</option>
+                            <option value="250">250A</option>
+                            <option value="300">300A</option>
+                            <option value="350">350A</option>
+                            <option value="400">400A</option>
+                            <option value="500">500A</option>
+                            <option value="600">600A</option>
+                            <option value="800">800A</option>
+                            <option value="1000">1000A</option>
+                            <option value="1200">1200A</option>
+                        </select>
+                        <p class="field-note">Required for EGC sizing per NEC 250.122</p>
+                    </div>
+
                     <div class="form-group" id="wireSizeGroup">
                         <label for="wireSize">Wire Size</label>
                         <select id="wireSize">
@@ -162,6 +194,21 @@
                     '250':170,'300':190,'350':210,'400':225,'500':260,'600':285,'750':320 }
     };
 
+    // Circular mil areas
+    var cmil = {
+        '14':4110,'12':6530,'10':10380,'8':16510,'6':26240,'4':41740,'3':52620,'2':66360,
+        '1':83690,'1/0':105600,'2/0':133100,'3/0':167800,'4/0':211600,
+        '250':250000,'300':300000,'350':350000,'400':400000,'500':500000,'600':600000,'750':750000
+    };
+
+    // NEC 250.122 — Min EGC by OCPD rating
+    var egcTable = [
+        {max:15,cu:'14',al:'12'},{max:20,cu:'12',al:'10'},{max:60,cu:'10',al:'8'},
+        {max:100,cu:'8',al:'6'},{max:200,cu:'6',al:'4'},{max:300,cu:'4',al:'2'},
+        {max:400,cu:'3',al:'1'},{max:500,cu:'2',al:'1/0'},{max:600,cu:'1',al:'2/0'},
+        {max:800,cu:'1/0',al:'3/0'},{max:1000,cu:'2/0',al:'4/0'},{max:1200,cu:'3/0',al:'250'}
+    ];
+
     // ══════════════════════════════════════
     //  MODE MANAGEMENT
     // ══════════════════════════════════════
@@ -176,6 +223,7 @@
         if (mode === 'distance') buttons[1].classList.add('active');
         if (mode === 'conductor') buttons[2].classList.add('active');
 
+        document.getElementById('ocpdGroup').style.display = (mode === 'conductor') ? '' : 'none';
         document.getElementById('wireSizeGroup').style.display = (mode === 'conductor') ? 'none' : '';
         document.getElementById('distanceGroup').style.display = (mode === 'distance') ? 'none' : '';
 
@@ -207,6 +255,22 @@
 
     function getFactor(circuit) {
         return (circuit === '3ac') ? 1.732 : 2;
+    }
+
+    function getEGC(ocpdVal, material) {
+        var key = (material === 'aluminum') ? 'al' : 'cu';
+        for (var i = 0; i < egcTable.length; i++) {
+            if (ocpdVal <= egcTable[i].max) return egcTable[i][key];
+        }
+        return egcTable[egcTable.length - 1][key];
+    }
+
+    function nextSizeUp(targetCmil, material) {
+        var startIdx = (material === 'aluminum') ? 1 : 0;
+        for (var i = startIdx; i < wireSizes.length; i++) {
+            if (cmil[wireSizes[i]] >= targetCmil) return wireSizes[i];
+        }
+        return wireSizes[wireSizes.length - 1];
     }
 
     // ══════════════════════════════════════
@@ -283,7 +347,9 @@
         if (!amps || amps <= 0) { return; }
 
         var html = '';
-        var infoNote = '<div class="info-box" style="margin-top:16px;">This calculator checks voltage drop only. Use the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> to verify ampacity, derating, and conductor sizing.</div>';
+        var infoNote = (currentMode === 'conductor')
+            ? '<div class="info-box" style="margin-top:16px;">Use the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> for ampacity derating and 110.14(C) terminal temperature ratings.</div>'
+            : '<div class="info-box" style="margin-top:16px;">This calculator checks voltage drop only. Use the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> to verify ampacity, derating, and conductor sizing.</div>';
 
         // ── CHECK VOLTAGE DROP ──
         if (currentMode === 'check') {
@@ -448,6 +514,48 @@
                 }
                 html += '<tr><td>At 5% Voltage Drop</td><td>' + sizeLabel(rec5) + ' ' + cap(material) + ' \u2014 ' + rec5VD.toFixed(2) + '% (' + (rec5VD / 100 * voltage).toFixed(1) + 'V drop, ' + (voltage - rec5VD / 100 * voltage).toFixed(1) + 'V delivered)</td></tr>';
                 html += '</table>';
+
+                // ── EGC Section ──
+                var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
+                if (ocpdVal && rec3) {
+                    var minEGC = getEGC(ocpdVal, material);
+
+                    // Find ampacity minimum wire
+                    var ampMin = null;
+                    var ampStartIdx = (material === 'aluminum') ? 1 : 0;
+                    for (var i = ampStartIdx; i < wireSizes.length; i++) {
+                        var amp = basicAmpacity[material][wireSizes[i]];
+                        if (amp !== null && amp >= amps) { ampMin = wireSizes[i]; break; }
+                    }
+
+                    html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+                    html += '<div style="font-weight:700;font-size:0.92rem;margin-bottom:8px;">Equipment Grounding Conductor <span class="nec-ref">250.122</span></div>';
+                    html += '<table class="breakdown-table">';
+                    html += '<tr><td>Min EGC per 250.122</td><td>' + sizeLabel(minEGC) + ' ' + cap(material) + '</td></tr>';
+
+                    // Check if VD wire is larger than ampacity min → proportional increase
+                    var vdWireIdx = wireSizes.indexOf(rec3);
+                    var ampMinIdx = ampMin ? wireSizes.indexOf(ampMin) : -1;
+
+                    if (ampMin && vdWireIdx > ampMinIdx) {
+                        var ampMinCmil = cmil[ampMin];
+                        var vdCmil = cmil[rec3];
+                        var ratio = vdCmil / ampMinCmil;
+                        var egcCmil = cmil[minEGC];
+                        var scaledCmil = egcCmil * ratio;
+                        var suggestedEGC = nextSizeUp(scaledCmil, material);
+
+                        html += '<tr><td>Ungrounded conductor (ampacity)</td><td>' + sizeLabel(ampMin) + ' \u2014 ' + ampMinCmil.toLocaleString() + ' cmil</td></tr>';
+                        html += '<tr><td>Ungrounded conductor (VD sized)</td><td>' + sizeLabel(rec3) + ' \u2014 ' + vdCmil.toLocaleString() + ' cmil</td></tr>';
+                        html += '<tr><td>Conductor increase</td><td>' + vdCmil.toLocaleString() + ' \u00F7 ' + ampMinCmil.toLocaleString() + ' = ' + ratio.toFixed(3) + ' (' + (ratio * 100).toFixed(0) + '%)</td></tr>';
+                        html += '<tr><td>Base EGC (250.122)</td><td>' + sizeLabel(minEGC) + ' \u2014 ' + egcCmil.toLocaleString() + ' cmil</td></tr>';
+                        html += '<tr><td>Proportional EGC calc</td><td>' + egcCmil.toLocaleString() + ' \u00D7 ' + ratio.toFixed(3) + ' = ' + Math.round(scaledCmil).toLocaleString() + ' cmil</td></tr>';
+                        html += '<tr style="font-weight:700;"><td>Suggested EGC [250.122(B)]</td><td>' + sizeLabel(suggestedEGC) + ' ' + cap(material) + ' (' + cmil[suggestedEGC].toLocaleString() + ' cmil)</td></tr>';
+                    }
+
+                    html += '</table>';
+                    html += '</div>';
+                }
             }
 
             html += infoNote;

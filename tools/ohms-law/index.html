@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ohm's Law Calculator | Sparky HQ</title>
+    <title>Ohm's Law Calculator - Free V/I/R/P | Sparky HQ</title>
     <meta name="description" content="Free Ohm's Law calculator for electricians. Enter any two values — voltage, current, resistance, or power — and get the rest instantly.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/css/style.css?v=11">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -25,12 +26,54 @@
     <main>
         <section class="calc-page">
             <div class="container">
-                <h1>Ohm's Law Calculator</h1>
-                <p class="subtitle">Enter any two values to calculate the rest.</p>
-                <p style="color:#5a5a5a; margin-top:24px;">This tool is currently being built. Check back soon.</p>
-                <a href="/tools/" style="color:#D4910D;font-weight:600;text-decoration:none;display:inline-block;margin-top:16px;">&larr; Back to Tools</a>
+                <h1>Ohm's Law Calculator <span class="nec-ref">V &bull; I &bull; R &bull; P</span></h1>
+                <p class="subtitle">Enter any two known values. Leave the other two blank and hit Apply.</p>
+
+                <div class="calc-form">
+                    <div class="form-group">
+                        <label for="voltage">Voltage (V)</label>
+                        <input type="number" id="voltage" placeholder="Volts" min="0" step="any">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="current">Current (A)</label>
+                        <input type="number" id="current" placeholder="Amps" min="0" step="any">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resistance">Resistance (&Omega;)</label>
+                        <input type="number" id="resistance" placeholder="Ohms" min="0" step="any">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="power">Power (W)</label>
+                        <input type="number" id="power" placeholder="Watts" min="0" step="any">
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="info-box" style="margin-top:24px;">
+                    <strong>Quick Reference</strong><br>
+                    <span style="font-family:'Courier New',monospace;font-size:0.88rem;line-height:1.8;">
+                        V = I &times; R &nbsp;&nbsp;&bull;&nbsp;&nbsp; I = V / R &nbsp;&nbsp;&bull;&nbsp;&nbsp; R = V / I<br>
+                        P = V &times; I &nbsp;&nbsp;&bull;&nbsp;&nbsp; P = I&sup2; &times; R &nbsp;&nbsp;&bull;&nbsp;&nbsp; P = V&sup2; / R
+                    </span>
+                </div>
             </div>
         </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
     </main>
 
     <footer class="site-footer">
@@ -39,6 +82,151 @@
             <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
         </div>
     </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  OHM'S LAW CALCULATOR
+    // ══════════════════════════════════════
+
+    function getInputs() {
+        var fields = ['voltage','current','resistance','power'];
+        var vals = {};
+        var filled = [];
+        for (var i = 0; i < fields.length; i++) {
+            var raw = document.getElementById(fields[i]).value.trim();
+            if (raw !== '') {
+                vals[fields[i]] = parseFloat(raw);
+                filled.push(fields[i]);
+            } else {
+                vals[fields[i]] = null;
+            }
+        }
+        return { vals: vals, filled: filled };
+    }
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        if (Math.abs(n) >= 1) return n.toFixed(3).replace(/\.?0+$/, '');
+        if (Math.abs(n) >= 0.001) return n.toFixed(6).replace(/\.?0+$/, '');
+        return n.toExponential(3);
+    }
+
+    function clearAll() {
+        document.getElementById('voltage').value = '';
+        document.getElementById('current').value = '';
+        document.getElementById('resistance').value = '';
+        document.getElementById('power').value = '';
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function applyCalc() {
+        var inp = getInputs();
+        var filled = inp.filled;
+        var vals = inp.vals;
+
+        // Validation: exactly 2 filled, both > 0
+        var rules = [];
+        if (filled.length < 2) {
+            rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter exactly 2 values. You entered ' + filled.length + '.' });
+        } else if (filled.length > 2) {
+            rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter exactly 2 values. You entered ' + filled.length + ' \u2014 clear the extras.' });
+        }
+
+        for (var i = 0; i < filled.length; i++) {
+            var v = vals[filled[i]];
+            if (isNaN(v) || v <= 0) {
+                var labels = { voltage: 'Voltage', current: 'Current', resistance: 'Resistance', power: 'Power' };
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: labels[filled[i]] + ' must be greater than 0' });
+            }
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+        calculate(vals, filled);
+    }
+
+    function calculate(vals, filled) {
+        var V = vals.voltage;
+        var I = vals.current;
+        var R = vals.resistance;
+        var P = vals.power;
+
+        var known = filled.sort().join('+');
+        var formulasUsed = [];
+
+        // Solve for the two unknowns
+        switch (known) {
+            case 'current+voltage': // V and I known
+                R = V / I;
+                P = V * I;
+                formulasUsed = ['R = V \u00F7 I = ' + fmt(V) + ' \u00F7 ' + fmt(I) + ' = ' + fmt(R) + ' \u03A9',
+                                'P = V \u00D7 I = ' + fmt(V) + ' \u00D7 ' + fmt(I) + ' = ' + fmt(P) + ' W'];
+                break;
+            case 'resistance+voltage': // V and R known
+                I = V / R;
+                P = (V * V) / R;
+                formulasUsed = ['I = V \u00F7 R = ' + fmt(V) + ' \u00F7 ' + fmt(R) + ' = ' + fmt(I) + ' A',
+                                'P = V\u00B2 \u00F7 R = ' + fmt(V) + '\u00B2 \u00F7 ' + fmt(R) + ' = ' + fmt(P) + ' W'];
+                break;
+            case 'power+voltage': // V and P known
+                I = P / V;
+                R = (V * V) / P;
+                formulasUsed = ['I = P \u00F7 V = ' + fmt(P) + ' \u00F7 ' + fmt(V) + ' = ' + fmt(I) + ' A',
+                                'R = V\u00B2 \u00F7 P = ' + fmt(V) + '\u00B2 \u00F7 ' + fmt(P) + ' = ' + fmt(R) + ' \u03A9'];
+                break;
+            case 'current+resistance': // I and R known
+                V = I * R;
+                P = I * I * R;
+                formulasUsed = ['V = I \u00D7 R = ' + fmt(I) + ' \u00D7 ' + fmt(R) + ' = ' + fmt(V) + ' V',
+                                'P = I\u00B2 \u00D7 R = ' + fmt(I) + '\u00B2 \u00D7 ' + fmt(R) + ' = ' + fmt(P) + ' W'];
+                break;
+            case 'current+power': // I and P known
+                V = P / I;
+                R = P / (I * I);
+                formulasUsed = ['V = P \u00F7 I = ' + fmt(P) + ' \u00F7 ' + fmt(I) + ' = ' + fmt(V) + ' V',
+                                'R = P \u00F7 I\u00B2 = ' + fmt(P) + ' \u00F7 ' + fmt(I) + '\u00B2 = ' + fmt(R) + ' \u03A9'];
+                break;
+            case 'power+resistance': // R and P known
+                V = Math.sqrt(P * R);
+                I = Math.sqrt(P / R);
+                formulasUsed = ['V = \u221A(P \u00D7 R) = \u221A(' + fmt(P) + ' \u00D7 ' + fmt(R) + ') = ' + fmt(V) + ' V',
+                                'I = \u221A(P \u00F7 R) = \u221A(' + fmt(P) + ' \u00F7 ' + fmt(R) + ') = ' + fmt(I) + ' A'];
+                break;
+        }
+
+        // Build results
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Response</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr' + (filled.indexOf('voltage') === -1 ? ' style="font-weight:700;"' : '') + '><td>Voltage (V)</td><td>' + fmt(V) + ' V' + (filled.indexOf('voltage') === -1 ? ' \u2190 calculated' : '') + '</td></tr>';
+        html += '<tr' + (filled.indexOf('current') === -1 ? ' style="font-weight:700;"' : '') + '><td>Current (I)</td><td>' + fmt(I) + ' A' + (filled.indexOf('current') === -1 ? ' \u2190 calculated' : '') + '</td></tr>';
+        html += '<tr' + (filled.indexOf('resistance') === -1 ? ' style="font-weight:700;"' : '') + '><td>Resistance (R)</td><td>' + fmt(R) + ' \u03A9' + (filled.indexOf('resistance') === -1 ? ' \u2190 calculated' : '') + '</td></tr>';
+        html += '<tr' + (filled.indexOf('power') === -1 ? ' style="font-weight:700;"' : '') + '><td>Power (P)</td><td>' + fmt(P) + ' W' + (filled.indexOf('power') === -1 ? ' \u2190 calculated' : '') + '</td></tr>';
+        html += '</table>';
+
+        // Show Your Work
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details style="cursor:pointer;">';
+        html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+        html += '<div style="margin-top:12px;">';
+        for (var i = 0; i < formulasUsed.length; i++) {
+            html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">' + formulasUsed[i] + '</div>';
+        }
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
     <script src="/js/app.js" defer></script>
 </body>
 </html>
