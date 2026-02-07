@@ -381,7 +381,7 @@
 
         // Derating trigger (>3 CCCs)
         if (totalWireCount > 3) {
-            guidance += '<div class="info-box"><strong>Derating reminder:</strong> With ' + totalWireCount + ' conductors, ampacity adjustment per NEC 310.15(C)(1) is likely required. Count current-carrying conductors (exclude equipment grounds and neutrals that carry only unbalanced loads) to determine the adjustment factor. Check the <a href="/tools/wire-size/" style="color:var(--accent);font-weight:600;">Wire Size Calculator</a> with derating enabled.</div>';
+            guidance += '<div class="info-box"><strong>Derating reminder:</strong> You have ' + totalWireCount + ' conductors in this raceway. If more than 3 are current-carrying, ampacity adjustment per NEC 310.15(C)(1) is required. Count current-carrying conductors (exclude equipment grounds and neutrals that carry only unbalanced loads) to determine the adjustment factor. Check the <a href="/tools/wire-size/" style="color:var(--accent);font-weight:600;">Wire Size Calculator</a> with derating enabled.</div>';
         }
 
         // Nipple exception note

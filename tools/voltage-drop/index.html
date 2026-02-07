@@ -152,6 +152,16 @@
         '250':'250','300':'300','350':'350','400':'400','500':'500','600':'600','750':'750'
     };
 
+    // NEC 310.16 — 60°C column (basic ampacity check only)
+    var basicAmpacity = {
+        copper: { '14':15,'12':20,'10':30,'8':40,'6':55,'4':70,'3':85,'2':95,
+                  '1':110,'1/0':125,'2/0':145,'3/0':165,'4/0':195,
+                  '250':215,'300':240,'350':260,'400':280,'500':320,'600':350,'750':385 },
+        aluminum: { '14':null,'12':15,'10':25,'8':30,'6':40,'4':55,'3':65,'2':75,
+                    '1':85,'1/0':100,'2/0':115,'3/0':130,'4/0':150,
+                    '250':170,'300':190,'350':210,'400':225,'500':260,'600':285,'750':320 }
+    };
+
     // ══════════════════════════════════════
     //  MODE MANAGEMENT
     // ══════════════════════════════════════
@@ -285,6 +295,7 @@
             var vd = calcVD(R, factor, distance, amps);
             var vdPct = (vd / voltage) * 100;
             var deliveredV = voltage - vd;
+            if (deliveredV < 0) deliveredV = 0;
             var pass3 = vdPct <= 3;
             var pass5 = vdPct <= 5;
 
@@ -295,7 +306,7 @@
             html += '</div>';
             html += '<table class="breakdown-table">';
             html += '<tr><td>Circuit</td><td>' + voltage + 'V ' + circuitLabel(circuit) + ' \u2014 ' + amps + 'A</td></tr>';
-            html += '<tr><td>Delivered Voltage</td><td>' + deliveredV.toFixed(1) + ' V</td></tr>';
+            html += '<tr><td>Delivered Voltage</td><td>' + (vd >= voltage ? '0 V (voltage drop exceeds source)' : deliveredV.toFixed(1) + ' V') + '</td></tr>';
             html += '<tr><td>Branch Circuit (3% max)</td><td>' + vdPct.toFixed(2) + '% \u2014 <span class="' + (pass3 ? 'result-pass' : 'result-fail') + '">' + (pass3 ? 'PASS' : 'FAIL') + '</span></td></tr>';
             html += '<tr><td>Total Circuit (5% max)</td><td>' + vdPct.toFixed(2) + '% \u2014 <span class="' + (pass5 ? 'result-pass' : 'result-fail') + '">' + (pass5 ? 'PASS' : 'FAIL') + '</span></td></tr>';
             html += '</table>';
@@ -304,6 +315,13 @@
                 html += '<div class="caution-box"><strong>Consider upsizing:</strong> Voltage drop exceeds 3% for a branch circuit. Use <strong>Max Distance</strong> mode to find the maximum run length, or the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a> to find the right conductor.</div>';
             } else if (!pass5) {
                 html += '<div class="warning-box"><strong>Exceeds 5% total:</strong> This run has excessive voltage drop even for combined feeder + branch. Consider a shorter route, larger conductor, or higher system voltage.</div>';
+            }
+
+            var wireAmp = basicAmpacity[material][wireSize];
+            if (wireAmp === null) {
+                html += '<div class="warning-box"><strong>NEC 310.3(A):</strong> 14 AWG aluminum is not permitted. Minimum aluminum conductor size is 12 AWG.</div>';
+            } else if (amps > wireAmp) {
+                html += '<div class="warning-box"><strong>Ampacity exceeded:</strong> ' + sizeLabel(wireSize) + ' ' + cap(material) + ' is rated for ' + wireAmp + 'A at 60\u00B0C (NEC 310.16). Your load is ' + amps + 'A. Verify conductor capacity with the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a>.</div>';
             }
 
             html += infoNote;
@@ -345,6 +363,13 @@
             html += '<tr><td>At 3% Voltage Drop</td><td>' + Math.floor(maxDist3) + ' ft (' + (0.03 * voltage).toFixed(1) + 'V drop)</td></tr>';
             html += '<tr><td>At 5% Voltage Drop</td><td>' + Math.floor(maxDist5) + ' ft (' + (0.05 * voltage).toFixed(1) + 'V drop)</td></tr>';
             html += '</table>';
+
+            var wireAmp = basicAmpacity[material][wireSize];
+            if (wireAmp === null) {
+                html += '<div class="warning-box"><strong>NEC 310.3(A):</strong> 14 AWG aluminum is not permitted. Minimum aluminum conductor size is 12 AWG.</div>';
+            } else if (amps > wireAmp) {
+                html += '<div class="warning-box"><strong>Ampacity exceeded:</strong> ' + sizeLabel(wireSize) + ' ' + cap(material) + ' is rated for ' + wireAmp + 'A at 60\u00B0C (NEC 310.16). Your load is ' + amps + 'A. Verify conductor capacity with the <a href="/tools/wire-size/"><strong>Wire Size Calculator</strong></a>.</div>';
+            }
 
             html += infoNote;
 

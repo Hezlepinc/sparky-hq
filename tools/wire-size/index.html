@@ -43,6 +43,11 @@
                         <div class="form-group">
                             <label for="amps">Load (Amps)</label>
                             <input type="number" id="amps" placeholder="e.g. 40" min="0" step="0.1" oninput="updateTempInfo()">
+                            <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                                <input type="checkbox" id="continuous" style="width:auto;margin:0;">
+                                Continuous load (3+ hours)
+                            </label>
+                            <p class="field-note" id="continuousNote" style="display:none;">Per NEC 210.20(A): continuous loads multiplied by 125% for conductor and OCPD sizing.</p>
                         </div>
                     </div>
 
@@ -443,6 +448,8 @@
 
     function applyCalc() {
         var amps = parseFloat(document.getElementById('amps').value) || 0;
+        var isContinuous = document.getElementById('continuous').checked;
+        var sizingAmps = isContinuous ? amps * 1.25 : amps;
         var distance = parseFloat(document.getElementById('distance').value) || 0;
         var voltage = parseFloat(document.getElementById('voltage').value);
 
@@ -453,13 +460,13 @@
             { rule: 'range', value: distance, max: 5000, label: 'Distance', level: 'warning', msg: 'Distance over 5,000 ft is unusual \u2014 verify input' }
         ];
 
-        if (amps > 0) {
-            rules.push({ rule: 'maxForVoltage', value: amps, voltage: voltage, label: 'Load (amps)' });
+        if (sizingAmps > 0) {
+            rules.push({ rule: 'maxForVoltage', value: sizingAmps, voltage: voltage, label: 'Load (amps)' });
         }
 
         var ocpdVal = document.getElementById('ocpd').value ? parseInt(document.getElementById('ocpd').value) : null;
-        if (ocpdVal && amps > 0 && amps > ocpdVal) {
-            rules.push({ rule: 'custom', test: true, msg: 'Load (' + amps + 'A) exceeds OCPD (' + ocpdVal + 'A) \u2014 breaker will trip. Verify breaker size or load.', level: 'warning' });
+        if (ocpdVal && sizingAmps > 0 && sizingAmps > ocpdVal) {
+            rules.push({ rule: 'custom', test: true, msg: 'Sizing load (' + sizingAmps.toFixed(0) + 'A' + (isContinuous ? ' incl. 125% continuous' : '') + ') exceeds OCPD (' + ocpdVal + 'A) \u2014 breaker will trip. Verify breaker size or load.', level: 'warning' });
         }
 
         var result = SparkyValidate.check(rules);
@@ -473,6 +480,8 @@
 
     function calculate() {
         var amps = parseFloat(document.getElementById('amps').value);
+        var isContinuous = document.getElementById('continuous').checked;
+        var sizingAmps = isContinuous ? amps * 1.25 : amps;
         var voltage = parseFloat(document.getElementById('voltage').value);
         var phase = parseInt(document.getElementById('phase').value);
         var distance = parseFloat(document.getElementById('distance').value);
@@ -513,7 +522,7 @@
                 if (amp === null) continue;
                 deratedAmp = hasDerating ? amp * derating.combined : amp;
             }
-            if (deratedAmp >= amps) {
+            if (deratedAmp >= sizingAmps) {
                 minByAmpacity = size;
                 break;
             }
@@ -591,6 +600,9 @@
         // Breakdown table
         html += '<table class="breakdown-table">';
         html += '<tr><td>Application</td><td>' + (application === 'branch' ? 'Branch Circuit' : 'Feeder') + '</td></tr>';
+        if (isContinuous) {
+            html += '<tr><td>Continuous Load (125%)</td><td>' + amps + 'A \u00D7 1.25 = ' + sizingAmps.toFixed(1) + 'A sizing basis</td></tr>';
+        }
         html += '<tr><td>Ampacity at ' + tempRating + '\u00B0C (310.16)</td><td>' + recAmpacity + 'A';
         if (hasDerating) {
             html += ' \u2192 ' + recDeratedAmpacity.toFixed(0) + 'A derated';
@@ -659,6 +671,8 @@
                 html += '</div>';
             }
             html += '</div>';
+        } else {
+            html += '<div class="info-box" style="margin-top:12px;"><strong>EGC not shown:</strong> Select an OCPD / breaker size above to include Equipment Grounding Conductor sizing per NEC 250.122.</div>';
         }
 
         // ── Show Your Work ──
@@ -692,7 +706,7 @@
             }
             html += ' \u2192 ' + minDeratedVal.toFixed(0) + 'A after derating';
         }
-        html += ' \u2265 ' + amps + 'A load</td></tr>';
+        html += ' \u2265 ' + sizingAmps.toFixed(0) + 'A' + (isContinuous ? ' (sizing)' : '') + ' load</td></tr>';
 
         if (upsized) {
             var minVDpct = (calcVD(amps, distance, minByAmpacity, material, voltage, phase) / voltage * 100);
@@ -717,6 +731,10 @@
 
     document.getElementById('vdLimit').addEventListener('change', function() {
         document.getElementById('customVDGroup').style.display = (this.value === 'custom') ? '' : 'none';
+    });
+
+    document.getElementById('continuous').addEventListener('change', function() {
+        document.getElementById('continuousNote').style.display = this.checked ? '' : 'none';
     });
 
     // ── Initialize ──
