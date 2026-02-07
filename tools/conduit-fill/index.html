@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conduit Fill Calculator - NEC Chapter 9 | Sparky HQ</title>
-    <meta name="description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with common presets.">
+    <meta name="description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with live cross-section visualization.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="canonical" href="https://sparky-hq.com/tools/conduit-fill/">
     <meta property="og:title" content="Conduit Fill Calculator - NEC Chapter 9 | Sparky HQ">
-    <meta property="og:description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with common presets.">
+    <meta property="og:description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with live cross-section visualization.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sparky-hq.com/tools/conduit-fill/">
     <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Conduit Fill Calculator - NEC Chapter 9 | Sparky HQ">
-    <meta name="twitter:description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with common presets.">
+    <meta name="twitter:description" content="Free conduit fill calculator for electricians. Calculate fill percentage per NEC Chapter 9 Tables 4 and 5. Supports EMT, IMC, RMC, PVC, and FMC with live cross-section visualization.">
     <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
     <link rel="stylesheet" href="/css/style.css?v=12">
     <script src="/js/validate.js" defer></script>
@@ -41,82 +41,79 @@
                 <p class="subtitle">Calculate conduit fill percentage per NEC Chapter 9 Table 1.</p>
 
                 <div class="calc-form">
-                    <!-- Common Presets -->
-                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Quick Start Presets</label>
-                    <div class="preset-row">
-                        <button class="preset-btn" onclick="loadPreset('20a')">20A circuit (3x #12 + #12 GND)</button>
-                        <button class="preset-btn" onclick="loadPreset('30a')">30A circuit (3x #10 + #10 GND)</button>
-                        <button class="preset-btn" onclick="loadPreset('50a')">50A circuit (3x #6 + #10 GND)</button>
-                        <button class="preset-btn" onclick="loadPreset('100a')">100A feeder (3x #3 + #8 GND)</button>
+                    <div class="fill-layout">
+                        <div class="fill-inputs">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="conduitType">Conduit Type</label>
+                                    <select id="conduitType" onchange="updateConduitSizes()">
+                                        <option value="EMT">EMT</option>
+                                        <option value="IMC">IMC</option>
+                                        <option value="RMC">RMC</option>
+                                        <option value="PVC40">PVC Schedule 40</option>
+                                        <option value="PVC80">PVC Schedule 80</option>
+                                        <option value="FMC">FMC (Flex)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="conduitSize">Conduit Size</label>
+                                    <select id="conduitSize"></select>
+                                </div>
+                            </div>
+
+                            <div class="checkbox-group" style="margin-bottom:12px;">
+                                <label><input type="checkbox" id="nippleCheck"> Nipple (&le;24")</label>
+                                <p class="field-note" id="nippleNote" style="display:none;">NEC 376.22 / Ch.9 Note 4: Conduit nipples &le;24" may be filled to 60%.</p>
+                            </div>
+
+                            <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Conductors</label>
+                            <div id="wireEntries">
+                                <div class="wire-entry">
+                                    <select class="wireType" onchange="updateWireSizesInRow(this)">
+                                        <option value="THHN">THHN / THWN-2</option>
+                                        <option value="THW">THW / THWN</option>
+                                        <option value="XHHW">XHHW / XHHW-2</option>
+                                        <option value="USE">USE-2 / RHH</option>
+                                    </select>
+                                    <select class="wireGauge">
+                                        <option value="14">14 AWG</option>
+                                        <option value="12" selected>12 AWG</option>
+                                        <option value="10">10 AWG</option>
+                                        <option value="8">8 AWG</option>
+                                        <option value="6">6 AWG</option>
+                                        <option value="4">4 AWG</option>
+                                        <option value="3">3 AWG</option>
+                                        <option value="2">2 AWG</option>
+                                        <option value="1">1 AWG</option>
+                                        <option value="1/0">1/0 AWG</option>
+                                        <option value="2/0">2/0 AWG</option>
+                                        <option value="3/0">3/0 AWG</option>
+                                        <option value="4/0">4/0 AWG</option>
+                                        <option value="250">250 kcmil</option>
+                                        <option value="300">300 kcmil</option>
+                                        <option value="350">350 kcmil</option>
+                                        <option value="400">400 kcmil</option>
+                                        <option value="500">500 kcmil</option>
+                                        <option value="600">600 kcmil</option>
+                                        <option value="750">750 kcmil</option>
+                                    </select>
+                                    <input type="number" class="wireCount" value="3" min="1" placeholder="Qty">
+                                    <button class="btn-remove" onclick="removeWireEntry(this)" title="Remove">&times;</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline" onclick="addWireEntry()" style="margin-top:8px;margin-bottom:16px;">+ Add Wire</button>
+                        </div>
+
+                        <div class="fill-visual">
+                            <svg id="fill-svg" viewBox="0 0 280 280" aria-label="Conduit cross-section visualization">
+                                <circle cx="140" cy="140" r="130" fill="#f8f8f6" stroke="#bbb" stroke-width="3" id="conduitRing"/>
+                                <text x="140" y="150" text-anchor="middle" font-size="14" fill="#999" id="fillPrompt">Add wires and press Apply</text>
+                                <text x="140" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="var(--text)" id="fillPctSvg" style="display:none"></text>
+                            </svg>
+                            <div class="fill-legend" id="fillLegend"></div>
+                        </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="conduitType">Conduit Type</label>
-                            <select id="conduitType" onchange="updateConduitSizes()">
-                                <option value="EMT">EMT</option>
-                                <option value="IMC">IMC</option>
-                                <option value="RMC">RMC</option>
-                                <option value="PVC40">PVC Schedule 40</option>
-                                <option value="PVC80">PVC Schedule 80</option>
-                                <option value="FMC">FMC (Flex)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="conduitSize">Conduit Size</label>
-                            <select id="conduitSize"></select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="conduitLength">Conduit Length (optional)</label>
-                            <select id="conduitLength">
-                                <option value="normal" selected>Standard (over 24")</option>
-                                <option value="nipple">Nipple (24" or less)</option>
-                            </select>
-                            <p class="field-note" id="nippleNote">Standard fill limits apply.</p>
-                        </div>
-                    </div>
-
-                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Conductors</label>
-                    <div id="wireEntries">
-                        <div class="wire-entry">
-                            <select class="wireType" onchange="updateWireSizesInRow(this)">
-                                <option value="THHN">THHN / THWN-2</option>
-                                <option value="THW">THW / THWN</option>
-                                <option value="XHHW">XHHW / XHHW-2</option>
-                                <option value="USE">USE-2 / RHH</option>
-                            </select>
-                            <select class="wireGauge">
-                                <option value="14">14 AWG</option>
-                                <option value="12" selected>12 AWG</option>
-                                <option value="10">10 AWG</option>
-                                <option value="8">8 AWG</option>
-                                <option value="6">6 AWG</option>
-                                <option value="4">4 AWG</option>
-                                <option value="3">3 AWG</option>
-                                <option value="2">2 AWG</option>
-                                <option value="1">1 AWG</option>
-                                <option value="1/0">1/0 AWG</option>
-                                <option value="2/0">2/0 AWG</option>
-                                <option value="3/0">3/0 AWG</option>
-                                <option value="4/0">4/0 AWG</option>
-                                <option value="250">250 kcmil</option>
-                                <option value="300">300 kcmil</option>
-                                <option value="350">350 kcmil</option>
-                                <option value="400">400 kcmil</option>
-                                <option value="500">500 kcmil</option>
-                                <option value="600">600 kcmil</option>
-                                <option value="750">750 kcmil</option>
-                            </select>
-                            <input type="number" class="wireCount" value="3" min="1" placeholder="Qty">
-                            <button class="btn-remove" onclick="removeWireEntry(this)" title="Remove">&times;</button>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-outline" onclick="addWireEntry()" style="margin-top:8px;margin-bottom:16px;">+ Add Wire</button>
-
-                    <br>
                     <div class="apply-section">
                         <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician against the current National Electrical Code and local amendments.</p>
                         <button class="btn" onclick="applyCalc()">Apply</button>
@@ -205,14 +202,17 @@
         }
     };
 
-    // Nipple note
-    document.getElementById('conduitLength').addEventListener('change', function() {
-        var note = document.getElementById('nippleNote');
-        if (this.value === 'nipple') {
-            note.textContent = 'NEC 376.22 / Ch.9 Note 4: Conduit nipples \u226424" may be filled to 60%.';
-        } else {
-            note.textContent = 'Standard fill limits apply.';
-        }
+    // Wire type colors for cross-section
+    var wireColors = {
+        THHN: '#D4910D',
+        THW: '#4A90D9',
+        XHHW: '#16a34a',
+        USE: '#9333ea'
+    };
+
+    // Nipple checkbox
+    document.getElementById('nippleCheck').addEventListener('change', function() {
+        document.getElementById('nippleNote').style.display = this.checked ? 'block' : 'none';
     });
 
     function updateConduitSizes() {
@@ -238,51 +238,196 @@
         }
     }
 
-    function loadPreset(type) {
-        var container = document.getElementById('wireEntries');
-        // Clear existing
-        container.innerHTML = '';
+    // ══════════════════════════════════════
+    //  CROSS-SECTION VISUALIZATION
+    // ══════════════════════════════════════
 
-        var configs = {
-            '20a': [
-                { type: 'THHN', gauge: '12', count: 3 },
-                { type: 'THHN', gauge: '12', count: 1 }
-            ],
-            '30a': [
-                { type: 'THHN', gauge: '10', count: 3 },
-                { type: 'THHN', gauge: '10', count: 1 }
-            ],
-            '50a': [
-                { type: 'THHN', gauge: '6', count: 3 },
-                { type: 'THHN', gauge: '10', count: 1 }
-            ],
-            '100a': [
-                { type: 'THHN', gauge: '3', count: 3 },
-                { type: 'THHN', gauge: '8', count: 1 }
-            ]
-        };
+    function packCircles(conduitR, wires) {
+        // wires: array of {r, type, label} sorted large-first
+        var placed = [];
+        var step = Math.max(0.5, conduitR / 80);
 
-        var rows = configs[type];
-        rows.forEach(function(row) {
-            var html = '<div class="wire-entry">';
-            html += '<select class="wireType"><option value="THHN" ' + (row.type === 'THHN' ? 'selected' : '') + '>THHN / THWN-2</option><option value="THW">THW / THWN</option><option value="XHHW">XHHW / XHHW-2</option><option value="USE">USE-2 / RHH</option></select>';
-            html += '<select class="wireGauge">';
-            var gauges = ['14','12','10','8','6','4','3','2','1','1/0','2/0','3/0','4/0','250','300','350','400','500','600','750'];
-            gauges.forEach(function(g) {
-                var label = parseInt(g) >= 250 ? g + ' kcmil' : g + ' AWG';
-                html += '<option value="' + g + '"' + (g === row.gauge ? ' selected' : '') + '>' + label + '</option>';
-            });
-            html += '</select>';
-            html += '<input type="number" class="wireCount" value="' + row.count + '" min="1" placeholder="Qty">';
-            html += '<button class="btn-remove" onclick="removeWireEntry(this)" title="Remove">&times;</button>';
-            html += '</div>';
-            container.innerHTML += html;
+        for (var i = 0; i < wires.length; i++) {
+            var wire = wires[i];
+            var bestPos = null;
+
+            // Scan from bottom up (gravity packing)
+            for (var y = conduitR - wire.r; y >= -(conduitR - wire.r); y -= step) {
+                var maxX = Math.sqrt(Math.max(0, (conduitR - wire.r) * (conduitR - wire.r) - y * y));
+                for (var x = -maxX; x <= maxX; x += step) {
+                    // Check fits inside conduit
+                    var dist = Math.sqrt(x * x + y * y);
+                    if (dist + wire.r > conduitR + 0.01) continue;
+
+                    // Check no overlap with placed wires
+                    var overlap = false;
+                    for (var j = 0; j < placed.length; j++) {
+                        var dx = x - placed[j].x;
+                        var dy = y - placed[j].y;
+                        var minDist = wire.r + placed[j].r;
+                        if (dx * dx + dy * dy < (minDist - 0.01) * (minDist - 0.01)) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+                    if (!overlap) {
+                        bestPos = { x: x, y: y };
+                        break;
+                    }
+                }
+                if (bestPos) break;
+            }
+
+            if (bestPos) {
+                placed.push({ x: bestPos.x, y: bestPos.y, r: wire.r, type: wire.type, label: wire.label });
+            } else {
+                // Couldn't place — mark as overflow at center
+                placed.push({ x: 0, y: 0, r: wire.r, type: wire.type, label: wire.label, overflow: true });
+            }
+        }
+        return placed;
+    }
+
+    function renderCrossSection(cArea, breakdown, fillPct, pass, fillLimit) {
+        var svg = document.getElementById('fill-svg');
+        var svgNS = 'http://www.w3.org/2000/svg';
+        var cx = 140, cy = 140, outerR = 130;
+
+        // Clear previous wire circles, limit ring, tooltip
+        var old = svg.querySelectorAll('.wire-circle, .limit-ring, .svg-tooltip');
+        for (var i = 0; i < old.length; i++) old[i].remove();
+
+        // Hide prompt, show pct
+        document.getElementById('fillPrompt').style.display = 'none';
+        var pctEl = document.getElementById('fillPctSvg');
+        pctEl.style.display = '';
+        pctEl.textContent = fillPct.toFixed(1) + '%';
+
+        // Conduit ring color
+        var ring = document.getElementById('conduitRing');
+        ring.setAttribute('stroke', pass ? '#16a34a' : '#dc2626');
+        ring.setAttribute('stroke-width', '4');
+
+        // Scale: conduit area -> radius in SVG units
+        var conduitR = outerR - 4; // leave room for stroke
+        var areaScale = conduitR * conduitR * Math.PI / cArea; // SVG px² per in²
+
+        // Fill limit dashed ring
+        var limitArea = cArea * fillLimit / 100;
+        var limitR = Math.sqrt(limitArea * areaScale / Math.PI);
+        var limitCircle = document.createElementNS(svgNS, 'circle');
+        limitCircle.setAttribute('cx', cx);
+        limitCircle.setAttribute('cy', cy);
+        limitCircle.setAttribute('r', limitR);
+        limitCircle.setAttribute('fill', 'none');
+        limitCircle.setAttribute('stroke', '#D4910D');
+        limitCircle.setAttribute('stroke-width', '1');
+        limitCircle.setAttribute('stroke-dasharray', '4 3');
+        limitCircle.setAttribute('opacity', '0.5');
+        limitCircle.classList.add('limit-ring');
+        svg.insertBefore(limitCircle, pctEl);
+
+        // Expand breakdown into individual wire circles
+        var wires = [];
+        var typesUsed = {};
+        var totalCount = 0;
+        breakdown.forEach(function(row) {
+            var wR = Math.sqrt(row.area * areaScale / Math.PI);
+            typesUsed[row.type] = true;
+            for (var i = 0; i < row.count; i++) {
+                totalCount++;
+                if (totalCount <= 50) {
+                    wires.push({ r: wR, type: row.type, label: row.gauge + (parseInt(row.gauge) >= 250 ? ' kcmil' : ' AWG') + ' ' + row.type });
+                }
+            }
         });
 
-        // Highlight active preset
-        document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
-        event.target.classList.add('active');
+        // Sort largest first for better packing
+        wires.sort(function(a, b) { return b.r - a.r; });
+
+        if (totalCount > 50) {
+            // Simplified area representation for large counts
+            renderSimplifiedFill(svg, svgNS, cx, cy, conduitR, breakdown, areaScale, fillPct, typesUsed);
+        } else {
+            var placed = packCircles(conduitR, wires);
+
+            // Create tooltip element
+            var tooltip = document.createElementNS(svgNS, 'text');
+            tooltip.classList.add('svg-tooltip');
+            tooltip.setAttribute('x', cx);
+            tooltip.setAttribute('y', 270);
+            tooltip.setAttribute('text-anchor', 'middle');
+            tooltip.setAttribute('font-size', '11');
+            tooltip.setAttribute('fill', 'var(--text-light)');
+            tooltip.style.display = 'none';
+            svg.appendChild(tooltip);
+
+            placed.forEach(function(p) {
+                var circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('cx', cx + p.x);
+                circle.setAttribute('cy', cy + p.y);
+                circle.setAttribute('r', p.r);
+                circle.setAttribute('fill', p.overflow ? '#dc2626' : wireColors[p.type]);
+                circle.setAttribute('opacity', p.overflow ? '0.4' : '0.85');
+                circle.setAttribute('stroke', p.overflow ? '#dc2626' : 'rgba(0,0,0,0.15)');
+                circle.setAttribute('stroke-width', '0.5');
+                circle.classList.add('wire-circle');
+                circle.style.cursor = 'default';
+
+                // Tooltip on hover
+                circle.addEventListener('mouseenter', function() {
+                    tooltip.textContent = p.label;
+                    tooltip.style.display = '';
+                });
+                circle.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                });
+
+                svg.insertBefore(circle, pctEl);
+            });
+        }
+
+        // Update legend
+        var legendEl = document.getElementById('fillLegend');
+        var legendHtml = '';
+        for (var t in typesUsed) {
+            legendHtml += '<span style="color:' + wireColors[t] + '">&#9679; ' + t + '</span>';
+        }
+        legendEl.innerHTML = legendHtml;
     }
+
+    function renderSimplifiedFill(svg, svgNS, cx, cy, conduitR, breakdown, areaScale, fillPct, typesUsed) {
+        // For 50+ wires: show proportional filled wedges/circles per type
+        var pctEl = document.getElementById('fillPctSvg');
+        var totalArea = 0;
+        breakdown.forEach(function(row) { totalArea += row.area * row.count; });
+
+        var filledR = Math.sqrt(totalArea * areaScale / Math.PI);
+        if (filledR > conduitR) filledR = conduitR;
+
+        var circle = document.createElementNS(svgNS, 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', filledR);
+        circle.setAttribute('fill', fillPct > 100 ? '#dc2626' : '#D4910D');
+        circle.setAttribute('opacity', '0.3');
+        circle.classList.add('wire-circle');
+        svg.insertBefore(circle, pctEl);
+
+        var note = document.createElementNS(svgNS, 'text');
+        note.setAttribute('x', cx);
+        note.setAttribute('y', cy + 6);
+        note.setAttribute('text-anchor', 'middle');
+        note.setAttribute('font-size', '11');
+        note.setAttribute('fill', 'var(--text-muted)');
+        note.textContent = '50+ wires (area shown)';
+        note.classList.add('wire-circle');
+        svg.insertBefore(note, pctEl);
+    }
+
+    // ══════════════════════════════════════
+    //  CALCULATION
+    // ══════════════════════════════════════
 
     function applyCalc() {
         var entries = document.querySelectorAll('.wire-entry');
@@ -318,7 +463,7 @@
     function calculate() {
         var conduitType = document.getElementById('conduitType').value;
         var conduitSize = document.getElementById('conduitSize').value;
-        var isNipple = document.getElementById('conduitLength').value === 'nipple';
+        var isNipple = document.getElementById('nippleCheck').checked;
         var cArea = conduitArea[conduitType][conduitSize];
 
         var entries = document.querySelectorAll('.wire-entry');
@@ -338,6 +483,8 @@
                 totalWireCount += count;
                 breakdown.push({
                     label: gauge + (parseInt(gauge) >= 250 ? ' kcmil' : ' AWG') + ' ' + type,
+                    type: type,
+                    gauge: gauge,
                     area: area,
                     count: count,
                     total: total
@@ -368,6 +515,9 @@
 
         var statusNote = isNipple ? ' (nipple \u226424": 60% allowed)' : '';
         document.getElementById('passStatus').innerHTML = '<span class="' + (pass ? 'result-pass' : 'result-fail') + '">' + (pass ? 'PASS' : 'FAIL') + '</span> \u2014 Limit is ' + fillLimit + '% for ' + totalWireCount + ' conductor' + (totalWireCount > 1 ? 's' : '') + statusNote;
+
+        // Render cross-section SVG
+        renderCrossSection(cArea, breakdown, fillPct, pass, fillLimit);
 
         // Guidance boxes
         var guidance = '';

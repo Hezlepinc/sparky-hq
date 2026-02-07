@@ -865,6 +865,47 @@ nav a:hover {
     text-decoration: underline;
 }
 
+/* ============================================
+   Conduit Fill - Cross-Section Layout
+   ============================================ */
+
+.fill-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.fill-visual {
+    text-align: center;
+}
+
+.fill-visual svg {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+}
+
+.fill-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+@media (min-width: 768px) {
+    .fill-layout {
+        grid-template-columns: 1fr 280px;
+        align-items: start;
+    }
+
+    .fill-visual {
+        position: sticky;
+        top: 24px;
+    }
+}
+
 @media (max-width: 600px) {
     .preset-row {
         gap: 6px;

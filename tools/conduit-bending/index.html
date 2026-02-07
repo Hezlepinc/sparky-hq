@@ -126,6 +126,7 @@
                             <button class="btn btn-outline" onclick="showAddBendForm('stub90')" style="font-size:0.85rem;">+ 90&deg;</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('offset')" style="font-size:0.85rem;">+ Offset</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('saddle3')" style="font-size:0.85rem;">+ Saddle</button>
+                            <button class="btn btn-outline" onclick="showAddBendForm('saddle4')" style="font-size:0.85rem;">+ 4-Pt Saddle</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('kick')" style="font-size:0.85rem;">+ Kick</button>
                         </div>
 
@@ -673,6 +674,18 @@
             html += '</select></div>';
             html += '</div>';
             html += '<p class="field-note" style="margin-bottom:10px;">Center mark at position. Outer marks = position \u00B1 (height \u00D7 multiplier).</p>';
+        } else if (type === 'saddle4') {
+            title += '4-Point Saddle';
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += rotSelectHtml;
+            html += refSelectHtml;
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">' + (showRef ? 'Center distance (in)' : 'Center Position (in)') + '</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 50" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Obstruction Height (in)</label>';
+            html += '<input type="number" id="bf-height" value="' + (isEdit ? existingBend.height : 4) + '" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '</div>';
+            html += '<p class="field-note" style="margin-bottom:10px;">4 bends at 22.5\u00B0, evenly spaced, centered on position. For wider obstructions.</p>';
         } else if (type === 'kick') {
             title += 'Kick';
             html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
@@ -753,6 +766,10 @@
             var centerAngle = parseFloat(document.getElementById('bf-angle').value);
             if (isNaN(position) || isNaN(height) || height <= 0) return;
             var bend = { id: editingBendId || plannerState.nextId++, type: 'saddle3', position: position, height: height, centerAngle: centerAngle, rotation: rotation };
+        } else if (type === 'saddle4') {
+            var height = parseFloat(document.getElementById('bf-height').value);
+            if (isNaN(position) || isNaN(height) || height <= 0) return;
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'saddle4', position: position, height: height, rotation: rotation };
         } else if (type === 'kick') {
             var angle = parseFloat(document.getElementById('bf-angle').value);
             var direction = document.getElementById('bf-direction').value;
@@ -798,6 +815,7 @@
             if (b.type === 'stub90') r = computeStubMarks(b, plannerState.conduitSize);
             else if (b.type === 'offset') r = computeOffsetMarks(b);
             else if (b.type === 'saddle3') r = computeSaddleMarks(b);
+            else if (b.type === 'saddle4') r = computeSaddle4Marks(b);
             else if (b.type === 'kick') r = computeKickMarks(b);
             if (r) {
                 for (var j = 0; j < r.marks.length; j++) {
@@ -854,6 +872,26 @@
             ],
             shrink: shrink,
             span: [mark1, mark3]
+        };
+    }
+
+    function computeSaddle4Marks(bend) {
+        var mult = MULTIPLIERS['22.5'];  // 2.613
+        var distance = bend.height * mult;
+        var shrink = bend.height * SHRINK_PER_INCH['22.5'] * 2;  // two offset transitions
+        var mark1 = bend.position - 1.5 * distance;
+        var mark2 = bend.position - 0.5 * distance;
+        var mark3 = bend.position + 0.5 * distance;
+        var mark4 = bend.position + 1.5 * distance;
+        return {
+            marks: [
+                { pos: mark1, label: '4-Pt Saddle outer (22.5\u00B0 up)' },
+                { pos: mark2, label: '4-Pt Saddle inner (22.5\u00B0 up)' },
+                { pos: mark3, label: '4-Pt Saddle inner (22.5\u00B0 down)' },
+                { pos: mark4, label: '4-Pt Saddle outer (22.5\u00B0 down)' }
+            ],
+            shrink: shrink,
+            span: [mark1, mark4]
         };
     }
 
@@ -916,6 +954,7 @@
             if (b.type === 'stub90') result = computeStubMarks(b, plannerState.conduitSize);
             else if (b.type === 'offset') result = computeOffsetMarks(b);
             else if (b.type === 'saddle3') result = computeSaddleMarks(b);
+            else if (b.type === 'saddle4') result = computeSaddle4Marks(b);
             else if (b.type === 'kick') result = computeKickMarks(b);
 
             totalShrink += result.shrink;
@@ -959,6 +998,8 @@
                 desc = 'Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0' + rotNote;
             } else if (b.type === 'saddle3') {
                 desc = '3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0' + rotNote;
+            } else if (b.type === 'saddle4') {
+                desc = '4-Pt Saddle \u2014 ' + fmt(b.height) + '" @ 22.5\u00B0' + rotNote;
             } else if (b.type === 'kick') {
                 desc = 'Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + rotNote;
             }
@@ -1032,6 +1073,9 @@
                 var outerAngle = parseFloat(b.centerAngle) / 2;
                 html += '<div style="font-weight:700;font-size:0.92rem;">3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0' + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '", ' + fmt(r.marks[1].pos) + '", ' + fmt(r.marks[2].pos) + '" (outer ' + outerAngle + '\u00B0, shrink: ' + fmt(r.shrink) + '")</div>';
+            } else if (b.type === 'saddle4') {
+                html += '<div style="font-weight:700;font-size:0.92rem;">4-Pt Saddle \u2014 ' + fmt(b.height) + '" @ 22.5\u00B0' + rotInfo + '</div>';
+                html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '", ' + fmt(r.marks[1].pos) + '", ' + fmt(r.marks[2].pos) + '", ' + fmt(r.marks[3].pos) + '" (shrink: ' + fmt(r.shrink) + '")</div>';
             } else if (b.type === 'kick') {
                 html += '<div style="font-weight:700;font-size:0.92rem;">Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Mark at ' + fmt(r.marks[0].pos) + '"</div>';
@@ -1155,6 +1199,13 @@
                 markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up', rotation: rot });
                 markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down', rotation: 0 });
                 markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up', rotation: 0 });
+            } else if (b.type === 'saddle4') {
+                var mult = MULTIPLIERS['22.5'];
+                var dist = b.height * mult;
+                markEvents.push({ pos: b.position - 1.5 * dist, angle: 22.5, direction: 'up', rotation: rot });
+                markEvents.push({ pos: b.position - 0.5 * dist, angle: 22.5, direction: 'up', rotation: 0 });
+                markEvents.push({ pos: b.position + 0.5 * dist, angle: 22.5, direction: 'down', rotation: 0 });
+                markEvents.push({ pos: b.position + 1.5 * dist, angle: 22.5, direction: 'down', rotation: 0 });
             } else if (b.type === 'kick') {
                 markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, rotation: rot });
             }

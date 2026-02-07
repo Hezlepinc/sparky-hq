@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Box Fill Calculator - NEC 314.16 | Sparky HQ</title>
-    <meta name="description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors with common scenario presets.">
+    <meta name="description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="canonical" href="https://sparky-hq.com/tools/box-fill/">
     <meta property="og:title" content="Box Fill Calculator - NEC 314.16 | Sparky HQ">
-    <meta property="og:description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors with common scenario presets.">
+    <meta property="og:description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sparky-hq.com/tools/box-fill/">
     <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Box Fill Calculator - NEC 314.16 | Sparky HQ">
-    <meta name="twitter:description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors with common scenario presets.">
+    <meta name="twitter:description" content="Free box fill calculator for electricians. Calculate required box volume in cubic inches per NEC 314.16(B). Count by cables or conductors.">
     <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
     <link rel="stylesheet" href="/css/style.css?v=12">
     <script src="/js/validate.js" defer></script>
@@ -50,14 +50,6 @@
                 <div id="cableForm" class="calc-form">
                     <div class="info-box">
                         <strong>Cable mode:</strong> Enter cables entering the box (e.g., "two 14/2 NM-B"). Conductors are auto-counted — each cable's hot and neutral count as individual conductors. Equipment grounds are counted per 314.16(B)(5): 1&ndash;4 EGCs = 1 conductor volume; each EGC beyond 4 adds &frac14; conductor volume.
-                    </div>
-
-                    <label style="font-weight:600;font-size:0.9rem;display:block;margin-bottom:8px;">Common Scenarios</label>
-                    <div class="preset-row">
-                        <button class="preset-btn" onclick="loadCablePreset('switch1')">Single Switch</button>
-                        <button class="preset-btn" onclick="loadCablePreset('recep1')">Single Receptacle</button>
-                        <button class="preset-btn" onclick="loadCablePreset('switchrecep')">Switch + Receptacle</button>
-                        <button class="preset-btn" onclick="loadCablePreset('junction3')">Junction (3 cables)</button>
                     </div>
 
                     <h3 style="margin-bottom:12px;margin-top:16px;">Cables Entering Box</h3>
@@ -332,42 +324,6 @@
         if (container.children.length > 1) {
             btn.closest('.wire-entry').remove();
         }
-    }
-
-    function loadCablePreset(type) {
-        var container = document.getElementById('cableEntries');
-        var devicesEl = document.getElementById('cableDevices');
-        var clampsEl = document.getElementById('cableClamps');
-
-        var presets = {
-            'switch1': { cables: [{ type: '14/2', count: 2 }], devices: 1, clamps: 1 },
-            'recep1': { cables: [{ type: '12/2', count: 1 }], devices: 1, clamps: 1 },
-            'switchrecep': { cables: [{ type: '14/2', count: 2 }, { type: '12/2', count: 1 }], devices: 2, clamps: 1 },
-            'junction3': { cables: [{ type: '14/2', count: 3 }], devices: 0, clamps: 1 }
-        };
-
-        var preset = presets[type];
-        container.innerHTML = '';
-
-        preset.cables.forEach(function(c) {
-            var html = '<div class="wire-entry" style="grid-template-columns:1fr 80px 40px;">';
-            html += '<select class="cableType">';
-            Object.keys(cableData).forEach(function(k) {
-                var d = cableData[k];
-                html += '<option value="' + k + '"' + (k === c.type ? ' selected' : '') + '>' + k + ' NM-B (' + d.conductors + ' conductors + ground)</option>';
-            });
-            html += '</select>';
-            html += '<input type="number" class="cableCount" value="' + c.count + '" min="1" placeholder="Qty">';
-            html += '<button class="btn-remove" onclick="removeCableEntry(this)" title="Remove">&times;</button>';
-            html += '</div>';
-            container.innerHTML += html;
-        });
-
-        devicesEl.value = preset.devices;
-        clampsEl.value = preset.clamps;
-
-        document.querySelectorAll('#cableForm .preset-btn').forEach(function(b) { b.classList.remove('active'); });
-        event.target.classList.add('active');
     }
 
     function applyCable() {
