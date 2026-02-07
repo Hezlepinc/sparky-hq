@@ -79,11 +79,12 @@ var ALL_TOOLS = [
     { path: '/tools/generator-sizing/', name: 'Generator Sizing' },
     { path: '/tools/circuit-design/',  name: 'Circuit Design' },
     { path: '/tools/ohms-law/',        name: 'Ohms Law' },
-    { path: '/tools/conduit-bending/', name: 'Conduit Bending' }
+    { path: '/tools/conduit-bending/', name: 'Conduit Bending' },
+    { path: '/tables/conduit-bending/', name: 'Conduit Bending Tables' }
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/'];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/', '/tables/conduit-bending/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {

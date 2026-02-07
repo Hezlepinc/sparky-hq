@@ -11,6 +11,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/css/style.css?v=12">
     <script src="/js/validate.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -36,7 +38,7 @@
                         <button onclick="setMode('3saddle')">3-Pt Saddle</button>
                         <button onclick="setMode('4saddle')">4-Pt Saddle</button>
                         <button onclick="setMode('stub')">90&deg; Stub</button>
-                        <button onclick="setMode('planner')">Plan a Stick <span style="font-size:0.65rem;background:#f59e0b;color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;">BETA</span></button>
+                        <button onclick="setMode('planner')">Plan a Stick</button>
                     </div>
 
                     <!-- Offset & Saddle Inputs -->
@@ -82,22 +84,43 @@
 
                     <!-- Plan a Stick Inputs -->
                     <div id="inputs-planner" style="display:none;">
-                        <div class="form-group">
-                            <label for="stick-length">Stick Length (inches)</label>
-                            <input type="number" id="stick-length" value="120" min="1" step="1">
-                            <p class="field-note">Standard 10ft stick = 120". Adjust if cutting shorter.</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group">
+                                <label for="stick-length">Stick Length (inches)</label>
+                                <input type="number" id="stick-length" value="120" min="1" step="1">
+                                <p class="field-note">Standard 10ft stick = 120"</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="planner-conduit-size">Conduit Size (EMT)</label>
+                                <select id="planner-conduit-size">
+                                    <option value="0.5">1/2"</option>
+                                    <option value="0.75">3/4"</option>
+                                    <option value="1">1"</option>
+                                    <option value="1.25">1-1/4"</option>
+                                    <option value="1.5">1-1/2"</option>
+                                    <option value="2">2"</option>
+                                </select>
+                            </div>
                         </div>
-                        <div id="planner-canvas-wrap" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;position:relative;touch-action:none;overflow:hidden;">
-                            <svg id="planner-svg" viewBox="0 0 500 280" preserveAspectRatio="xMidYMid meet" style="width:100%;display:block;"></svg>
+
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+                            <button class="btn btn-outline" onclick="showAddBendForm('stub90')" style="font-size:0.85rem;">+ 90&deg; Stub</button>
+                            <button class="btn btn-outline" onclick="showAddBendForm('offset')" style="font-size:0.85rem;">+ Offset</button>
+                            <button class="btn btn-outline" onclick="showAddBendForm('saddle3')" style="font-size:0.85rem;">+ Saddle</button>
+                            <button class="btn btn-outline" onclick="showAddBendForm('kick')" style="font-size:0.85rem;">+ Kick</button>
                         </div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-                            <button class="btn btn-outline" onclick="undoPoint()" style="font-size:0.85rem;">Undo</button>
-                            <button class="btn btn-outline" onclick="clearPlanner()" style="font-size:0.85rem;">Clear Canvas</button>
-                            <button class="btn btn-outline" onclick="showBendForm('offset')" style="font-size:0.85rem;">+ Offset</button>
-                            <button class="btn btn-outline" onclick="showBendForm('saddle')" style="font-size:0.85rem;">+ Saddle</button>
+
+                        <div id="planner-bend-form" style="display:none;background:var(--gray);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;"></div>
+
+                        <div id="planner-bend-list"></div>
+
+                        <div id="planner-warnings"></div>
+
+                        <div id="viewer-3d-wrap" style="background:#1c1c1c;border-radius:var(--radius);margin:12px 0;height:280px;position:relative;display:none;">
+                            <canvas id="viewer-3d" style="width:100%;height:100%;display:block;"></canvas>
+                            <button onclick="reset3DCamera()" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.15);color:#ccc;border:none;padding:4px 10px;border-radius:4px;font-size:0.78rem;cursor:pointer;">Reset View</button>
+                            <div id="viewer-3d-fallback" style="display:none;position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#666;font-size:0.85rem;text-align:center;padding:20px;">3D viewer unavailable.<br>Bend marks are shown above.</div>
                         </div>
-                        <div id="bend-form-panel" style="display:none;background:var(--gray);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;"></div>
-                        <p class="field-note">Tap or click to place waypoints. Drag points to adjust. Use + Offset / + Saddle to insert common bends.</p>
                     </div>
 
                     <div class="apply-section">
@@ -120,6 +143,13 @@
                 <div class="info-box" style="margin-top:24px;display:none;" id="info-stub">
                     <strong>Deduct (Take-Up)</strong><br>
                     For a 90&deg; stub, subtract the deduct from your stub-up length to find where to place your mark. The deduct varies by conduit size and bender manufacturer.
+                </div>
+
+                <div class="info-box" style="margin-top:24px;display:none;" id="info-planner">
+                    <strong>How It Works</strong><br>
+                    Add bends in order from the cut end of the stick. Position = distance from the cut end where the first mark goes. The tool calculates all marks, checks bender shoe clearance, and shows total shrink.
+                    <br><br>
+                    <a href="/tables/conduit-bending/" style="color:var(--accent);font-weight:600;text-decoration:none;">View Bending Reference Tables &rarr;</a>
                 </div>
 
                 <div class="caution-box">
@@ -196,6 +226,12 @@
         '2': '2"'
     };
 
+    // Bender shoe length by conduit size (inches) — for feasibility checking
+    var BENDER_SHOE = { '0.5':6, '0.75':6, '1':8, '1.25':11, '1.5':11, '2':14 };
+
+    // Centerline bend radius by conduit size (inches) — EMT standard
+    var BEND_RADIUS = { '0.5':4, '0.75':4.5, '1':5.75, '1.25':7.25, '1.5':8.25, '2':9.5 };
+
     var currentMode = 'offset';
 
     function setMode(mode) {
@@ -215,18 +251,21 @@
         var plannerInputs = document.getElementById('inputs-planner');
         var infoOffset = document.getElementById('info-offset');
         var infoStub = document.getElementById('info-stub');
+        var infoPlanner = document.getElementById('info-planner');
 
         bendInputs.style.display = 'none';
         stubInputs.style.display = 'none';
         plannerInputs.style.display = 'none';
         infoOffset.style.display = 'none';
         infoStub.style.display = 'none';
+        infoPlanner.style.display = 'none';
 
         if (mode === 'stub') {
             stubInputs.style.display = '';
             infoStub.style.display = '';
         } else if (mode === 'planner') {
             plannerInputs.style.display = '';
+            infoPlanner.style.display = '';
             initPlanner();
         } else {
             bendInputs.style.display = '';
@@ -268,14 +307,12 @@
     }
 
     function toFraction(decimal) {
-        // Convert decimal inches to nearest 1/16 fraction for display
         var sixteenths = Math.round(decimal * 16);
         var whole = Math.floor(sixteenths / 16);
         var remainder = sixteenths % 16;
 
         if (remainder === 0) return whole + '"';
 
-        // Simplify fraction
         var num = remainder;
         var den = 16;
         while (num % 2 === 0) { num /= 2; den /= 2; }
@@ -300,8 +337,8 @@
         var rules = [];
 
         if (currentMode === 'planner') {
-            if (plannerPoints.length < 2) {
-                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Place at least 2 points to define a path.' });
+            if (plannerState.bends.length === 0) {
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Add at least one bend to calculate marks.' });
             }
             var result = SparkyValidate.check(rules);
             SparkyValidate.showMessages('validation-messages', result);
@@ -402,15 +439,14 @@
     function calc4Saddle() {
         var height = parseFloat(document.getElementById('obstruction').value);
 
-        // 4-point saddle uses 22.5° bends with specific spacing
         var angle = 22.5;
         var mult = MULTIPLIERS['22.5'];
         var shrinkRate = SHRINK_PER_INCH['22.5'];
 
         var distance = height * mult;
-        var shrink = height * shrinkRate * 2; // Two offsets worth of shrink
-        var centerSpacing = distance; // Distance between center pair
-        var outerSpacing = distance; // Distance from center to outer bends
+        var shrink = height * shrinkRate * 2;
+        var centerSpacing = distance;
+        var outerSpacing = distance;
 
         var html = '';
         html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">4-Point Saddle Results</div>';
@@ -454,7 +490,6 @@
         html += '<strong>How to bend:</strong> Measure ' + fmt(mark) + '" from the end of the conduit and make your mark. Line up the mark with the arrow on the bender shoe. Step on the bender and pull a 90\u00B0 bend.';
         html += '</div>';
 
-        // Deduct reference table
         html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
         html += '<details><summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;cursor:pointer;">Deduct Reference (All Sizes)</summary>';
         html += '<div style="margin-top:12px;">';
@@ -480,622 +515,686 @@
     }
 
     // ══════════════════════════════════════
-    //  PLAN A STICK — Interactive Planner
+    //  PLAN A STICK — Form-Based Planner
     // ══════════════════════════════════════
 
-    var plannerPoints = [];      // [{x, y}] in real-inch coordinates
-    var CANVAS_W = 500;
-    var CANVAS_H = 280;
-    var PLANNER_PAD = 40;        // SVG padding for labels
+    var plannerState = {
+        stickLength: 120,
+        conduitSize: '0.5',
+        bends: [],
+        nextId: 1
+    };
+
     var plannerInited = false;
-    var draggingIdx = -1;        // index of point being dragged, -1 = none
-    var plannerScale = 1;        // pixels per inch
-    var plannerOffsetX = 0;
-    var plannerOffsetY = 0;
-    var plannerResultOverlay = []; // bend results to overlay after calc
-    var plannerPatterns = [];      // tracked offset/saddle patterns
-
-    var STANDARD_ANGLES = [10, 22.5, 30, 45, 60, 90];
-
-    function isPatternPoint(idx) {
-        for (var p = 0; p < plannerPatterns.length; p++) {
-            if (plannerPatterns[p].pointIndices.indexOf(idx) !== -1) return true;
-        }
-        return false;
-    }
-
-    function getPatternForPoint(idx) {
-        for (var p = 0; p < plannerPatterns.length; p++) {
-            if (plannerPatterns[p].pointIndices.indexOf(idx) !== -1) return plannerPatterns[p];
-        }
-        return null;
-    }
-
-    function ensureLeadIn() {
-        if (plannerPoints.length < 2) {
-            var last = plannerPoints[plannerPoints.length - 1];
-            plannerPoints.push({ x: last.x + 12, y: last.y });
-        } else {
-            var a = plannerPoints[plannerPoints.length - 2];
-            var b = plannerPoints[plannerPoints.length - 1];
-            if (Math.abs(a.y - b.y) > 0.1) {
-                plannerPoints.push({ x: b.x + 6, y: b.y });
-            }
-        }
-    }
+    var editingBendId = null; // null = adding new, number = editing existing
 
     function initPlanner() {
         if (plannerInited) return;
         plannerInited = true;
-        plannerPoints = [{ x: 0, y: 0 }];
-        plannerResultOverlay = [];
-
-        var svg = document.getElementById('planner-svg');
-        svg.addEventListener('pointerdown', onPlannerDown);
-        svg.addEventListener('pointermove', onPlannerMove);
-        svg.addEventListener('pointerup', onPlannerUp);
-        svg.addEventListener('pointerleave', onPlannerUp);
-
-        renderPlanner();
+        // Listen for stick length and conduit size changes
+        document.getElementById('stick-length').addEventListener('change', function() {
+            plannerState.stickLength = parseFloat(this.value) || 120;
+            if (plannerState.bends.length > 0) recalcAllBends();
+        });
+        document.getElementById('planner-conduit-size').addEventListener('change', function() {
+            plannerState.conduitSize = this.value;
+            if (plannerState.bends.length > 0) recalcAllBends();
+        });
     }
 
     function clearPlanner() {
-        plannerPoints = [{ x: 0, y: 0 }];
-        plannerResultOverlay = [];
-        plannerPatterns = [];
-        draggingIdx = -1;
-        hideBendForm();
-        renderPlanner();
+        plannerState.bends = [];
+        plannerState.nextId = 1;
+        editingBendId = null;
+        hideAddBendForm();
+        renderBendList();
+        document.getElementById('planner-warnings').innerHTML = '';
+        var viewerWrap = document.getElementById('viewer-3d-wrap');
+        if (viewerWrap) viewerWrap.style.display = 'none';
+        dispose3DViewer();
     }
 
-    function undoPoint() {
-        if (plannerPoints.length > 1) {
-            plannerPoints.pop();
-            plannerResultOverlay = [];
-            // Remove patterns that reference points no longer in the array
-            plannerPatterns = plannerPatterns.filter(function(p) {
-                for (var i = 0; i < p.pointIndices.length; i++) {
-                    if (p.pointIndices[i] >= plannerPoints.length) return false;
+    // ── Bend form UI ──
+
+    function showAddBendForm(type, existingBend) {
+        var panel = document.getElementById('planner-bend-form');
+        var isEdit = !!existingBend;
+        editingBendId = isEdit ? existingBend.id : null;
+        var html = '';
+        var title = isEdit ? 'Edit ' : 'Add ';
+
+        if (type === 'stub90') {
+            title += '90\u00B0 Stub';
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Stub Length (in)</label>';
+            html += '<input type="number" id="bf-stub-length" value="' + (isEdit ? existingBend.stubLength : 12) + '" min="1" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Position from cut end (in)</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 30" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '</div>';
+            html += '<p class="field-note" style="margin-bottom:10px;">Position is where the mark goes on the stick. For a stub, the mark = stub length minus deduct.</p>';
+        } else if (type === 'offset') {
+            title += 'Offset';
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Position (in from cut end)</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 40" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Offset Height (in)</label>';
+            html += '<input type="number" id="bf-height" value="' + (isEdit ? existingBend.height : 4) + '" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Angle</label>';
+            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            var angles = ['10','22.5','30','45','60'];
+            for (var a = 0; a < angles.length; a++) {
+                var sel = (isEdit && String(existingBend.angle) === angles[a]) || (!isEdit && angles[a] === '30') ? ' selected' : '';
+                html += '<option value="' + angles[a] + '"' + sel + '>' + angles[a] + '\u00B0</option>';
+            }
+            html += '</select></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Direction</label>';
+            html += '<select id="bf-direction" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            html += '<option value="up"' + (isEdit && existingBend.direction === 'up' ? ' selected' : '') + '>Up</option>';
+            html += '<option value="down"' + (isEdit && existingBend.direction === 'down' ? ' selected' : '') + '>Down</option>';
+            html += '</select></div>';
+            html += '</div>';
+            html += '<p class="field-note" style="margin-bottom:10px;">First mark at position. Second mark = position + (height \u00D7 multiplier).</p>';
+        } else if (type === 'saddle3') {
+            title += '3-Point Saddle';
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Center Position (in)</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 60" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Obstruction Height (in)</label>';
+            html += '<input type="number" id="bf-height" value="' + (isEdit ? existingBend.height : 4) + '" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Center Angle</label>';
+            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            var angles = ['10','22.5','30','45','60'];
+            for (var a = 0; a < angles.length; a++) {
+                var sel = (isEdit && String(existingBend.centerAngle) === angles[a]) || (!isEdit && angles[a] === '30') ? ' selected' : '';
+                html += '<option value="' + angles[a] + '"' + sel + '>' + angles[a] + '\u00B0</option>';
+            }
+            html += '</select></div>';
+            html += '</div>';
+            html += '<p class="field-note" style="margin-bottom:10px;">Center mark at position. Outer marks = position \u00B1 (height \u00D7 multiplier).</p>';
+        } else if (type === 'kick') {
+            title += 'Kick';
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Position (in from cut end)</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 90" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Kick Angle</label>';
+            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            var angles = ['10','22.5','30','45','60'];
+            for (var a = 0; a < angles.length; a++) {
+                var sel = (isEdit && String(existingBend.angle) === angles[a]) || (!isEdit && angles[a] === '30') ? ' selected' : '';
+                html += '<option value="' + angles[a] + '"' + sel + '>' + angles[a] + '\u00B0</option>';
+            }
+            html += '</select></div>';
+            html += '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Direction</label>';
+            html += '<select id="bf-direction" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            html += '<option value="up"' + (isEdit && existingBend.direction === 'up' ? ' selected' : '') + '>Up</option>';
+            html += '<option value="down"' + (isEdit && existingBend.direction === 'down' ? ' selected' : '') + '>Down</option>';
+            html += '</select></div>';
+            html += '</div>';
+            html += '<p class="field-note" style="margin-bottom:10px;">Single bend at the given position and angle. Used to change conduit direction.</p>';
+        }
+
+        html += '<div style="display:flex;gap:8px;">';
+        html += '<button class="btn btn-sm" onclick="submitBendForm(\'' + type + '\')">' + (isEdit ? 'Update' : 'Add to Stick') + '</button>';
+        html += '<button class="btn btn-outline btn-sm" onclick="hideAddBendForm()">Cancel</button>';
+        html += '</div>';
+
+        panel.innerHTML = html;
+        panel.style.display = '';
+        // Focus the first input
+        var firstInput = panel.querySelector('input[type="number"]');
+        if (firstInput) firstInput.focus();
+    }
+
+    function hideAddBendForm() {
+        var panel = document.getElementById('planner-bend-form');
+        if (panel) panel.style.display = 'none';
+        editingBendId = null;
+    }
+
+    function submitBendForm(type) {
+        var posEl = document.getElementById('bf-position');
+        var position = posEl ? parseFloat(posEl.value) : 0;
+
+        if (type === 'stub90') {
+            var stubLength = parseFloat(document.getElementById('bf-stub-length').value);
+            if (isNaN(stubLength) || stubLength <= 0) return;
+            // If position not specified, auto-calculate from stub length
+            if (isNaN(position) || posEl.value === '') {
+                position = stubLength - DEDUCT[plannerState.conduitSize];
+                if (position < 0) position = 0;
+            }
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'stub90', position: position, stubLength: stubLength };
+        } else if (type === 'offset') {
+            var height = parseFloat(document.getElementById('bf-height').value);
+            var angle = parseFloat(document.getElementById('bf-angle').value);
+            var direction = document.getElementById('bf-direction').value;
+            if (isNaN(position) || isNaN(height) || height <= 0) return;
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'offset', position: position, height: height, angle: angle, direction: direction };
+        } else if (type === 'saddle3') {
+            var height = parseFloat(document.getElementById('bf-height').value);
+            var centerAngle = parseFloat(document.getElementById('bf-angle').value);
+            if (isNaN(position) || isNaN(height) || height <= 0) return;
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'saddle3', position: position, height: height, centerAngle: centerAngle };
+        } else if (type === 'kick') {
+            var angle = parseFloat(document.getElementById('bf-angle').value);
+            var direction = document.getElementById('bf-direction').value;
+            if (isNaN(position)) return;
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'kick', position: position, angle: angle, direction: direction };
+        }
+
+        if (editingBendId) {
+            // Replace existing bend
+            for (var i = 0; i < plannerState.bends.length; i++) {
+                if (plannerState.bends[i].id === editingBendId) {
+                    plannerState.bends[i] = bend;
+                    break;
                 }
-                return true;
-            });
-            renderPlanner();
+            }
+        } else {
+            plannerState.bends.push(bend);
         }
+
+        hideAddBendForm();
+        recalcAllBends();
     }
 
-    // ── Coordinate transforms ──
-
-    function autoScale() {
-        var stickLen = parseFloat(document.getElementById('stick-length').value) || 120;
-        var minX = 0, maxX = stickLen, minY = 0, maxY = 0;
-        for (var i = 0; i < plannerPoints.length; i++) {
-            var p = plannerPoints[i];
-            if (p.x < minX) minX = p.x;
-            if (p.x > maxX) maxX = p.x;
-            if (p.y < minY) minY = p.y;
-            if (p.y > maxY) maxY = p.y;
-        }
-        // Ensure minimum vertical range
-        var rangeX = Math.max(maxX - minX, stickLen);
-        var rangeY = Math.max(maxY - minY, 24);
-
-        var availW = CANVAS_W - PLANNER_PAD * 2;
-        var availH = CANVAS_H - PLANNER_PAD * 2;
-        plannerScale = Math.min(availW / rangeX, availH / rangeY);
-
-        // Center the drawing
-        var cx = (minX + maxX) / 2;
-        var cy = (minY + maxY) / 2;
-        plannerOffsetX = CANVAS_W / 2 - cx * plannerScale;
-        // Y is inverted: real y-up → SVG y-down
-        plannerOffsetY = CANVAS_H / 2 + cy * plannerScale;
+    function removeBend(id) {
+        plannerState.bends = plannerState.bends.filter(function(b) { return b.id !== id; });
+        recalcAllBends();
     }
 
-    function realToSvg(rx, ry) {
+    function editBend(id) {
+        var bend = null;
+        for (var i = 0; i < plannerState.bends.length; i++) {
+            if (plannerState.bends[i].id === id) { bend = plannerState.bends[i]; break; }
+        }
+        if (!bend) return;
+        showAddBendForm(bend.type, bend);
+    }
+
+    // ── Mark calculation engine ──
+
+    function computeStubMarks(bend, conduitSize) {
+        var deduct = DEDUCT[conduitSize];
+        var mark = bend.stubLength - deduct;
         return {
-            x: rx * plannerScale + plannerOffsetX,
-            y: -ry * plannerScale + plannerOffsetY
+            marks: [{ pos: mark, label: 'Stub mark (' + fmt(bend.stubLength) + '" stub)' }],
+            shrink: 0,
+            span: [mark, mark]
         };
     }
 
-    function svgToReal(sx, sy) {
+    function computeOffsetMarks(bend) {
+        var mult = MULTIPLIERS[String(bend.angle)];
+        var distance = bend.height * mult;
+        var shrinkRate = SHRINK_PER_INCH[String(bend.angle)];
+        var shrink = bend.height * shrinkRate;
+        var mark1 = bend.position;
+        var mark2 = bend.position + distance;
         return {
-            x: (sx - plannerOffsetX) / plannerScale,
-            y: -(sy - plannerOffsetY) / plannerScale
+            marks: [
+                { pos: mark1, label: 'Offset mark 1 (bend ' + bend.direction + ')' },
+                { pos: mark2, label: 'Offset mark 2 (bend ' + (bend.direction === 'up' ? 'down' : 'up') + ')' }
+            ],
+            shrink: shrink,
+            span: [mark1, mark2]
         };
     }
 
-    function getSvgPoint(e) {
-        var svg = document.getElementById('planner-svg');
-        var rect = svg.getBoundingClientRect();
-        var scaleX = CANVAS_W / rect.width;
-        var scaleY = CANVAS_H / rect.height;
+    function computeSaddleMarks(bend) {
+        var mult = MULTIPLIERS[String(bend.centerAngle)];
+        var distance = bend.height * mult;
+        var shrinkRate = SHRINK_PER_INCH[String(bend.centerAngle)];
+        var shrink = bend.height * shrinkRate;
+        var outerAngle = parseFloat(bend.centerAngle) / 2;
+        var mark1 = bend.position - distance;
+        var mark2 = bend.position;
+        var mark3 = bend.position + distance;
         return {
-            x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY
+            marks: [
+                { pos: mark1, label: 'Saddle outer (' + outerAngle + '\u00B0)' },
+                { pos: mark2, label: 'Saddle center (' + bend.centerAngle + '\u00B0)' },
+                { pos: mark3, label: 'Saddle outer (' + outerAngle + '\u00B0)' }
+            ],
+            shrink: shrink,
+            span: [mark1, mark3]
         };
     }
 
-    // ── Pointer events ──
-
-    function onPlannerDown(e) {
-        e.preventDefault();
-        // Block canvas interaction when bend form is open
-        var formPanel = document.getElementById('bend-form-panel');
-        if (formPanel && formPanel.style.display !== 'none') return;
-
-        var svgPt = getSvgPoint(e);
-        // Check if near an existing point (hit radius 20px in SVG coords)
-        var hitR = 20;
-        for (var i = 0; i < plannerPoints.length; i++) {
-            var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
-            var dx = svgPt.x - sp.x;
-            var dy = svgPt.y - sp.y;
-            if (Math.sqrt(dx * dx + dy * dy) < hitR) {
-                // Don't allow dragging pattern-locked points
-                if (isPatternPoint(i)) return;
-                draggingIdx = i;
-                return;
-            }
-        }
-        // Add new point — clamp to stick length range
-        var real = svgToReal(svgPt.x, svgPt.y);
-        var stickLen = parseFloat(document.getElementById('stick-length').value) || 120;
-        var rx = Math.max(0, Math.round(real.x * 4) / 4);
-        var ry = Math.round(real.y * 4) / 4;
-        // Clamp Y to reasonable range based on stick length
-        ry = Math.max(-stickLen / 2, Math.min(stickLen / 2, ry));
-        plannerPoints.push({ x: rx, y: ry });
-        plannerResultOverlay = [];
-        renderPlanner();
+    function computeKickMarks(bend) {
+        return {
+            marks: [{ pos: bend.position, label: 'Kick ' + bend.angle + '\u00B0 ' + bend.direction }],
+            shrink: 0,
+            span: [bend.position, bend.position]
+        };
     }
 
-    function onPlannerMove(e) {
-        if (draggingIdx < 0) return;
-        e.preventDefault();
-        var svgPt = getSvgPoint(e);
-        var real = svgToReal(svgPt.x, svgPt.y);
-        plannerPoints[draggingIdx].x = Math.round(real.x * 4) / 4;
-        plannerPoints[draggingIdx].y = Math.round(real.y * 4) / 4;
-        plannerResultOverlay = [];
-        renderPlanner();
-    }
+    function validateFeasibility(allMarks, conduitSize, stickLength) {
+        var warnings = [];
+        var shoeLen = BENDER_SHOE[conduitSize];
 
-    function onPlannerUp(e) {
-        draggingIdx = -1;
-    }
+        // Sort all marks by position
+        var sorted = allMarks.slice().sort(function(a, b) { return a.pos - b.pos; });
 
-    // ── Rendering ──
-
-    function renderPlanner() {
-        autoScale();
-        var svg = document.getElementById('planner-svg');
-        var parts = [];
-
-        // Background
-        parts.push('<rect width="' + CANVAS_W + '" height="' + CANVAS_H + '" fill="#fafaf8"/>');
-
-        // Grid — compute visible real-inch range
-        var topLeft = svgToReal(0, 0);
-        var botRight = svgToReal(CANVAS_W, CANVAS_H);
-        var gridMinX = Math.floor(Math.min(topLeft.x, botRight.x));
-        var gridMaxX = Math.ceil(Math.max(topLeft.x, botRight.x));
-        var gridMinY = Math.floor(Math.min(topLeft.y, botRight.y));
-        var gridMaxY = Math.ceil(Math.max(topLeft.y, botRight.y));
-
-        // Determine grid step based on zoom: show 1" lines only if scale > 4px/in
-        var step = 1;
-        if (plannerScale < 2) step = 12;
-        else if (plannerScale < 4) step = 6;
-        var majorStep = step < 6 ? 6 : 12;
-
-        for (var gx = Math.floor(gridMinX / step) * step; gx <= gridMaxX; gx += step) {
-            var sx = realToSvg(gx, 0).x;
-            var isMajor = (gx % majorStep === 0);
-            parts.push('<line x1="' + sx + '" y1="0" x2="' + sx + '" y2="' + CANVAS_H + '" stroke="' + (isMajor ? '#ddd' : '#eee') + '" stroke-width="' + (isMajor ? 1 : 0.5) + '"/>');
-        }
-        for (var gy = Math.floor(gridMinY / step) * step; gy <= gridMaxY; gy += step) {
-            var sy = realToSvg(0, gy).y;
-            var isMajorY = (gy % majorStep === 0);
-            parts.push('<line x1="0" y1="' + sy + '" x2="' + CANVAS_W + '" y2="' + sy + '" stroke="' + (isMajorY ? '#ddd' : '#eee') + '" stroke-width="' + (isMajorY ? 1 : 0.5) + '"/>');
-        }
-
-        // Draw conduit path
-        if (plannerPoints.length > 1) {
-            var pathD = '';
-            for (var i = 0; i < plannerPoints.length; i++) {
-                var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
-                pathD += (i === 0 ? 'M' : 'L') + sp.x.toFixed(1) + ',' + sp.y.toFixed(1);
-            }
-            parts.push('<path d="' + pathD + '" fill="none" stroke="#D4910D" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>');
-
-            // Segment length labels
-            for (var i = 0; i < plannerPoints.length - 1; i++) {
-                var a = plannerPoints[i], b = plannerPoints[i + 1];
-                var dx = b.x - a.x, dy = b.y - a.y;
-                var segLen = Math.sqrt(dx * dx + dy * dy);
-                if (segLen < 1) continue;
-                var midSvg = realToSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
-                // Offset label perpendicular to segment
-                var nx = -dy / segLen * 12, ny = dx / segLen * 12;
-                parts.push('<text x="' + (midSvg.x + nx).toFixed(1) + '" y="' + (midSvg.y - ny).toFixed(1) + '" text-anchor="middle" dominant-baseline="middle" fill="#5a5a5a" font-size="10" font-weight="600">' + fmt(segLen) + '"</text>');
+        // Check gaps between adjacent marks
+        for (var i = 0; i < sorted.length - 1; i++) {
+            var gap = sorted[i + 1].pos - sorted[i].pos;
+            if (gap > 0 && gap < shoeLen) {
+                warnings.push('Marks at ' + fmt(sorted[i].pos) + '" and ' + fmt(sorted[i + 1].pos) + '" are only ' + fmt(gap) + '" apart. Your bender shoe needs at least ' + shoeLen + '" clearance for ' + CONDUIT_LABELS[conduitSize] + ' EMT.');
             }
         }
 
-        // Waypoints
-        for (var i = 0; i < plannerPoints.length; i++) {
-            var sp = realToSvg(plannerPoints[i].x, plannerPoints[i].y);
-            var isStart = (i === 0);
-            parts.push('<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) + '" r="' + (isStart ? 7 : 6) + '" fill="' + (isStart ? '#D4910D' : '#fff') + '" stroke="#D4910D" stroke-width="2.5"/>');
-            if (isStart) {
-                parts.push('<text x="' + (sp.x + 12).toFixed(1) + '" y="' + (sp.y - 10).toFixed(1) + '" fill="#D4910D" font-size="10" font-weight="700">START</text>');
+        // Check marks within stick bounds
+        for (var i = 0; i < sorted.length; i++) {
+            if (sorted[i].pos < 0) {
+                warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is before the cut end of the stick. Adjust the bend position.');
+            }
+            if (sorted[i].pos > stickLength) {
+                warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is past the end of your ' + stickLength + '" stick.');
             }
         }
 
-        // Overlay bend results if calculated
-        if (plannerResultOverlay.length > 0) {
-            for (var i = 0; i < plannerResultOverlay.length; i++) {
-                var ov = plannerResultOverlay[i];
-                var sp = realToSvg(ov.px, ov.py);
-                // Angle label
-                parts.push('<text x="' + sp.x.toFixed(1) + '" y="' + (sp.y - 16).toFixed(1) + '" text-anchor="middle" fill="#b87c0a" font-size="11" font-weight="700">' + ov.snappedAngle + '\u00B0 ' + ov.direction + '</text>');
-                // Mark position label
-                parts.push('<text x="' + sp.x.toFixed(1) + '" y="' + (sp.y + 22).toFixed(1) + '" text-anchor="middle" fill="#2c2c2c" font-size="9" font-weight="600">Mark: ' + fmt(ov.markFromEnd) + '"</text>');
+        return warnings;
+    }
+
+    function recalcAllBends() {
+        plannerState.conduitSize = document.getElementById('planner-conduit-size').value;
+        plannerState.stickLength = parseFloat(document.getElementById('stick-length').value) || 120;
+
+        // Sort bends by position
+        plannerState.bends.sort(function(a, b) { return a.position - b.position; });
+
+        // Compute marks for each bend
+        var allMarks = [];
+        var totalShrink = 0;
+        var bendResults = [];
+
+        for (var i = 0; i < plannerState.bends.length; i++) {
+            var b = plannerState.bends[i];
+            var result;
+            if (b.type === 'stub90') result = computeStubMarks(b, plannerState.conduitSize);
+            else if (b.type === 'offset') result = computeOffsetMarks(b);
+            else if (b.type === 'saddle3') result = computeSaddleMarks(b);
+            else if (b.type === 'kick') result = computeKickMarks(b);
+
+            totalShrink += result.shrink;
+            bendResults.push({ bend: b, result: result });
+            for (var m = 0; m < result.marks.length; m++) {
+                allMarks.push({ pos: result.marks[m].pos, label: result.marks[m].label, bendId: b.id });
             }
         }
 
-        svg.innerHTML = parts.join('');
+        // Validate feasibility
+        var warnings = validateFeasibility(allMarks, plannerState.conduitSize, plannerState.stickLength);
+
+        // Store computed data for rendering
+        plannerState._lastResults = bendResults;
+        plannerState._allMarks = allMarks;
+        plannerState._totalShrink = totalShrink;
+        plannerState._warnings = warnings;
+
+        renderBendList();
+        renderPlannerWarnings(warnings);
+        update3DView();
     }
 
-    // ── Path analysis ──
-
-    function snapAngle(angle) {
-        var best = STANDARD_ANGLES[0];
-        var bestDiff = Math.abs(angle - best);
-        for (var i = 1; i < STANDARD_ANGLES.length; i++) {
-            var diff = Math.abs(angle - STANDARD_ANGLES[i]);
-            if (diff < bestDiff) { best = STANDARD_ANGLES[i]; bestDiff = diff; }
+    function renderBendList() {
+        var listEl = document.getElementById('planner-bend-list');
+        if (plannerState.bends.length === 0) {
+            listEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">No bends added yet. Use the buttons above to build your stick.</p>';
+            return;
         }
-        return { snapped: best, original: angle, diff: bestDiff };
-    }
 
-    function segmentLength(a, b) {
-        var dx = b.x - a.x, dy = b.y - a.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
+        var html = '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">Bends on this stick:</div>';
+        var sorted = plannerState.bends.slice().sort(function(a, b) { return a.position - b.position; });
 
-    function angleBetweenVectors(v1x, v1y, v2x, v2y) {
-        var dot = v1x * v2x + v1y * v2y;
-        var mag1 = Math.sqrt(v1x * v1x + v1y * v1y);
-        var mag2 = Math.sqrt(v2x * v2x + v2y * v2y);
-        if (mag1 === 0 || mag2 === 0) return 0;
-        var cosA = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
-        return Math.acos(cosA) * 180 / Math.PI;
-    }
+        for (var i = 0; i < sorted.length; i++) {
+            var b = sorted[i];
+            var desc = '';
+            if (b.type === 'stub90') {
+                desc = '90\u00B0 Stub \u2014 ' + fmt(b.stubLength) + '" stub';
+            } else if (b.type === 'offset') {
+                desc = 'Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0';
+            } else if (b.type === 'saddle3') {
+                desc = '3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0';
+            } else if (b.type === 'kick') {
+                desc = 'Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction;
+            }
 
-    function getShrinkForAngle(angle) {
-        // Return shrink per inch of offset for standard angles
-        var shrinkMap = { 10: 0.0625, 22.5: 0.1875, 30: 0.25, 45: 0.375, 60: 0.5, 90: 0 };
-        return shrinkMap[angle] || 0;
-    }
-
-    function analyzePath(points) {
-        var bends = [];
-        var cumulativeLen = 0; // running length along the conduit from start
-
-        for (var i = 1; i < points.length - 1; i++) {
-            var prev = points[i - 1], curr = points[i], next = points[i + 1];
-
-            // Vectors
-            var inX = curr.x - prev.x, inY = curr.y - prev.y;
-            var outX = next.x - curr.x, outY = next.y - curr.y;
-
-            // Angle between incoming and outgoing (interior angle)
-            var interiorAngle = angleBetweenVectors(inX, inY, outX, outY);
-            // Bend angle = deviation from straight line
-            var bendAngle = 180 - interiorAngle;
-
-            if (bendAngle < 2) continue; // essentially straight, no bend
-
-            var snap = snapAngle(bendAngle);
-
-            // Cumulative conduit length to this point
-            cumulativeLen += segmentLength(prev, curr);
-
-            // Determine bend direction using cross product (2D)
-            var cross = inX * outY - inY * outX;
-            var direction = cross >= 0 ? 'Up' : 'Down';
-
-            bends.push({
-                pointIdx: i,
-                px: curr.x,
-                py: curr.y,
-                markFromEnd: cumulativeLen,
-                originalAngle: Math.round(bendAngle * 10) / 10,
-                snappedAngle: snap.snapped,
-                angleDiff: Math.round(snap.diff * 10) / 10,
-                direction: direction,
-                shrink: getShrinkForAngle(snap.snapped)
-            });
+            html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin:4px 0;background:var(--white);border:1px solid var(--border);border-radius:6px;">';
+            html += '<span style="font-weight:700;color:var(--accent);min-width:20px;">' + (i + 1) + '.</span>';
+            html += '<span style="flex:1;font-size:0.88rem;">' + desc + ' <span style="color:var(--text-muted);">@ ' + fmt(b.position) + '"</span></span>';
+            html += '<button onclick="editBend(' + b.id + ')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.82rem;font-weight:600;padding:4px 6px;">Edit</button>';
+            html += '<button onclick="removeBend(' + b.id + ')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:1.1rem;padding:4px 6px;line-height:1;">&times;</button>';
+            html += '</div>';
         }
-        return bends;
+
+        listEl.innerHTML = html;
+    }
+
+    function renderPlannerWarnings(warnings) {
+        var el = document.getElementById('planner-warnings');
+        if (!warnings || warnings.length === 0) {
+            el.innerHTML = '';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < warnings.length; i++) {
+            html += '<div class="caution-box" style="margin:6px 0;"><strong>Warning</strong><br>' + warnings[i] + '</div>';
+        }
+        el.innerHTML = html;
     }
 
     function calcPlanner() {
-        var stickLen = parseFloat(document.getElementById('stick-length').value) || 120;
-        var bends = analyzePath(plannerPoints);
+        if (!plannerState._lastResults) recalcAllBends();
 
-        // Calculate total conduit path length (sum of segments)
-        var totalPathLen = 0;
-        for (var i = 0; i < plannerPoints.length - 1; i++) {
-            totalPathLen += segmentLength(plannerPoints[i], plannerPoints[i + 1]);
-        }
+        var bendResults = plannerState._lastResults;
+        var allMarks = plannerState._allMarks;
+        var totalShrink = plannerState._totalShrink;
+        var warnings = plannerState._warnings;
+        var stickLen = plannerState.stickLength;
+        var conduitSize = plannerState.conduitSize;
 
-        // Calculate total shrink
-        var totalShrink = 0;
-        for (var i = 0; i < bends.length; i++) {
-            // Shrink is roughly proportional to the offset amount
-            // For a simple estimate, use the bend's deviation height
-            // The shrink per inch values are per inch of offset height
-            // We approximate offset height from adjacent segments and bend angle
-            var b = bends[i];
-            var prev = plannerPoints[b.pointIdx - 1];
-            var curr = plannerPoints[b.pointIdx];
-            var next = plannerPoints[b.pointIdx + 1];
-
-            // Height of offset = shortest segment × sin(bend angle)
-            var seg1 = segmentLength(prev, curr);
-            var seg2 = segmentLength(curr, next);
-            var shortSeg = Math.min(seg1, seg2);
-            var offsetHeight = shortSeg * Math.sin(b.snappedAngle * Math.PI / 180);
-            var bendShrink = offsetHeight * b.shrink;
-            b.bendShrink = bendShrink;
-            totalShrink += bendShrink;
-        }
-
-        var conduitNeeded = totalPathLen + totalShrink;
-
-        // Store overlay data for rendering
-        plannerResultOverlay = bends;
-        renderPlanner();
-
-        // Build results HTML
         var html = '';
         html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Stick Planner Results</div>';
 
-        if (bends.length === 0) {
-            html += '<div class="info-box"><strong>Straight Run</strong><br>Your path has no bends. Total run: ' + fmt(totalPathLen) + '".</div>';
-        } else {
-            // Build step-by-step display, grouping offset/saddle patterns
-            var renderedPatIdx = {};
-            var stepNum = 0;
+        // Mark table sorted by position
+        var sortedMarks = allMarks.slice().sort(function(a, b) { return a.pos - b.pos; });
 
-            for (var i = 0; i < bends.length; i++) {
-                var b = bends[i];
-                var pat = getPatternForPoint(b.pointIdx);
-
-                if (pat && !renderedPatIdx[plannerPatterns.indexOf(pat)]) {
-                    renderedPatIdx[plannerPatterns.indexOf(pat)] = true;
-                    // Find all bends belonging to this pattern
-                    var patBends = [];
-                    for (var j = 0; j < bends.length; j++) {
-                        if (pat.pointIndices.indexOf(bends[j].pointIdx) !== -1) patBends.push(bends[j]);
-                    }
-                    stepNum++;
-
-                    if (pat.type === 'offset' && patBends.length >= 2) {
-                        var mult = MULTIPLIERS[String(pat.angle)] || (pat.dist / pat.height);
-                        var shrinkLabel = SHRINK_LABELS[String(pat.angle)] || '';
-                        html += '<div style="background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:12px 16px;margin:8px 0;">';
-                        html += '<div style="font-weight:700;font-size:0.95rem;margin-bottom:8px;">Step ' + stepNum + ': Offset \u2014 ' + fmt(pat.height) + '" ' + pat.dir + ' @ ' + pat.angle + '\u00B0</div>';
-                        html += '<table class="breakdown-table" style="margin:0;">';
-                        html += '<tr><td>Mark 1 (bend ' + pat.dir + ')</td><td style="font-weight:700;">' + fmt(patBends[0].markFromEnd) + '" (' + toFraction(patBends[0].markFromEnd) + ')</td></tr>';
-                        html += '<tr><td>Mark 2 (bend ' + (pat.dir === 'up' ? 'down' : 'up') + ')</td><td style="font-weight:700;">' + fmt(patBends[1].markFromEnd) + '" (' + toFraction(patBends[1].markFromEnd) + ')</td></tr>';
-                        html += '<tr><td>Distance between marks</td><td>' + fmt(pat.dist) + '" (' + fmt(pat.height) + '" \u00D7 ' + mult + ' multiplier)</td></tr>';
-                        html += '<tr><td>Shrink</td><td>' + fmt(pat.shrink) + '"' + (shrinkLabel ? ' (' + fmt(pat.height) + '" \u00D7 ' + shrinkLabel + '/in)' : '') + '</td></tr>';
-                        html += '</table>';
-                        html += '</div>';
-                    } else if (pat.type === 'saddle' && patBends.length >= 3) {
-                        var outerMult = MULTIPLIERS[String(pat.centerAngle)] || 0;
-                        var shrinkLabel = SHRINK_LABELS[String(pat.centerAngle)] || '';
-                        html += '<div style="background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:12px 16px;margin:8px 0;">';
-                        html += '<div style="font-weight:700;font-size:0.95rem;margin-bottom:8px;">Step ' + stepNum + ': 3-Point Saddle \u2014 ' + fmt(pat.height) + '" @ ' + pat.centerAngle + '\u00B0 center</div>';
-                        html += '<table class="breakdown-table" style="margin:0;">';
-                        html += '<tr><td>Mark 1 (outer ' + pat.outerAngle + '\u00B0 up)</td><td style="font-weight:700;">' + fmt(patBends[0].markFromEnd) + '" (' + toFraction(patBends[0].markFromEnd) + ')</td></tr>';
-                        html += '<tr><td>Mark 2 (center ' + pat.centerAngle + '\u00B0)</td><td style="font-weight:700;">' + fmt(patBends[1].markFromEnd) + '" (' + toFraction(patBends[1].markFromEnd) + ')</td></tr>';
-                        html += '<tr><td>Mark 3 (outer ' + pat.outerAngle + '\u00B0 down)</td><td style="font-weight:700;">' + fmt(patBends[2].markFromEnd) + '" (' + toFraction(patBends[2].markFromEnd) + ')</td></tr>';
-                        html += '<tr><td>Center to outer distance</td><td>' + fmt(pat.height * outerMult) + '" (' + fmt(pat.height) + '" \u00D7 ' + outerMult + ' multiplier)</td></tr>';
-                        html += '<tr><td>Shrink</td><td>' + fmt(pat.shrink) + '"' + (shrinkLabel ? ' (' + fmt(pat.height) + '" \u00D7 ' + shrinkLabel + '/in)' : '') + '</td></tr>';
-                        html += '</table>';
-                        html += '</div>';
-                    } else {
-                        // Fallback: render pattern bends individually
-                        for (var k = 0; k < patBends.length; k++) {
-                            html += renderBendStep(++stepNum, patBends[k]);
-                        }
-                        stepNum--;
-                    }
-                } else if (!pat) {
-                    stepNum++;
-                    html += renderBendStep(stepNum, b);
-                }
-            }
+        html += '<table class="breakdown-table">';
+        html += '<tr><th>#</th><th>Position</th><th>Description</th></tr>';
+        for (var i = 0; i < sortedMarks.length; i++) {
+            html += '<tr>';
+            html += '<td style="font-weight:700;color:var(--accent);">' + (i + 1) + '</td>';
+            html += '<td style="font-weight:700;font-size:1.05rem;">' + fmt(sortedMarks[i].pos) + '" (' + toFraction(sortedMarks[i].pos) + ')</td>';
+            html += '<td>' + sortedMarks[i].label + '</td>';
+            html += '</tr>';
         }
+        html += '</table>';
 
-        function renderBendStep(num, b) {
-            var notes = '';
-            if (b.angleDiff > 1) notes = 'Drawn ' + b.originalAngle + '\u00B0, snapped to ' + b.snappedAngle + '\u00B0';
-            var s = '<div style="padding:8px 16px;margin:4px 0;border-left:2px solid var(--border);border-radius:0 4px 4px 0;background:var(--white);">';
-            s += '<span style="font-weight:700;">Step ' + num + ':</span> Mark at <strong>' + fmt(b.markFromEnd) + '" (' + toFraction(b.markFromEnd) + ')</strong> \u2014 ' + b.snappedAngle + '\u00B0 ' + b.direction;
-            if (notes) s += ' <span style="font-size:0.82rem;color:var(--text-muted);">(' + notes + ')</span>';
-            s += '</div>';
-            return s;
+        // Per-bend breakdown
+        for (var i = 0; i < bendResults.length; i++) {
+            var br = bendResults[i];
+            var b = br.bend;
+            var r = br.result;
+            html += '<div style="margin-top:12px;padding:10px 16px;background:var(--white);border:1px solid var(--border);border-radius:6px;">';
+            if (b.type === 'stub90') {
+                html += '<div style="font-weight:700;font-size:0.92rem;">90\u00B0 Stub \u2014 ' + fmt(b.stubLength) + '"</div>';
+                html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Deduct: ' + DEDUCT[conduitSize] + '" \u2192 Mark at ' + fmt(r.marks[0].pos) + '"</div>';
+            } else if (b.type === 'offset') {
+                var dist = b.height * MULTIPLIERS[String(b.angle)];
+                html += '<div style="font-weight:700;font-size:0.92rem;">Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0</div>';
+                html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '" and ' + fmt(r.marks[1].pos) + '" (distance: ' + fmt(dist) + '", shrink: ' + fmt(r.shrink) + '")</div>';
+            } else if (b.type === 'saddle3') {
+                var outerAngle = parseFloat(b.centerAngle) / 2;
+                html += '<div style="font-weight:700;font-size:0.92rem;">3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0</div>';
+                html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '", ' + fmt(r.marks[1].pos) + '", ' + fmt(r.marks[2].pos) + '" (outer ' + outerAngle + '\u00B0, shrink: ' + fmt(r.shrink) + '")</div>';
+            } else if (b.type === 'kick') {
+                html += '<div style="font-weight:700;font-size:0.92rem;">Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + '</div>';
+                html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Mark at ' + fmt(r.marks[0].pos) + '"</div>';
+            }
+            html += '</div>';
         }
 
         // Summary
+        var lastMark = sortedMarks.length > 0 ? sortedMarks[sortedMarks.length - 1].pos : 0;
         html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;">';
         html += '<table class="breakdown-table" style="margin:0;">';
-        html += '<tr><td>Path Length (drawn)</td><td>' + fmt(totalPathLen) + '"</td></tr>';
-        html += '<tr><td>Total Shrink</td><td>' + fmt(totalShrink) + '"</td></tr>';
-        html += '<tr><td>Conduit Needed (approx)</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(conduitNeeded) + '" (' + toFraction(conduitNeeded) + ')</td></tr>';
+        html += '<tr><td>Total Shrink</td><td style="font-weight:700;">' + fmt(totalShrink) + '" (' + toFraction(totalShrink) + ')</td></tr>';
+        html += '<tr><td>Farthest Mark</td><td>' + fmt(lastMark) + '"</td></tr>';
         html += '<tr><td>Stick Length</td><td>' + stickLen + '"</td></tr>';
+        html += '<tr><td>Conduit Size</td><td>' + CONDUIT_LABELS[conduitSize] + ' EMT</td></tr>';
         html += '</table>';
         html += '</div>';
 
         // Warnings
-        if (conduitNeeded > stickLen) {
-            html += '<div class="warning-box" style="margin-top:12px;"><strong>Warning</strong><br>This path needs ' + fmt(conduitNeeded) + '" of conduit. Your stick is only ' + stickLen + '". Consider a longer stick or a coupling.</div>';
-        }
-
-        // Check for small segments
-        var smallSegWarns = [];
-        for (var i = 0; i < plannerPoints.length - 1; i++) {
-            var sl = segmentLength(plannerPoints[i], plannerPoints[i + 1]);
-            if (sl < 2) {
-                smallSegWarns.push('Segment ' + (i + 1) + ' is only ' + fmt(sl) + '" — points may be too close.');
+        if (warnings.length > 0) {
+            for (var i = 0; i < warnings.length; i++) {
+                html += '<div class="warning-box" style="margin-top:12px;"><strong>Warning</strong><br>' + warnings[i] + '</div>';
             }
-        }
-        if (smallSegWarns.length > 0) {
-            html += '<div class="caution-box" style="margin-top:12px;"><strong>Heads Up</strong><br>' + smallSegWarns.join('<br>') + '</div>';
-        }
-
-        // Angle snap notes
-        var snapNotes = [];
-        for (var i = 0; i < bends.length; i++) {
-            if (bends[i].angleDiff > 1) {
-                snapNotes.push('Bend ' + (i + 1) + ': Drawn ' + bends[i].originalAngle + '\u00B0 \u2192 snapped to ' + bends[i].snappedAngle + '\u00B0 (nearest standard).');
-            }
-        }
-        if (snapNotes.length > 0) {
-            html += '<div class="info-box" style="margin-top:12px;"><strong>Angle Adjustments</strong><br>' + snapNotes.join('<br>') + '</div>';
         }
 
         html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
-        html += '<strong>How to use:</strong> Measure from the start end of your stick. Mark each position, then bend at the listed angle and direction. Account for shrink when cutting your stick.';
+        html += '<strong>How to use:</strong> Measure from the cut end of your stick. Mark each position, then bend at the listed angle and direction. Account for shrink when planning your run.';
         html += '</div>';
 
         showResult(html);
     }
 
-    // ── Bend pattern insertion ──
+    // ══════════════════════════════════════
+    //  3D VIEWER (Three.js)
+    // ══════════════════════════════════════
 
-    function showBendForm(type) {
-        var panel = document.getElementById('bend-form-panel');
-        var html = '';
-        if (type === 'offset') {
-            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">Add Offset</div>';
-            html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Height (in)</label>';
-            html += '<input type="number" id="bf-height" value="4" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Angle</label>';
-            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
-            html += '<option value="10">10\u00B0</option><option value="22.5">22.5\u00B0</option><option value="30" selected>30\u00B0</option><option value="45">45\u00B0</option><option value="60">60\u00B0</option></select></div>';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Direction</label>';
-            html += '<select id="bf-dir" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
-            html += '<option value="up">Up</option><option value="down">Down</option></select></div>';
-            html += '</div>';
-            html += '<div style="display:flex;gap:8px;">';
-            html += '<button class="btn btn-sm" onclick="placeOffset()">Place</button>';
-            html += '<button class="btn btn-outline btn-sm" onclick="hideBendForm()">Cancel</button>';
-            html += '</div>';
-        } else if (type === 'saddle') {
-            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">Add Saddle</div>';
-            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Height (in)</label>';
-            html += '<input type="number" id="bf-height" value="4" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Center Angle</label>';
-            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
-            html += '<option value="10">10\u00B0</option><option value="22.5">22.5\u00B0</option><option value="30" selected>30\u00B0</option><option value="45">45\u00B0</option><option value="60">60\u00B0</option></select></div>';
-            html += '</div>';
-            html += '<div style="display:flex;gap:8px;">';
-            html += '<button class="btn btn-sm" onclick="placeSaddle()">Place</button>';
-            html += '<button class="btn btn-outline btn-sm" onclick="hideBendForm()">Cancel</button>';
-            html += '</div>';
+    var viewer3d = {
+        scene: null, camera: null, renderer: null, controls: null,
+        pipeMesh: null, gridMesh: null, animId: null, initialized: false
+    };
+
+    function init3DViewer() {
+        if (viewer3d.initialized) return true;
+        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+            // Three.js not loaded — show fallback
+            var fallback = document.getElementById('viewer-3d-fallback');
+            if (fallback) { fallback.style.display = 'flex'; }
+            return false;
         }
-        panel.innerHTML = html;
-        panel.style.display = '';
+
+        var canvas = document.getElementById('viewer-3d');
+        var wrap = document.getElementById('viewer-3d-wrap');
+        var w = wrap.clientWidth;
+        var h = wrap.clientHeight;
+
+        viewer3d.scene = new THREE.Scene();
+        viewer3d.scene.background = new THREE.Color(0x1c1c1c);
+
+        viewer3d.camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 1000);
+        viewer3d.camera.position.set(0, 40, 80);
+
+        viewer3d.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        viewer3d.renderer.setSize(w, h);
+        viewer3d.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        viewer3d.controls = new THREE.OrbitControls(viewer3d.camera, canvas);
+        viewer3d.controls.enableDamping = true;
+        viewer3d.controls.dampingFactor = 0.1;
+
+        // Lighting
+        var ambient = new THREE.AmbientLight(0xffffff, 0.5);
+        viewer3d.scene.add(ambient);
+        var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 40, 30);
+        viewer3d.scene.add(dirLight);
+
+        // Grid
+        var gridHelper = new THREE.GridHelper(200, 40, 0x333333, 0x2a2a2a);
+        gridHelper.position.y = -2;
+        viewer3d.scene.add(gridHelper);
+        viewer3d.gridMesh = gridHelper;
+
+        viewer3d.initialized = true;
+        animate3D();
+        return true;
     }
 
-    function hideBendForm() {
-        var panel = document.getElementById('bend-form-panel');
-        if (panel) panel.style.display = 'none';
+    function generatePipePath(bends, stickLength, conduitSize) {
+        // Build a 3D path: start along X axis, apply bends
+        var points = [];
+        var pos = new THREE.Vector3(0, 0, 0);
+        var dir = new THREE.Vector3(1, 0, 0); // heading along X
+        var radius = BEND_RADIUS[conduitSize] || 5;
+
+        // Collect all marks with their bend info, sorted by position
+        var markEvents = [];
+        for (var i = 0; i < bends.length; i++) {
+            var b = bends[i];
+            if (b.type === 'stub90') {
+                var deduct = DEDUCT[conduitSize];
+                var mark = b.stubLength - deduct;
+                markEvents.push({ pos: mark, angle: 90, direction: 'up', type: 'stub90' });
+            } else if (b.type === 'offset') {
+                var mult = MULTIPLIERS[String(b.angle)];
+                var dist = b.height * mult;
+                var d = b.direction === 'up' ? 1 : -1;
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, type: 'offset_start' });
+                markEvents.push({ pos: b.position + dist, angle: b.angle, direction: (b.direction === 'up' ? 'down' : 'up'), type: 'offset_end' });
+            } else if (b.type === 'saddle3') {
+                var mult = MULTIPLIERS[String(b.centerAngle)];
+                var dist = b.height * mult;
+                var outerAngle = parseFloat(b.centerAngle) / 2;
+                markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up', type: 'saddle_outer' });
+                markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down', type: 'saddle_center' });
+                markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up', type: 'saddle_outer' });
+            } else if (b.type === 'kick') {
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, type: 'kick' });
+            }
+        }
+
+        markEvents.sort(function(a, b) { return a.pos - b.pos; });
+
+        // Build path as line segments with bends
+        var currentPos = 0;
+        points.push(pos.clone());
+
+        for (var i = 0; i < markEvents.length; i++) {
+            var evt = markEvents[i];
+            var advance = evt.pos - currentPos;
+            if (advance > 0) {
+                pos = pos.clone().add(dir.clone().multiplyScalar(advance));
+                points.push(pos.clone());
+                currentPos = evt.pos;
+            }
+
+            // Apply bend — rotate direction
+            var angleRad = evt.angle * Math.PI / 180;
+            var bendDir = (evt.direction === 'up') ? 1 : -1;
+
+            // Choose rotation axis: perpendicular to current direction and Y-up
+            var up = new THREE.Vector3(0, 1, 0);
+            var rotAxis = new THREE.Vector3().crossVectors(dir, up).normalize();
+            if (rotAxis.length() < 0.01) rotAxis.set(0, 0, 1); // fallback if dir is vertical
+
+            // For stub90: rotate in the Y-Z plane
+            // For offsets/kicks: rotate around Z axis (perpendicular to X-Y plane run)
+            var quat = new THREE.Quaternion().setFromAxisAngle(rotAxis, angleRad * bendDir);
+            dir = dir.clone().applyQuaternion(quat).normalize();
+
+            // Add a small arc point for visual smoothness
+            var arcPt = pos.clone().add(dir.clone().multiplyScalar(radius * 0.5));
+            points.push(arcPt);
+        }
+
+        // Continue to end of stick
+        var remaining = stickLength - currentPos;
+        if (remaining > 0) {
+            pos = pos.clone().add(dir.clone().multiplyScalar(remaining));
+            points.push(pos.clone());
+        }
+
+        return points;
     }
 
-    function placeOffset() {
-        var h = parseFloat(document.getElementById('bf-height').value);
-        var angle = parseFloat(document.getElementById('bf-angle').value);
-        var dir = document.getElementById('bf-dir').value;
-        if (isNaN(h) || h <= 0) return;
+    function update3DView() {
+        var viewerWrap = document.getElementById('viewer-3d-wrap');
+        if (plannerState.bends.length === 0) {
+            viewerWrap.style.display = 'none';
+            return;
+        }
 
-        ensureLeadIn();
+        viewerWrap.style.display = '';
+        if (!init3DViewer()) return;
 
-        var startIdx = plannerPoints.length - 1;
-        var last = plannerPoints[startIdx];
-        var angleRad = angle * Math.PI / 180;
-        var dx = h / Math.tan(angleRad);
-        var dy = (dir === 'up' ? 1 : -1) * h;
-        var dist = h / Math.sin(angleRad);
-        var shrinkRate = SHRINK_PER_INCH[String(angle)] || 0;
+        // Remove old pipe
+        if (viewer3d.pipeMesh) {
+            viewer3d.scene.remove(viewer3d.pipeMesh);
+            viewer3d.pipeMesh.geometry.dispose();
+            viewer3d.pipeMesh.material.dispose();
+            viewer3d.pipeMesh = null;
+        }
 
-        // Diagonal endpoint (second bend)
-        var endIdx = plannerPoints.length;
-        plannerPoints.push({ x: last.x + dx, y: last.y + dy });
-        // Short horizontal continuation so second bend is detected
-        var end = plannerPoints[plannerPoints.length - 1];
-        plannerPoints.push({ x: end.x + 6, y: end.y });
+        var pathPoints = generatePipePath(plannerState.bends, plannerState.stickLength, plannerState.conduitSize);
+        if (pathPoints.length < 2) return;
 
-        plannerPatterns.push({
-            type: 'offset',
-            pointIndices: [startIdx, endIdx],
-            height: h,
-            angle: angle,
-            dir: dir,
-            dist: dist,
-            shrink: h * shrinkRate
-        });
+        var curve = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.1);
+        var geometry = new THREE.TubeGeometry(curve, Math.max(64, pathPoints.length * 10), 0.5, 12, false);
+        var material = new THREE.MeshStandardMaterial({ color: 0xD4910D, metalness: 0.4, roughness: 0.5 });
+        viewer3d.pipeMesh = new THREE.Mesh(geometry, material);
+        viewer3d.scene.add(viewer3d.pipeMesh);
 
-        plannerResultOverlay = [];
-        hideBendForm();
-        renderPlanner();
+        // Auto-frame camera
+        var box = new THREE.Box3().setFromObject(viewer3d.pipeMesh);
+        var center = box.getCenter(new THREE.Vector3());
+        var size = box.getSize(new THREE.Vector3());
+        var maxDim = Math.max(size.x, size.y, size.z);
+        var dist = maxDim * 1.5;
+
+        viewer3d.camera.position.set(center.x, center.y + dist * 0.4, center.z + dist);
+        viewer3d.controls.target.copy(center);
+        viewer3d.controls.update();
     }
 
-    function placeSaddle() {
-        var h = parseFloat(document.getElementById('bf-height').value);
-        var centerAngle = parseFloat(document.getElementById('bf-angle').value);
-        if (isNaN(h) || h <= 0) return;
+    function reset3DCamera() {
+        if (!viewer3d.initialized || !viewer3d.pipeMesh) return;
+        var box = new THREE.Box3().setFromObject(viewer3d.pipeMesh);
+        var center = box.getCenter(new THREE.Vector3());
+        var size = box.getSize(new THREE.Vector3());
+        var maxDim = Math.max(size.x, size.y, size.z);
+        var dist = maxDim * 1.5;
 
-        ensureLeadIn();
-
-        var startIdx = plannerPoints.length - 1;
-        var last = plannerPoints[startIdx];
-        var outerAngle = centerAngle / 2;
-        var outerRad = outerAngle * Math.PI / 180;
-        var dx = h / Math.tan(outerRad);
-        var shrinkRate = SHRINK_PER_INCH[String(centerAngle)] || 0;
-
-        // Peak (center bend)
-        var centerIdx = plannerPoints.length;
-        plannerPoints.push({ x: last.x + dx, y: last.y + h });
-        // Return to original height (second outer bend)
-        var endIdx = plannerPoints.length;
-        plannerPoints.push({ x: last.x + 2 * dx, y: last.y });
-        // Short horizontal continuation so last bend is detected
-        var end = plannerPoints[plannerPoints.length - 1];
-        plannerPoints.push({ x: end.x + 6, y: end.y });
-
-        plannerPatterns.push({
-            type: 'saddle',
-            pointIndices: [startIdx, centerIdx, endIdx],
-            height: h,
-            centerAngle: centerAngle,
-            outerAngle: outerAngle,
-            shrink: h * shrinkRate
-        });
-
-        plannerResultOverlay = [];
-        hideBendForm();
-        renderPlanner();
+        viewer3d.camera.position.set(center.x, center.y + dist * 0.4, center.z + dist);
+        viewer3d.controls.target.copy(center);
+        viewer3d.controls.update();
     }
+
+    function animate3D() {
+        viewer3d.animId = requestAnimationFrame(animate3D);
+        if (viewer3d.controls) viewer3d.controls.update();
+        if (viewer3d.renderer && viewer3d.scene && viewer3d.camera) {
+            viewer3d.renderer.render(viewer3d.scene, viewer3d.camera);
+        }
+    }
+
+    function dispose3DViewer() {
+        if (viewer3d.animId) {
+            cancelAnimationFrame(viewer3d.animId);
+            viewer3d.animId = null;
+        }
+        if (viewer3d.pipeMesh) {
+            viewer3d.scene.remove(viewer3d.pipeMesh);
+            viewer3d.pipeMesh.geometry.dispose();
+            viewer3d.pipeMesh.material.dispose();
+            viewer3d.pipeMesh = null;
+        }
+        if (viewer3d.renderer) {
+            viewer3d.renderer.dispose();
+        }
+        viewer3d.scene = null;
+        viewer3d.camera = null;
+        viewer3d.renderer = null;
+        viewer3d.controls = null;
+        viewer3d.initialized = false;
+    }
+
+    // Handle viewer resize
+    window.addEventListener('resize', function() {
+        if (!viewer3d.initialized) return;
+        var wrap = document.getElementById('viewer-3d-wrap');
+        if (!wrap || wrap.style.display === 'none') return;
+        var w = wrap.clientWidth;
+        var h = wrap.clientHeight;
+        viewer3d.camera.aspect = w / h;
+        viewer3d.camera.updateProjectionMatrix();
+        viewer3d.renderer.setSize(w, h);
+    });
     </script>
     <script src="/js/app.js" defer></script>
 </body>

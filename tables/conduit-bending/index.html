@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conduit Bending Reference Tables | Sparky HQ</title>
+    <meta name="description" content="Complete conduit bending reference: multipliers, shrink values, deduct tables, bender shoe clearance, and bend radius for EMT, IMC, and RMC.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <div class="ref-nav"><a href="/tables/">Tables</a> &rsaquo; Conduit Bending</div>
+                <h1>Conduit Bending Reference <span class="nec-ref">Field Reference</span></h1>
+                <p class="subtitle">Multipliers, shrink, deducts, shoe clearance, and bend radius for EMT conduit bending.</p>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Multiplier Table</h2>
+                <p class="field-note" style="margin-bottom:8px;">Distance between marks = obstruction height &times; multiplier</p>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Bend Angle</th>
+                                <th>Multiplier</th>
+                                <th>Common Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10&deg;</td>
+                                <td>6.0</td>
+                                <td>Shallow offsets, rolling offsets</td>
+                            </tr>
+                            <tr>
+                                <td>22.5&deg;</td>
+                                <td>2.613</td>
+                                <td>4-point saddles, medium offsets</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>30&deg;</td>
+                                <td>2.0</td>
+                                <td>Most common offset angle</td>
+                            </tr>
+                            <tr>
+                                <td>45&deg;</td>
+                                <td>1.414</td>
+                                <td>Tight offsets, saddles</td>
+                            </tr>
+                            <tr>
+                                <td>60&deg;</td>
+                                <td>1.155</td>
+                                <td>Very tight offsets</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Shrink Per Inch of Offset</h2>
+                <p class="field-note" style="margin-bottom:8px;">Total shrink = obstruction height &times; shrink per inch</p>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Bend Angle</th>
+                                <th>Shrink Per Inch</th>
+                                <th>Fraction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10&deg;</td>
+                                <td>0.0625"</td>
+                                <td>1/16"</td>
+                            </tr>
+                            <tr>
+                                <td>22.5&deg;</td>
+                                <td>0.1875"</td>
+                                <td>3/16"</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>30&deg;</td>
+                                <td>0.25"</td>
+                                <td>1/4"</td>
+                            </tr>
+                            <tr>
+                                <td>45&deg;</td>
+                                <td>0.375"</td>
+                                <td>3/8"</td>
+                            </tr>
+                            <tr>
+                                <td>60&deg;</td>
+                                <td>0.5"</td>
+                                <td>1/2"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">90&deg; Stub Deduct (Take-Up)</h2>
+                <p class="field-note" style="margin-bottom:8px;">Mark position = desired stub length &minus; deduct. Standard EMT hand benders.</p>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Conduit Size</th>
+                                <th>Deduct (EMT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>1/2"</td>
+                                <td>5"</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>3/4"</td>
+                                <td>6"</td>
+                            </tr>
+                            <tr>
+                                <td>1"</td>
+                                <td>8"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/4"</td>
+                                <td>11"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/2"</td>
+                                <td>13"</td>
+                            </tr>
+                            <tr>
+                                <td>2"</td>
+                                <td>15"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="table-note">Deduct values are for standard EMT hand benders (Ideal, Klein, Greenlee). Always verify with the markings on your bender shoe.</p>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Bender Shoe Clearance</h2>
+                <p class="field-note" style="margin-bottom:8px;">Minimum distance between adjacent bend marks. If marks are closer than this, bends will physically interfere.</p>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Conduit Size</th>
+                                <th>Shoe Length (approx)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>1/2"</td>
+                                <td>6"</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>3/4"</td>
+                                <td>6"</td>
+                            </tr>
+                            <tr>
+                                <td>1"</td>
+                                <td>8"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/4"</td>
+                                <td>11"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/2"</td>
+                                <td>11"</td>
+                            </tr>
+                            <tr>
+                                <td>2"</td>
+                                <td>14"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="table-note">Shoe lengths are approximate and vary by manufacturer. When planning multiple bends on a single stick, ensure marks are at least this far apart.</p>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Centerline Bend Radius</h2>
+                <p class="field-note" style="margin-bottom:8px;">Minimum bend radius measured to the centerline of the conduit. Per NEC Chapter 2 for one-shot bends.</p>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Conduit Size</th>
+                                <th>EMT</th>
+                                <th>IMC</th>
+                                <th>RMC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>1/2"</td>
+                                <td>4"</td>
+                                <td>4.5"</td>
+                                <td>4.5"</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>3/4"</td>
+                                <td>4.5"</td>
+                                <td>5.25"</td>
+                                <td>5.25"</td>
+                            </tr>
+                            <tr>
+                                <td>1"</td>
+                                <td>5.75"</td>
+                                <td>6"</td>
+                                <td>6"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/4"</td>
+                                <td>7.25"</td>
+                                <td>7.25"</td>
+                                <td>8"</td>
+                            </tr>
+                            <tr>
+                                <td>1-1/2"</td>
+                                <td>8.25"</td>
+                                <td>8.25"</td>
+                                <td>9.5"</td>
+                            </tr>
+                            <tr>
+                                <td>2"</td>
+                                <td>9.5"</td>
+                                <td>9.5"</td>
+                                <td>11"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="table-note">Values are for one-shot (field) bends using hand benders. Factory elbows and mechanical benders may have different minimums.</p>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>Quick Reference</strong><br>
+                    30&deg; offset: multiply by 2, shrink 1/4" per inch. That covers 90% of field offsets.
+                    For the rest, keep this page bookmarked.
+                </div>
+
+                <div class="info-box" style="margin-top:16px;">
+                    <strong>Use the Calculator</strong><br>
+                    Need exact mark positions? Use the <a href="/tools/conduit-bending/" style="color:var(--accent);font-weight:600;text-decoration:none;">Conduit Bending Calculator</a> to compute distances, shrink, and plan full sticks with multiple bends.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>
