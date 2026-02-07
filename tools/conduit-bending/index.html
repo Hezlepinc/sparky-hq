@@ -870,13 +870,18 @@
             }
         }
 
-        // Check marks within stick bounds
+        // Check marks within stick bounds (3" buffer on each end for couplings)
+        var END_BUFFER = 3;
         for (var i = 0; i < sorted.length; i++) {
             if (sorted[i].pos < 0) {
                 warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is before the cut end of the stick. Adjust the bend position.');
+            } else if (sorted[i].pos < END_BUFFER) {
+                warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is only ' + fmt(sorted[i].pos) + '" from the cut end. You need at least ' + END_BUFFER + '" for a coupling.');
             }
             if (sorted[i].pos > stickLength) {
                 warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is past the end of your ' + stickLength + '" stick.');
+            } else if (sorted[i].pos > stickLength - END_BUFFER) {
+                warnings.push('Mark at ' + fmt(sorted[i].pos) + '" is only ' + fmt(stickLength - sorted[i].pos) + '" from the end of the stick. You need at least ' + END_BUFFER + '" for a coupling.');
             }
         }
 
