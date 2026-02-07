@@ -1,9 +1,21 @@
-/* Sparky HQ - PWA, Install Banner, Share */
+/* Sparky HQ - PWA, Install Banner, Share, Analytics */
 
 // ── Service Worker ──
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
 }
+
+// ── Analytics (GoatCounter — privacy-friendly, no cookies) ──
+// Sign up free: https://www.goatcounter.com  →  set SITE_CODE below
+var GC_SITE = 'sparky-hq'; // ← your goatcounter site code
+(function() {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+    var s = document.createElement('script');
+    s.async = true;
+    s.dataset.goatcounter = 'https://' + GC_SITE + '.goatcounter.com/count';
+    s.src = '//gc.zgo.at/count.js';
+    document.head.appendChild(s);
+})();
 
 // ── Install Banner ──
 var deferredPrompt;

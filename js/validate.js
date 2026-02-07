@@ -121,6 +121,15 @@ var SparkyValidate = (function() {
         var key = 'sparky_apply_count';
         var count = parseInt(sessionStorage.getItem(key) || '0');
         sessionStorage.setItem(key, (count + 1).toString());
+
+        // Send calculator-use event to GoatCounter
+        if (window.goatcounter && window.goatcounter.count) {
+            window.goatcounter.count({
+                path: window.location.pathname + '?apply',
+                title: document.title + ' (Apply)',
+                event: true
+            });
+        }
     }
 
     // ── Public API ──
