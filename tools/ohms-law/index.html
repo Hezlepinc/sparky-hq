@@ -51,65 +51,7 @@
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:center;padding:8px 0;">
-                            <svg id="ohm-wheel" viewBox="0 0 300 300" style="width:100%;max-width:300px;display:block;" aria-label="Ohm's Law formula wheel">
-                                <defs>
-                                    <clipPath id="q-tl"><path d="M150,150 L150,16 A134,134 0 0,0 16,150 Z"/></clipPath>
-                                    <clipPath id="q-tr"><path d="M150,150 L284,150 A134,134 0 0,0 150,16 Z"/></clipPath>
-                                    <clipPath id="q-bl"><path d="M150,150 L16,150 A134,134 0 0,0 150,284 Z"/></clipPath>
-                                    <clipPath id="q-br"><path d="M150,150 L150,284 A134,134 0 0,0 284,150 Z"/></clipPath>
-                                </defs>
-
-                                <!-- Outer circle -->
-                                <circle cx="150" cy="150" r="134" fill="#fafaf8" stroke="#e2e0dc" stroke-width="2"/>
-
-                                <!-- Color-coded quadrant fills -->
-                                <circle cx="150" cy="150" r="133" fill="#fef7ea" clip-path="url(#q-tl)"/>
-                                <circle cx="150" cy="150" r="133" fill="#eef6ff" clip-path="url(#q-tr)"/>
-                                <circle cx="150" cy="150" r="133" fill="#fff4f0" clip-path="url(#q-bl)"/>
-                                <circle cx="150" cy="150" r="133" fill="#f0faf0" clip-path="url(#q-br)"/>
-
-                                <!-- Divider lines -->
-                                <line x1="150" y1="16" x2="150" y2="284" stroke="#e2e0dc" stroke-width="1.5"/>
-                                <line x1="16" y1="150" x2="284" y2="150" stroke="#e2e0dc" stroke-width="1.5"/>
-
-                                <!-- Inner ring -->
-                                <circle cx="150" cy="150" r="58" fill="none" stroke="#e2e0dc" stroke-width="1"/>
-
-                                <!-- Center circle -->
-                                <circle cx="150" cy="150" r="28" fill="#D4910D"/>
-                                <text x="150" y="144" text-anchor="middle" fill="#fff" font-size="10" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">OHM'S</text>
-                                <text x="150" y="157" text-anchor="middle" fill="#fff" font-size="10" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">LAW</text>
-
-                                <!-- V I P R — inside inner ring, rotated to follow the circle -->
-                                <text x="120" y="120" text-anchor="middle" dominant-baseline="central" fill="#b8860b" font-size="20" font-weight="800" font-family="-apple-system,sans-serif" transform="rotate(-45,120,120)">V</text>
-                                <text x="180" y="120" text-anchor="middle" dominant-baseline="central" fill="#2a7ab5" font-size="20" font-weight="800" font-family="-apple-system,sans-serif" transform="rotate(45,180,120)">I</text>
-                                <text x="120" y="180" text-anchor="middle" dominant-baseline="central" fill="#c0542e" font-size="20" font-weight="800" font-family="-apple-system,sans-serif" transform="rotate(45,120,180)">P</text>
-                                <text x="180" y="180" text-anchor="middle" dominant-baseline="central" fill="#2e8b57" font-size="20" font-weight="800" font-family="-apple-system,sans-serif" transform="rotate(-45,180,180)">R</text>
-
-                                <!-- VOLTS quadrant (top-left) — all text inside circle -->
-                                <text x="78" y="50" text-anchor="middle" fill="#b8860b" font-size="9" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">VOLTS</text>
-                                <text x="78" y="66" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="700" font-family="-apple-system,sans-serif">I &#215; R</text>
-                                <text x="78" y="80" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">P &#247; I</text>
-                                <text x="78" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">&#8730;(P&#215;R)</text>
-
-                                <!-- AMPS quadrant (top-right) -->
-                                <text x="222" y="50" text-anchor="middle" fill="#2a7ab5" font-size="9" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">AMPS</text>
-                                <text x="222" y="66" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="700" font-family="-apple-system,sans-serif">V &#247; R</text>
-                                <text x="222" y="80" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">P &#247; V</text>
-                                <text x="222" y="93" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">&#8730;(P&#247;R)</text>
-
-                                <!-- WATTS quadrant (bottom-left) -->
-                                <text x="78" y="212" text-anchor="middle" fill="#c0542e" font-size="9" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">WATTS</text>
-                                <text x="78" y="228" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="700" font-family="-apple-system,sans-serif">V &#215; I</text>
-                                <text x="78" y="242" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">I&#178; &#215; R</text>
-                                <text x="78" y="255" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">V&#178; &#247; R</text>
-
-                                <!-- OHMS quadrant (bottom-right) -->
-                                <text x="222" y="212" text-anchor="middle" fill="#2e8b57" font-size="9" font-weight="700" letter-spacing="1.5" font-family="-apple-system,sans-serif">OHMS</text>
-                                <text x="222" y="228" text-anchor="middle" fill="#2c2c2c" font-size="11" font-weight="700" font-family="-apple-system,sans-serif">V &#247; I</text>
-                                <text x="222" y="242" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">V&#178; &#247; P</text>
-                                <text x="222" y="255" text-anchor="middle" fill="#5a5a5a" font-size="10" font-family="-apple-system,sans-serif">P &#247; I&#178;</text>
-                            </svg>
+                            <svg id="ohm-wheel" viewBox="0 0 340 340" style="width:100%;max-width:310px;display:block;" aria-label="Ohm's Law formula wheel"></svg>
                         </div>
                     </div>
                     <div class="apply-section">
@@ -309,63 +251,161 @@
         resultEl.innerHTML = html;
         resultEl.classList.add('show');
 
-        // Highlight the calculated quadrants on the wheel
-        highlightWheel(filled);
+        // Highlight the exact formula segments used on the wheel
+        highlightWheel(known);
     }
 
-    function highlightWheel(filled) {
-        // Map: which variable was calculated → which quadrant to highlight
-        var quadrantMap = {
-            voltage:    'q-tl',
-            current:    'q-tr',
-            power:      'q-bl',
-            resistance: 'q-br'
-        };
+    // ══════════════════════════════════════
+    //  12-SEGMENT OHM'S LAW WHEEL
+    // ══════════════════════════════════════
+
+    var WH = { cx:170, cy:170, iR:46, oR:128, cR:22, vR:36, lR:146 };
+
+    // Quadrants: V top-left, I top-right, R bottom-right, P bottom-left
+    var QUADS = [
+        { v:'V', lbl:'VOLTS', col:'#b8860b', bg:'#fef7ea', hi:'#f5d67a',
+          f:['I\u00d7R','P\u00f7I','\u221a(P\u00d7R)'], a:-180, rot:-45 },
+        { v:'I', lbl:'AMPS', col:'#2a7ab5', bg:'#eef6ff', hi:'#8ec4f0',
+          f:['V\u00f7R','P\u00f7V','\u221a(P\u00f7R)'], a:-90, rot:45 },
+        { v:'R', lbl:'OHMS', col:'#2e8b57', bg:'#f0faf0', hi:'#8ed4a8',
+          f:['V\u00f7I','V\u00b2\u00f7P','P\u00f7I\u00b2'], a:0, rot:-45 },
+        { v:'P', lbl:'WATTS', col:'#c0542e', bg:'#fff4f0', hi:'#f0a888',
+          f:['V\u00d7I','I\u00b2\u00d7R','V\u00b2\u00f7R'], a:90, rot:45 }
+    ];
+
+    // Map known-pair → which 2 of the 12 segments to highlight
+    var SEG_MAP = {
+        'current+voltage':    [{q:2,s:0},{q:3,s:0}],
+        'resistance+voltage': [{q:1,s:0},{q:3,s:2}],
+        'power+voltage':      [{q:1,s:1},{q:2,s:1}],
+        'current+resistance': [{q:0,s:0},{q:3,s:1}],
+        'current+power':      [{q:0,s:1},{q:2,s:2}],
+        'power+resistance':   [{q:0,s:2},{q:1,s:2}]
+    };
+
+    function _svg(tag, a) {
+        var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (var k in a) el.setAttribute(k, a[k]);
+        return el;
+    }
+
+    function _arc(a1, a2) {
+        var R=Math.PI/180, c=WH.cx, d=WH.cy, ir=WH.iR, or_=WH.oR;
+        return 'M'+(c+ir*Math.cos(a1*R)).toFixed(1)+','+(d+ir*Math.sin(a1*R)).toFixed(1)+
+               'L'+(c+or_*Math.cos(a1*R)).toFixed(1)+','+(d+or_*Math.sin(a1*R)).toFixed(1)+
+               'A'+or_+','+or_+' 0 0,1 '+(c+or_*Math.cos(a2*R)).toFixed(1)+','+(d+or_*Math.sin(a2*R)).toFixed(1)+
+               'L'+(c+ir*Math.cos(a2*R)).toFixed(1)+','+(d+ir*Math.sin(a2*R)).toFixed(1)+
+               'A'+ir+','+ir+' 0 0,0 '+(c+ir*Math.cos(a1*R)).toFixed(1)+','+(d+ir*Math.sin(a1*R)).toFixed(1)+'Z';
+    }
+
+    function buildWheel() {
         var svg = document.getElementById('ohm-wheel');
         if (!svg) return;
+        var DEG = Math.PI/180, midR = (WH.iR+WH.oR)/2;
 
-        // Reset all quadrant fills to their base colors
-        var baseColors = { 'q-tl': '#fef7ea', 'q-tr': '#eef6ff', 'q-bl': '#fff4f0', 'q-br': '#f0faf0' };
-        var pulseColors = { 'q-tl': '#fde9b8', 'q-tr': '#d0e8ff', 'q-bl': '#ffddd0', 'q-br': '#c8eec8' };
-        var quadrants = svg.querySelectorAll('[clip-path]');
-        quadrants.forEach(function(el) {
-            var cp = el.getAttribute('clip-path');
-            for (var id in baseColors) {
-                if (cp.indexOf(id) !== -1) {
-                    el.setAttribute('fill', baseColors[id]);
-                    el.style.transition = 'fill 0.3s ease';
-                }
+        QUADS.forEach(function(q, qi) {
+            for (var si = 0; si < 3; si++) {
+                var a1 = q.a + si*30, a2 = a1 + 30;
+                var p = _svg('path', {
+                    d:_arc(a1,a2), fill:q.bg,
+                    stroke:'#e2e0dc', 'stroke-width':'1', id:'seg-'+qi+'-'+si
+                });
+                p.style.transition = 'fill 0.3s ease';
+                svg.appendChild(p);
+
+                var ma = (a1+a2)/2*DEG;
+                var tx = WH.cx + midR*Math.cos(ma), ty = WH.cy + midR*Math.sin(ma);
+                var txt = _svg('text', {
+                    x:tx.toFixed(1), y:ty.toFixed(1),
+                    'text-anchor':'middle', 'dominant-baseline':'central',
+                    fill: si===0 ? '#2c2c2c' : '#5a5a5a',
+                    'font-size': si===0 ? '11' : '9.5',
+                    'font-weight': si===0 ? '700' : '400',
+                    'font-family':'-apple-system,sans-serif'
+                });
+                txt.textContent = q.f[si];
+                svg.appendChild(txt);
             }
+
+            // V/I/R/P label inside inner ring
+            var ca = (q.a+45)*DEG;
+            var vx = WH.cx+WH.vR*Math.cos(ca), vy = WH.cy+WH.vR*Math.sin(ca);
+            var vt = _svg('text', {
+                x:vx.toFixed(1), y:vy.toFixed(1),
+                'text-anchor':'middle', 'dominant-baseline':'central',
+                fill:q.col, 'font-size':'18', 'font-weight':'800',
+                'font-family':'-apple-system,sans-serif',
+                transform:'rotate('+q.rot+','+vx.toFixed(1)+','+vy.toFixed(1)+')'
+            });
+            vt.textContent = q.v;
+            svg.appendChild(vt);
+
+            // Quadrant title outside circle, same rotation
+            var lx = WH.cx+WH.lR*Math.cos(ca), ly = WH.cy+WH.lR*Math.sin(ca);
+            var lt = _svg('text', {
+                x:lx.toFixed(1), y:ly.toFixed(1),
+                'text-anchor':'middle', 'dominant-baseline':'central',
+                fill:q.col, 'font-size':'10', 'font-weight':'700',
+                'letter-spacing':'1', 'font-family':'-apple-system,sans-serif',
+                transform:'rotate('+q.rot+','+lx.toFixed(1)+','+ly.toFixed(1)+')'
+            });
+            lt.textContent = q.lbl;
+            svg.appendChild(lt);
         });
 
-        // Highlight the quadrants for calculated (not filled) variables
-        var allFields = ['voltage', 'current', 'resistance', 'power'];
-        allFields.forEach(function(f) {
-            if (filled.indexOf(f) === -1) {
-                var qId = quadrantMap[f];
-                quadrants.forEach(function(el) {
-                    if (el.getAttribute('clip-path').indexOf(qId) !== -1) {
-                        el.setAttribute('fill', pulseColors[qId]);
-                    }
-                });
+        // Quadrant divider lines (thicker, on top)
+        svg.appendChild(_svg('line', {
+            x1:WH.cx, y1:WH.cy-WH.oR, x2:WH.cx, y2:WH.cy+WH.oR,
+            stroke:'#d0cec9', 'stroke-width':'2'
+        }));
+        svg.appendChild(_svg('line', {
+            x1:WH.cx-WH.oR, y1:WH.cy, x2:WH.cx+WH.oR, y2:WH.cy,
+            stroke:'#d0cec9', 'stroke-width':'2'
+        }));
+
+        // Center gold circle
+        svg.appendChild(_svg('circle', { cx:WH.cx, cy:WH.cy, r:WH.cR, fill:'#D4910D' }));
+        var c1 = _svg('text', {
+            x:WH.cx, y:WH.cy-5, 'text-anchor':'middle',
+            fill:'#fff', 'font-size':'8.5', 'font-weight':'700',
+            'font-family':'-apple-system,sans-serif', 'letter-spacing':'0.5'
+        });
+        c1.textContent = "OHM'S";
+        svg.appendChild(c1);
+        var c2 = _svg('text', {
+            x:WH.cx, y:WH.cy+7, 'text-anchor':'middle',
+            fill:'#fff', 'font-size':'8.5', 'font-weight':'700',
+            'font-family':'-apple-system,sans-serif', 'letter-spacing':'0.5'
+        });
+        c2.textContent = 'LAW';
+        svg.appendChild(c2);
+    }
+
+    function highlightWheel(known) {
+        QUADS.forEach(function(q, qi) {
+            for (var si = 0; si < 3; si++) {
+                var el = document.getElementById('seg-'+qi+'-'+si);
+                if (el) el.setAttribute('fill', q.bg);
             }
+        });
+        var segs = SEG_MAP[known];
+        if (!segs) return;
+        segs.forEach(function(s) {
+            var el = document.getElementById('seg-'+s.q+'-'+s.s);
+            if (el) el.setAttribute('fill', QUADS[s.q].hi);
         });
     }
 
     function resetWheel() {
-        var svg = document.getElementById('ohm-wheel');
-        if (!svg) return;
-        var baseColors = { 'q-tl': '#fef7ea', 'q-tr': '#eef6ff', 'q-bl': '#fff4f0', 'q-br': '#f0faf0' };
-        var quadrants = svg.querySelectorAll('[clip-path]');
-        quadrants.forEach(function(el) {
-            var cp = el.getAttribute('clip-path');
-            for (var id in baseColors) {
-                if (cp.indexOf(id) !== -1) {
-                    el.setAttribute('fill', baseColors[id]);
-                }
+        QUADS.forEach(function(q, qi) {
+            for (var si = 0; si < 3; si++) {
+                var el = document.getElementById('seg-'+qi+'-'+si);
+                if (el) el.setAttribute('fill', q.bg);
             }
         });
     }
+
+    buildWheel();
     </script>
     <script src="/js/app.js" defer></script>
 </body>
