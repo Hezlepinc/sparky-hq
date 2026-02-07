@@ -108,6 +108,13 @@
                 group.style.opacity = '';
             }
         }
+
+        // Live-highlight the wheel as soon as 2 fields are filled
+        if (filled.length === 2) {
+            highlightWheel(filled.slice().sort().join('+'));
+        } else {
+            resetWheel();
+        }
     }
 
     function getInputs() {
