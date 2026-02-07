@@ -128,9 +128,9 @@
 
                         <div id="planner-warnings"></div>
 
-                        <div id="viewer-3d-wrap" style="background:#1c1c1c;border-radius:var(--radius);margin:12px 0;height:280px;position:relative;display:none;">
+                        <div id="viewer-3d-wrap" style="background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;height:400px;position:relative;display:none;">
                             <canvas id="viewer-3d" style="width:100%;height:100%;display:block;"></canvas>
-                            <button onclick="reset3DCamera()" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.15);color:#ccc;border:none;padding:4px 10px;border-radius:4px;font-size:0.78rem;cursor:pointer;">Reset View</button>
+                            <button onclick="reset3DCamera()" style="position:absolute;top:8px;right:8px;background:var(--gray);color:var(--text-light);border:1px solid var(--border);padding:4px 10px;border-radius:4px;font-size:0.78rem;cursor:pointer;">Reset View</button>
                             <div id="viewer-3d-fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#666;font-size:0.85rem;text-align:center;padding:20px;">3D viewer unavailable.<br>Bend marks are shown above.</div>
                         </div>
                     </div>
@@ -1007,7 +1007,7 @@
         var h = wrap.clientHeight;
 
         viewer3d.scene = new THREE.Scene();
-        viewer3d.scene.background = new THREE.Color(0x1c1c1c);
+        viewer3d.scene.background = new THREE.Color(0xffffff);
 
         viewer3d.camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 1000);
         viewer3d.camera.position.set(0, 40, 80);
@@ -1028,7 +1028,7 @@
         viewer3d.scene.add(dirLight);
 
         // Grid
-        var gridHelper = new THREE.GridHelper(200, 40, 0x333333, 0x2a2a2a);
+        var gridHelper = new THREE.GridHelper(200, 40, 0xcccccc, 0xe0e0e0);
         gridHelper.position.y = -2;
         viewer3d.scene.add(gridHelper);
         viewer3d.gridMesh = gridHelper;
@@ -1138,7 +1138,7 @@
 
         var curve = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.1);
         var geometry = new THREE.TubeGeometry(curve, Math.max(64, pathPoints.length * 10), 0.5, 12, false);
-        var material = new THREE.MeshStandardMaterial({ color: 0xD4910D, metalness: 0.4, roughness: 0.5 });
+        var material = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, metalness: 0.7, roughness: 0.3 });
         viewer3d.pipeMesh = new THREE.Mesh(geometry, material);
         viewer3d.scene.add(viewer3d.pipeMesh);
 
