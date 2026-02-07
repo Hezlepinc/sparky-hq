@@ -93,8 +93,11 @@
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                             <button class="btn btn-outline" onclick="undoPoint()" style="font-size:0.85rem;">Undo</button>
                             <button class="btn btn-outline" onclick="clearPlanner()" style="font-size:0.85rem;">Clear Canvas</button>
+                            <button class="btn btn-outline" onclick="showBendForm('offset')" style="font-size:0.85rem;">+ Offset</button>
+                            <button class="btn btn-outline" onclick="showBendForm('saddle')" style="font-size:0.85rem;">+ Saddle</button>
                         </div>
-                        <p class="field-note">Tap or click on the canvas to place waypoints. The conduit path draws between them. Drag points to adjust.</p>
+                        <div id="bend-form-panel" style="display:none;background:var(--gray);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;"></div>
+                        <p class="field-note">Tap or click to place waypoints. Drag points to adjust. Use + Offset / + Saddle to insert common bends.</p>
                     </div>
 
                     <div class="apply-section">
@@ -512,6 +515,7 @@
         plannerPoints = [{ x: 0, y: 0 }];
         plannerResultOverlay = [];
         draggingIdx = -1;
+        hideBendForm();
         renderPlanner();
     }
 
@@ -877,6 +881,95 @@
         html += '</div>';
 
         showResult(html);
+    }
+
+    // ── Bend pattern insertion ──
+
+    function showBendForm(type) {
+        var panel = document.getElementById('bend-form-panel');
+        var html = '';
+        if (type === 'offset') {
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">Add Offset</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Height (in)</label>';
+            html += '<input type="number" id="bf-height" value="4" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Angle</label>';
+            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            html += '<option value="10">10\u00B0</option><option value="22.5">22.5\u00B0</option><option value="30" selected>30\u00B0</option><option value="45">45\u00B0</option><option value="60">60\u00B0</option></select></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Direction</label>';
+            html += '<select id="bf-dir" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            html += '<option value="up">Up</option><option value="down">Down</option></select></div>';
+            html += '</div>';
+            html += '<div style="display:flex;gap:8px;">';
+            html += '<button class="btn btn-sm" onclick="placeOffset()">Place</button>';
+            html += '<button class="btn btn-outline btn-sm" onclick="hideBendForm()">Cancel</button>';
+            html += '</div>';
+        } else if (type === 'saddle') {
+            html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">Add Saddle</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Height (in)</label>';
+            html += '<input type="number" id="bf-height" value="4" min="0.5" step="0.5" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Center Angle</label>';
+            html += '<select id="bf-angle" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            html += '<option value="10">10\u00B0</option><option value="22.5">22.5\u00B0</option><option value="30" selected>30\u00B0</option><option value="45">45\u00B0</option><option value="60">60\u00B0</option></select></div>';
+            html += '</div>';
+            html += '<div style="display:flex;gap:8px;">';
+            html += '<button class="btn btn-sm" onclick="placeSaddle()">Place</button>';
+            html += '<button class="btn btn-outline btn-sm" onclick="hideBendForm()">Cancel</button>';
+            html += '</div>';
+        }
+        panel.innerHTML = html;
+        panel.style.display = '';
+    }
+
+    function hideBendForm() {
+        var panel = document.getElementById('bend-form-panel');
+        if (panel) panel.style.display = 'none';
+    }
+
+    function placeOffset() {
+        var h = parseFloat(document.getElementById('bf-height').value);
+        var angle = parseFloat(document.getElementById('bf-angle').value);
+        var dir = document.getElementById('bf-dir').value;
+        if (isNaN(h) || h <= 0) return;
+
+        var last = plannerPoints[plannerPoints.length - 1];
+        var angleRad = angle * Math.PI / 180;
+        var dx = h / Math.tan(angleRad);
+        var dy = (dir === 'up' ? 1 : -1) * h;
+
+        // Diagonal endpoint (second bend)
+        plannerPoints.push({ x: last.x + dx, y: last.y + dy });
+        // Short horizontal continuation so second bend is detected
+        var end = plannerPoints[plannerPoints.length - 1];
+        plannerPoints.push({ x: end.x + 6, y: end.y });
+
+        plannerResultOverlay = [];
+        hideBendForm();
+        renderPlanner();
+    }
+
+    function placeSaddle() {
+        var h = parseFloat(document.getElementById('bf-height').value);
+        var centerAngle = parseFloat(document.getElementById('bf-angle').value);
+        if (isNaN(h) || h <= 0) return;
+
+        var last = plannerPoints[plannerPoints.length - 1];
+        // Outer bend deflection = half center angle
+        var outerRad = (centerAngle / 2) * Math.PI / 180;
+        var dx = h / Math.tan(outerRad);
+
+        // Peak (center bend)
+        plannerPoints.push({ x: last.x + dx, y: last.y + h });
+        // Return to original height (second outer bend)
+        plannerPoints.push({ x: last.x + 2 * dx, y: last.y });
+        // Short horizontal continuation so last bend is detected
+        var end = plannerPoints[plannerPoints.length - 1];
+        plannerPoints.push({ x: end.x + 6, y: end.y });
+
+        plannerResultOverlay = [];
+        hideBendForm();
+        renderPlanner();
     }
     </script>
     <script src="/js/app.js" defer></script>
