@@ -1039,73 +1039,87 @@
     }
 
     function generatePipePath(bends, stickLength, conduitSize) {
-        // Build a 3D path: start along X axis, apply bends
+        // Build a 3D path: start along X axis, trace arcs at each bend
         var points = [];
         var pos = new THREE.Vector3(0, 0, 0);
-        var dir = new THREE.Vector3(1, 0, 0); // heading along X
+        var dir = new THREE.Vector3(1, 0, 0);
         var radius = BEND_RADIUS[conduitSize] || 5;
+        var ARC_STEPS = 16; // subdivisions per bend arc
 
-        // Collect all marks with their bend info, sorted by position
+        // Collect all bend events sorted by position
         var markEvents = [];
         for (var i = 0; i < bends.length; i++) {
             var b = bends[i];
             if (b.type === 'stub90') {
                 var deduct = DEDUCT[conduitSize];
                 var mark = b.stubLength - deduct;
-                markEvents.push({ pos: mark, angle: 90, direction: 'up', type: 'stub90' });
+                markEvents.push({ pos: mark, angle: 90, direction: 'up' });
             } else if (b.type === 'offset') {
                 var mult = MULTIPLIERS[String(b.angle)];
                 var dist = b.height * mult;
-                var d = b.direction === 'up' ? 1 : -1;
-                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, type: 'offset_start' });
-                markEvents.push({ pos: b.position + dist, angle: b.angle, direction: (b.direction === 'up' ? 'down' : 'up'), type: 'offset_end' });
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction });
+                markEvents.push({ pos: b.position + dist, angle: b.angle, direction: (b.direction === 'up' ? 'down' : 'up') });
             } else if (b.type === 'saddle3') {
                 var mult = MULTIPLIERS[String(b.centerAngle)];
                 var dist = b.height * mult;
                 var outerAngle = parseFloat(b.centerAngle) / 2;
-                markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up', type: 'saddle_outer' });
-                markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down', type: 'saddle_center' });
-                markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up', type: 'saddle_outer' });
+                markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up' });
+                markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down' });
+                markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up' });
             } else if (b.type === 'kick') {
-                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, type: 'kick' });
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction });
             }
         }
-
         markEvents.sort(function(a, b) { return a.pos - b.pos; });
 
-        // Build path as line segments with bends
         var currentPos = 0;
         points.push(pos.clone());
 
         for (var i = 0; i < markEvents.length; i++) {
             var evt = markEvents[i];
-            var advance = evt.pos - currentPos;
-            if (advance > 0) {
-                pos = pos.clone().add(dir.clone().multiplyScalar(advance));
+            var angleRad = evt.angle * Math.PI / 180;
+            var bendSign = (evt.direction === 'up') ? 1 : -1;
+
+            // Tangent distance: how far before/after the mark the arc starts/ends
+            var tangentLen = radius * Math.tan(angleRad / 2);
+
+            // Advance straight to the arc start (mark position minus tangent approach)
+            var arcStartPos = evt.pos - tangentLen;
+            var straightAdvance = arcStartPos - currentPos;
+            if (straightAdvance > 0.1) {
+                pos = pos.clone().add(dir.clone().multiplyScalar(straightAdvance));
                 points.push(pos.clone());
-                currentPos = evt.pos;
+                currentPos = arcStartPos;
             }
 
-            // Apply bend — rotate direction
-            var angleRad = evt.angle * Math.PI / 180;
-            var bendDir = (evt.direction === 'up') ? 1 : -1;
-
-            // Choose rotation axis: perpendicular to current direction and Y-up
+            // Rotation axis: perpendicular to direction and Y-up
             var up = new THREE.Vector3(0, 1, 0);
             var rotAxis = new THREE.Vector3().crossVectors(dir, up).normalize();
-            if (rotAxis.length() < 0.01) rotAxis.set(0, 0, 1); // fallback if dir is vertical
+            if (rotAxis.length() < 0.01) rotAxis.set(0, 0, 1);
 
-            // For stub90: rotate in the Y-Z plane
-            // For offsets/kicks: rotate around Z axis (perpendicular to X-Y plane run)
-            var quat = new THREE.Quaternion().setFromAxisAngle(rotAxis, angleRad * bendDir);
-            dir = dir.clone().applyQuaternion(quat).normalize();
+            // Arc center: offset from arc start perpendicular to incoming direction
+            var toCenter = new THREE.Vector3().crossVectors(rotAxis, dir).normalize().multiplyScalar(bendSign * radius);
+            var arcCenter = pos.clone().add(toCenter);
+            var radialVec = pos.clone().sub(arcCenter); // vector from center to arc start
 
-            // Add a small arc point for visual smoothness
-            var arcPt = pos.clone().add(dir.clone().multiplyScalar(radius * 0.5));
-            points.push(arcPt);
+            // Generate arc points by rotating the radial vector
+            for (var s = 1; s <= ARC_STEPS; s++) {
+                var frac = s / ARC_STEPS;
+                var stepAngle = angleRad * bendSign * frac;
+                var q = new THREE.Quaternion().setFromAxisAngle(rotAxis, stepAngle);
+                var rotated = radialVec.clone().applyQuaternion(q);
+                var arcPt = arcCenter.clone().add(rotated);
+                points.push(arcPt);
+            }
+
+            // Update position and direction to end of arc
+            pos = points[points.length - 1].clone();
+            var fullQ = new THREE.Quaternion().setFromAxisAngle(rotAxis, angleRad * bendSign);
+            dir = dir.clone().applyQuaternion(fullQ).normalize();
+            currentPos = evt.pos + tangentLen;
         }
 
-        // Continue to end of stick
+        // Continue straight to end of stick
         var remaining = stickLength - currentPos;
         if (remaining > 0) {
             pos = pos.clone().add(dir.clone().multiplyScalar(remaining));
@@ -1136,8 +1150,9 @@
         var pathPoints = generatePipePath(plannerState.bends, plannerState.stickLength, plannerState.conduitSize);
         if (pathPoints.length < 2) return;
 
-        var curve = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.1);
-        var geometry = new THREE.TubeGeometry(curve, Math.max(64, pathPoints.length * 10), 0.5, 12, false);
+        var curve = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.0);
+        var segments = Math.max(128, pathPoints.length * 4);
+        var geometry = new THREE.TubeGeometry(curve, segments, 0.5, 16, false);
         var material = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, metalness: 0.7, roughness: 0.3 });
         viewer3d.pipeMesh = new THREE.Mesh(geometry, material);
         viewer3d.scene.add(viewer3d.pipeMesh);
