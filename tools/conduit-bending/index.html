@@ -11,8 +11,20 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/css/style.css?v=12">
     <script src="/js/validate.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js" defer></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    window.THREE = THREE;
+    THREE.OrbitControls = OrbitControls;
+    </script>
 </head>
 <body>
     <header class="site-header">

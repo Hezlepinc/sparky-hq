@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sparky-hq-v13';
+const CACHE_NAME = 'sparky-hq-v14';
 const PRECACHE = [
     '/',
     '/css/style.css?v=12',
@@ -22,8 +22,10 @@ const PRECACHE = [
     '/tables/overcurrent/',
     '/tables/raceway-fill/',
     '/tables/egc-sizing/',
+    '/tables/gec-sizing/',
     '/tables/torque-specs/',
-    '/tables/conductor-properties/'
+    '/tables/conductor-properties/',
+    '/tables/conduit-bending/'
 ];
 
 self.addEventListener('install', (e) => {
