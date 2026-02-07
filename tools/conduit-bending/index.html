@@ -99,8 +99,8 @@
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div class="form-group">
                                 <label for="stick-length">Stick Length (inches)</label>
-                                <input type="number" id="stick-length" value="120" min="1" step="1">
-                                <p class="field-note">Standard 10ft stick = 120"</p>
+                                <input type="number" id="stick-length" value="120" min="1" max="120" step="1">
+                                <p class="field-note">Standard 10ft stick = 120" (max)</p>
                             </div>
                             <div class="form-group">
                                 <label for="planner-conduit-size">Conduit Size (EMT)</label>
@@ -108,9 +108,6 @@
                                     <option value="0.5">1/2"</option>
                                     <option value="0.75">3/4"</option>
                                     <option value="1">1"</option>
-                                    <option value="1.25">1-1/4"</option>
-                                    <option value="1.5">1-1/2"</option>
-                                    <option value="2">2"</option>
                                 </select>
                             </div>
                         </div>
@@ -545,7 +542,9 @@
         plannerInited = true;
         // Listen for stick length and conduit size changes
         document.getElementById('stick-length').addEventListener('change', function() {
-            plannerState.stickLength = parseFloat(this.value) || 120;
+            var val = parseFloat(this.value) || 120;
+            if (val > 120) { val = 120; this.value = 120; }
+            plannerState.stickLength = val;
             if (plannerState.bends.length > 0) recalcAllBends();
         });
         document.getElementById('planner-conduit-size').addEventListener('change', function() {
