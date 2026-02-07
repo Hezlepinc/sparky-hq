@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGC Sizing Table (NEC 250.122) | Sparky HQ</title>
+    <meta name="description" content="Equipment grounding conductor sizing per NEC 250.122. Minimum EGC size by overcurrent device rating for copper and aluminum.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <div class="ref-nav"><a href="/tables/">Tables</a> &rsaquo; EGC Sizing</div>
+                <h1>Equipment Grounding Conductor Sizing <span class="nec-ref">NEC 250.122</span></h1>
+                <p class="subtitle">Minimum size equipment grounding conductor for each overcurrent device rating.</p>
+
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Overcurrent Device Rating (Amps)</th>
+                                <th>Copper EGC</th>
+                                <th>Aluminum or Cu-Clad Al EGC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row">
+                                <td>15</td>
+                                <td>14 AWG</td>
+                                <td>12 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>20</td>
+                                <td>12 AWG</td>
+                                <td>10 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>30</td>
+                                <td>10 AWG</td>
+                                <td>8 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>40</td>
+                                <td>10 AWG</td>
+                                <td>8 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>60</td>
+                                <td>10 AWG</td>
+                                <td>8 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>100</td>
+                                <td>8 AWG</td>
+                                <td>6 AWG</td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>200</td>
+                                <td>6 AWG</td>
+                                <td>4 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>300</td>
+                                <td>4 AWG</td>
+                                <td>2 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>400</td>
+                                <td>3 AWG</td>
+                                <td>1 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>500</td>
+                                <td>2 AWG</td>
+                                <td>1/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>600</td>
+                                <td>1 AWG</td>
+                                <td>2/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>800</td>
+                                <td>1/0 AWG</td>
+                                <td>3/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>1000</td>
+                                <td>2/0 AWG</td>
+                                <td>4/0 AWG</td>
+                            </tr>
+                            <tr>
+                                <td>1200</td>
+                                <td>3/0 AWG</td>
+                                <td>250 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>1600</td>
+                                <td>4/0 AWG</td>
+                                <td>350 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>2000</td>
+                                <td>250 kcmil</td>
+                                <td>400 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>2500</td>
+                                <td>350 kcmil</td>
+                                <td>600 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>3000</td>
+                                <td>400 kcmil</td>
+                                <td>600 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>4000</td>
+                                <td>500 kcmil</td>
+                                <td>800 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>5000</td>
+                                <td>700 kcmil</td>
+                                <td>1200 kcmil</td>
+                            </tr>
+                            <tr>
+                                <td>6000</td>
+                                <td>800 kcmil</td>
+                                <td>1200 kcmil</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box" style="margin-top:24px;">
+                    <strong>250.122(B) — Upsizing Rule</strong><br>
+                    When ungrounded conductors are increased in size for voltage drop, the equipment grounding conductor must be increased proportionally. Multiply the EGC size by the same ratio: (circular mils of actual conductor) &divide; (circular mils of minimum required conductor).
+                </div>
+
+                <div class="caution-box">
+                    <strong>Common Mistake</strong><br>
+                    The EGC is sized based on the overcurrent device rating, not the wire size. A #10 wire on a 30A breaker requires a #10 copper EGC — but a #10 wire on a 20A breaker only requires a #12 copper EGC.
+                </div>
+
+                <div class="tip-box">
+                    <strong>Conduit as EGC</strong><br>
+                    Listed metallic raceways (EMT, IMC, RMC) can serve as the equipment grounding conductor per NEC 250.118. No separate EGC wire is required when using these raceways, though many electricians pull one anyway as a best practice.
+                </div>
+
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

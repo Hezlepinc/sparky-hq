@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conduit Bending Calculator | Sparky HQ</title>
+    <title>Conduit Bending Calculator - Free Offset, Saddle, 90 | Sparky HQ</title>
     <meta name="description" content="Free conduit bending calculator for electricians. Calculate offsets, saddles, kicks, and 90s with multipliers and shrink values for EMT, IMC, and RMC.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="/css/style.css?v=11">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+    <script src="/js/validate.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -17,6 +18,7 @@
             <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
             <nav>
                 <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
                 <a href="/about.html">About</a>
             </nav>
         </div>
@@ -25,12 +27,94 @@
     <main>
         <section class="calc-page">
             <div class="container">
-                <h1>Conduit Bending Calculator</h1>
-                <p class="subtitle">Offsets, saddles, kicks, and 90s with multipliers and shrink.</p>
-                <p style="color:#5a5a5a; margin-top:24px;">This tool is currently being built. Check back soon.</p>
-                <a href="/tools/" style="color:#D4910D;font-weight:600;text-decoration:none;display:inline-block;margin-top:16px;">&larr; Back to Tools</a>
+                <h1>Conduit Bending Calculator <span class="nec-ref">Offsets &bull; Saddles &bull; 90s</span></h1>
+                <p class="subtitle">Calculate multipliers, shrink, and mark distances for common conduit bends.</p>
+
+                <div class="calc-form">
+                    <div class="method-toggle" id="mode-toggle">
+                        <button class="active" onclick="setMode('offset')">Offset</button>
+                        <button onclick="setMode('3saddle')">3-Point Saddle</button>
+                        <button onclick="setMode('4saddle')">4-Point Saddle</button>
+                        <button onclick="setMode('stub')">90&deg; Stub</button>
+                    </div>
+
+                    <!-- Offset & Saddle Inputs -->
+                    <div id="inputs-bend">
+                        <div class="form-group">
+                            <label for="obstruction" id="obstruction-label">Obstruction Height (inches)</label>
+                            <input type="number" id="obstruction" placeholder="e.g. 4" min="0.1" step="any">
+                            <p class="field-note" id="obstruction-note">How far the conduit needs to move to clear the obstruction.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bend-angle">Bend Angle</label>
+                            <select id="bend-angle">
+                                <option value="10">10&deg;</option>
+                                <option value="22.5">22.5&deg;</option>
+                                <option value="30" selected>30&deg;</option>
+                                <option value="45">45&deg;</option>
+                                <option value="60">60&deg;</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 90 Stub Inputs -->
+                    <div id="inputs-stub" style="display:none;">
+                        <div class="form-group">
+                            <label for="stub-length">Stub-Up Length (inches)</label>
+                            <input type="number" id="stub-length" placeholder="e.g. 12" min="1" step="any">
+                            <p class="field-note">Measured from the floor or surface to the top of the stub.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="conduit-size">Conduit Size (EMT)</label>
+                            <select id="conduit-size">
+                                <option value="0.5">1/2"</option>
+                                <option value="0.75">3/4"</option>
+                                <option value="1">1"</option>
+                                <option value="1.25">1-1/4"</option>
+                                <option value="1.5">1-1/2"</option>
+                                <option value="2">2"</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="info-box" style="margin-top:24px;" id="info-offset">
+                    <strong>How It Works</strong><br>
+                    Multiplier &times; obstruction height = distance between bends. Shrink tells you how much shorter your conduit run becomes after bending.
+                </div>
+
+                <div class="info-box" style="margin-top:24px;display:none;" id="info-stub">
+                    <strong>Deduct (Take-Up)</strong><br>
+                    For a 90&deg; stub, subtract the deduct from your stub-up length to find where to place your mark. The deduct varies by conduit size and bender manufacturer.
+                </div>
+
+                <div class="caution-box">
+                    <strong>Verify With Your Bender</strong><br>
+                    Deduct values are for standard EMT benders (Ideal, Klein, Greenlee). Always verify with the markings on your bender's shoe — values can vary by manufacturer and conduit type.
+                </div>
+
+                <div class="tip-box">
+                    <strong>Pro Tip</strong><br>
+                    Mark your conduit before cutting. Shrink reduces your total run — account for it when measuring your stick.
+                </div>
             </div>
         </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
     </main>
 
     <footer class="site-footer">
@@ -39,6 +123,321 @@
             <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
         </div>
     </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  CONDUIT BENDING CALCULATOR
+    // ══════════════════════════════════════
+
+    // Multiplier table: angle → multiplier
+    var MULTIPLIERS = {
+        '10': 6.0,
+        '22.5': 2.613,
+        '30': 2.0,
+        '45': 1.414,
+        '60': 1.155
+    };
+
+    // Shrink per inch of offset: angle → inches of shrink per inch of obstruction
+    var SHRINK_PER_INCH = {
+        '10': 0.0625,    // 1/16"
+        '22.5': 0.1875,  // 3/16"
+        '30': 0.25,      // 1/4"
+        '45': 0.375,     // 3/8"
+        '60': 0.5        // 1/2"
+    };
+
+    // Shrink display labels
+    var SHRINK_LABELS = {
+        '10': '1/16"',
+        '22.5': '3/16"',
+        '30': '1/4"',
+        '45': '3/8"',
+        '60': '1/2"'
+    };
+
+    // 90° stub deduct by conduit size (inches) — standard EMT benders
+    var DEDUCT = {
+        '0.5': 5,
+        '0.75': 6,
+        '1': 8,
+        '1.25': 11,
+        '1.5': 13,
+        '2': 15
+    };
+
+    var CONDUIT_LABELS = {
+        '0.5': '1/2"',
+        '0.75': '3/4"',
+        '1': '1"',
+        '1.25': '1-1/4"',
+        '1.5': '1-1/2"',
+        '2': '2"'
+    };
+
+    var currentMode = 'offset';
+
+    function setMode(mode) {
+        currentMode = mode;
+        var btns = document.querySelectorAll('#mode-toggle button');
+        var labels = { 'offset': 'Offset', '3saddle': '3-Point Saddle', '4saddle': '4-Point Saddle', 'stub': '90\u00B0 Stub' };
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].classList.remove('active');
+            if (btns[i].textContent.indexOf(labels[mode]) !== -1 || btns[i].textContent === labels[mode]) {
+                btns[i].classList.add('active');
+            }
+        }
+
+        // Show/hide inputs
+        var bendInputs = document.getElementById('inputs-bend');
+        var stubInputs = document.getElementById('inputs-stub');
+        var infoOffset = document.getElementById('info-offset');
+        var infoStub = document.getElementById('info-stub');
+
+        if (mode === 'stub') {
+            bendInputs.style.display = 'none';
+            stubInputs.style.display = '';
+            infoOffset.style.display = 'none';
+            infoStub.style.display = '';
+        } else {
+            bendInputs.style.display = '';
+            stubInputs.style.display = 'none';
+            infoOffset.style.display = '';
+            infoStub.style.display = 'none';
+        }
+
+        // Update labels based on mode
+        var obLabel = document.getElementById('obstruction-label');
+        var obNote = document.getElementById('obstruction-note');
+        var angleSelect = document.getElementById('bend-angle');
+
+        if (mode === 'offset') {
+            obLabel.textContent = 'Offset Height (inches)';
+            obNote.textContent = 'How far the conduit needs to offset to clear the obstruction.';
+        } else if (mode === '3saddle') {
+            obLabel.textContent = 'Obstruction Height (inches)';
+            obNote.textContent = 'Height of the obstruction the conduit must saddle over.';
+        } else if (mode === '4saddle') {
+            obLabel.textContent = 'Obstruction Height (inches)';
+            obNote.textContent = 'Height of the obstruction. Uses 22.5\u00B0 and 45\u00B0 bends.';
+            // 4-point saddle doesn't use the angle selector
+        }
+
+        // Show/hide angle selector for 4-point saddle
+        var angleGroup = angleSelect.closest('.form-group');
+        if (mode === '4saddle') {
+            angleGroup.style.display = 'none';
+        } else {
+            angleGroup.style.display = '';
+        }
+
+        clearAll();
+    }
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 100) return n.toFixed(1);
+        if (Math.abs(n) >= 1) return n.toFixed(2);
+        return n.toFixed(3);
+    }
+
+    function toFraction(decimal) {
+        // Convert decimal inches to nearest 1/16 fraction for display
+        var sixteenths = Math.round(decimal * 16);
+        var whole = Math.floor(sixteenths / 16);
+        var remainder = sixteenths % 16;
+
+        if (remainder === 0) return whole + '"';
+
+        // Simplify fraction
+        var num = remainder;
+        var den = 16;
+        while (num % 2 === 0) { num /= 2; den /= 2; }
+
+        if (whole > 0) return whole + '-' + num + '/' + den + '"';
+        return num + '/' + den + '"';
+    }
+
+    function clearAll() {
+        document.getElementById('obstruction').value = '';
+        document.getElementById('stub-length').value = '';
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function applyCalc() {
+        var rules = [];
+
+        if (currentMode === 'stub') {
+            var stubLen = parseFloat(document.getElementById('stub-length').value);
+            if (isNaN(stubLen) || stubLen <= 0) {
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter a stub-up length greater than 0.' });
+            }
+        } else {
+            var obsHeight = parseFloat(document.getElementById('obstruction').value);
+            if (isNaN(obsHeight) || obsHeight <= 0) {
+                rules.push({ rule: 'custom', test: true, level: 'error', msg: 'Enter an obstruction height greater than 0.' });
+            }
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+
+        if (currentMode === 'stub') {
+            calcStub();
+        } else if (currentMode === '4saddle') {
+            calc4Saddle();
+        } else if (currentMode === '3saddle') {
+            calc3Saddle();
+        } else {
+            calcOffset();
+        }
+    }
+
+    function calcOffset() {
+        var height = parseFloat(document.getElementById('obstruction').value);
+        var angle = document.getElementById('bend-angle').value;
+        var mult = MULTIPLIERS[angle];
+        var shrinkRate = SHRINK_PER_INCH[angle];
+        var shrinkLabel = SHRINK_LABELS[angle];
+
+        var distance = height * mult;
+        var shrink = height * shrinkRate;
+
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Offset Results</div>';
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Bend Angle</td><td>' + angle + '\u00B0</td></tr>';
+        html += '<tr><td>Offset Height</td><td>' + fmt(height) + '" (' + toFraction(height) + ')</td></tr>';
+        html += '<tr><td>Multiplier</td><td>' + mult + '</td></tr>';
+        html += '<tr><td>Distance Between Bends</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(distance) + '" (' + toFraction(distance) + ')</td></tr>';
+        html += '<tr><td>Shrink per inch</td><td>' + shrinkLabel + '</td></tr>';
+        html += '<tr><td>Total Shrink</td><td style="font-weight:700;">' + fmt(shrink) + '" (' + toFraction(shrink) + ')</td></tr>';
+        html += '</table>';
+
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
+        html += '<strong>How to bend:</strong> Make your first bend at the start mark. Measure ' + fmt(distance) + '" from the first bend mark and make your second bend at the same angle.';
+        html += '</div>';
+
+        showResult(html);
+    }
+
+    function calc3Saddle() {
+        var height = parseFloat(document.getElementById('obstruction').value);
+        var angle = document.getElementById('bend-angle').value;
+        var mult = MULTIPLIERS[angle];
+        var shrinkRate = SHRINK_PER_INCH[angle];
+        var shrinkLabel = SHRINK_LABELS[angle];
+
+        var centerAngle = parseFloat(angle);
+        var outerAngle = centerAngle / 2;
+
+        var distance = height * mult;
+        var shrink = height * shrinkRate;
+
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">3-Point Saddle Results</div>';
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Center Bend Angle</td><td>' + angle + '\u00B0</td></tr>';
+        html += '<tr><td>Outer Bend Angles</td><td>' + outerAngle + '\u00B0 each</td></tr>';
+        html += '<tr><td>Obstruction Height</td><td>' + fmt(height) + '"</td></tr>';
+        html += '<tr><td>Multiplier</td><td>' + mult + '</td></tr>';
+        html += '<tr><td>Distance: Center to Outer Bends</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(distance) + '" (' + toFraction(distance) + ')</td></tr>';
+        html += '<tr><td>Total Shrink</td><td style="font-weight:700;">' + fmt(shrink) + '" (' + toFraction(shrink) + ')</td></tr>';
+        html += '</table>';
+
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
+        html += '<strong>How to bend:</strong> Mark the center of the obstruction on your conduit. Measure ' + fmt(distance) + '" in each direction for the outer bend marks. Bend the center at ' + angle + '\u00B0, then each outer mark at ' + outerAngle + '\u00B0 in the opposite direction.';
+        html += '</div>';
+
+        showResult(html);
+    }
+
+    function calc4Saddle() {
+        var height = parseFloat(document.getElementById('obstruction').value);
+
+        // 4-point saddle uses 22.5° bends with specific spacing
+        var angle = 22.5;
+        var mult = MULTIPLIERS['22.5'];
+        var shrinkRate = SHRINK_PER_INCH['22.5'];
+
+        var distance = height * mult;
+        var shrink = height * shrinkRate * 2; // Two offsets worth of shrink
+        var centerSpacing = distance; // Distance between center pair
+        var outerSpacing = distance; // Distance from center to outer bends
+
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">4-Point Saddle Results</div>';
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Bend Angles</td><td>22.5\u00B0 (all four bends)</td></tr>';
+        html += '<tr><td>Obstruction Height</td><td>' + fmt(height) + '"</td></tr>';
+        html += '<tr><td>Multiplier (22.5\u00B0)</td><td>' + mult + '</td></tr>';
+        html += '<tr><td>Distance Between Bends</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(distance) + '" (' + toFraction(distance) + ')</td></tr>';
+        html += '<tr><td>Total Shrink</td><td style="font-weight:700;">' + fmt(shrink) + '" (' + toFraction(shrink) + ')</td></tr>';
+        html += '</table>';
+
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
+        html += '<strong>How to bend:</strong> Mark the center of the obstruction. Place marks at ' + fmt(distance) + '" on each side of center (4 marks total, evenly spaced ' + fmt(distance) + '" apart). All four bends are 22.5\u00B0 \u2014 outer bends go one direction, inner bends go the opposite.';
+        html += '</div>';
+
+        showResult(html);
+    }
+
+    function calcStub() {
+        var stubLen = parseFloat(document.getElementById('stub-length').value);
+        var size = document.getElementById('conduit-size').value;
+        var deduct = DEDUCT[size];
+        var sizeLabel = CONDUIT_LABELS[size];
+
+        var mark = stubLen - deduct;
+
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">90\u00B0 Stub-Up Results</div>';
+        html += '<table class="breakdown-table">';
+        html += '<tr><td>Conduit Size</td><td>' + sizeLabel + ' EMT</td></tr>';
+        html += '<tr><td>Desired Stub Length</td><td>' + fmt(stubLen) + '"</td></tr>';
+        html += '<tr><td>Deduct (Take-Up)</td><td>' + deduct + '"</td></tr>';
+        html += '<tr><td>Mark From End</td><td style="font-weight:700;font-size:1.1rem;">' + fmt(mark) + '" (' + toFraction(mark) + ')</td></tr>';
+        html += '</table>';
+
+        if (mark <= 0) {
+            html += '<div class="warning-box" style="margin-top:12px;"><strong>Warning</strong><br>The stub length is less than or equal to the deduct. Your mark would be at or past the end of the conduit. Increase the stub length.</div>';
+        }
+
+        html += '<div style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:6px;font-size:0.88rem;">';
+        html += '<strong>How to bend:</strong> Measure ' + fmt(mark) + '" from the end of the conduit and make your mark. Line up the mark with the arrow on the bender shoe. Step on the bender and pull a 90\u00B0 bend.';
+        html += '</div>';
+
+        // Deduct reference table
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details><summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;cursor:pointer;">Deduct Reference (All Sizes)</summary>';
+        html += '<div style="margin-top:12px;">';
+        html += '<table class="breakdown-table">';
+        html += '<tr><th>Conduit Size</th><th>Deduct</th></tr>';
+        html += '<tr><td>1/2" EMT</td><td>5"</td></tr>';
+        html += '<tr><td>3/4" EMT</td><td>6"</td></tr>';
+        html += '<tr><td>1" EMT</td><td>8"</td></tr>';
+        html += '<tr><td>1-1/4" EMT</td><td>11"</td></tr>';
+        html += '<tr><td>1-1/2" EMT</td><td>13"</td></tr>';
+        html += '<tr><td>2" EMT</td><td>15"</td></tr>';
+        html += '</table>';
+        html += '</div></details>';
+        html += '</div>';
+
+        showResult(html);
+    }
+
+    function showResult(html) {
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
     <script src="/js/app.js" defer></script>
 </body>
 </html>

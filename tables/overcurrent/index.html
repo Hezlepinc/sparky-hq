@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overcurrent Protection Table (NEC 240.4) | Sparky HQ</title>
+    <meta name="description" content="NEC 240.4(D) overcurrent protection limits by conductor size. Max breaker and fuse sizes for 14, 12, and 10 AWG conductors.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="/css/style.css?v=12">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <div class="ref-nav"><a href="/tables/">Tables</a> &rsaquo; Overcurrent Protection</div>
+                <h1>Overcurrent Protection <span class="nec-ref">NEC 240.4</span></h1>
+                <p class="subtitle">Maximum overcurrent protection for conductors per NEC 240.4(D) and standard overcurrent device sizes per 240.6(A).</p>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Small Conductor Protection &mdash; NEC 240.4(D)</h2>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Conductor Size (AWG)</th>
+                                <th>Max Overcurrent Device (Amps)</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row"><td>14 AWG Copper</td><td>15A</td><td>Most general lighting and receptacle circuits</td></tr>
+                            <tr class="highlight-row"><td>12 AWG Copper</td><td>20A</td><td>Kitchen, bath, laundry, garage receptacles</td></tr>
+                            <tr class="highlight-row"><td>10 AWG Copper</td><td>30A</td><td>Dryers, water heaters, A/C circuits</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Standard Overcurrent Device Sizes &mdash; NEC 240.6(A)</h2>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Standard Ampere Ratings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 125, 150, 175, 200, 225, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000, 1200, 1600, 2000, 2500, 3000, 4000, 5000, 6000</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 style="margin-top:28px;font-size:1.15rem;">Conductor Overcurrent Protection Summary</h2>
+                <div class="table-wrapper">
+                    <table class="breakdown-table ref-table">
+                        <thead>
+                            <tr>
+                                <th>Conductor Size</th>
+                                <th>75&deg;C Ampacity (Cu)</th>
+                                <th>Max Standard OCPD</th>
+                                <th>Next Size Up Allowed?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-row"><td>14 AWG</td><td>20A</td><td>15A</td><td>No &mdash; 240.4(D) limits to 15A</td></tr>
+                            <tr class="highlight-row"><td>12 AWG</td><td>25A</td><td>20A</td><td>No &mdash; 240.4(D) limits to 20A</td></tr>
+                            <tr class="highlight-row"><td>10 AWG</td><td>35A</td><td>30A</td><td>No &mdash; 240.4(D) limits to 30A</td></tr>
+                            <tr><td>8 AWG</td><td>50A</td><td>50A</td><td>Yes &mdash; 240.4(B) allows next size up</td></tr>
+                            <tr><td>6 AWG</td><td>65A</td><td>70A</td><td>Yes &mdash; next standard size up from 65A</td></tr>
+                            <tr><td>4 AWG</td><td>85A</td><td>90A</td><td>Yes</td></tr>
+                            <tr><td>3 AWG</td><td>100A</td><td>100A</td><td>Exact match</td></tr>
+                            <tr><td>2 AWG</td><td>115A</td><td>125A</td><td>Yes</td></tr>
+                            <tr><td>1 AWG</td><td>130A</td><td>150A</td><td>Yes</td></tr>
+                            <tr><td>1/0 AWG</td><td>150A</td><td>150A</td><td>Exact match</td></tr>
+                            <tr><td>2/0 AWG</td><td>175A</td><td>175A</td><td>Exact match</td></tr>
+                            <tr><td>3/0 AWG</td><td>200A</td><td>200A</td><td>Exact match</td></tr>
+                            <tr><td>4/0 AWG</td><td>230A</td><td>250A</td><td>Yes</td></tr>
+                            <tr><td>250 kcmil</td><td>255A</td><td>300A</td><td>Yes</td></tr>
+                            <tr><td>300 kcmil</td><td>285A</td><td>300A</td><td>Yes</td></tr>
+                            <tr><td>350 kcmil</td><td>310A</td><td>350A</td><td>Yes</td></tr>
+                            <tr><td>400 kcmil</td><td>335A</td><td>350A</td><td>Yes</td></tr>
+                            <tr><td>500 kcmil</td><td>380A</td><td>400A</td><td>Yes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box" style="margin-top:24px;">
+                    <strong>Exam Tip</strong><br>
+                    14 AWG = 15A max. 12 AWG = 20A max. 10 AWG = 30A max. These three are locked by 240.4(D) regardless of the ampacity table. This is one of the most commonly tested NEC rules.
+                </div>
+
+                <div class="tip-box">
+                    <strong>Next Size Up Rule &mdash; 240.4(B)</strong><br>
+                    For conductors 8 AWG and larger (where 240.4(D) doesn't apply), if the ampacity doesn't match a standard OCPD size, you may use the next standard size up &mdash; but only if the circuit doesn't supply multiple outlets or receptacles.
+                </div>
+
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

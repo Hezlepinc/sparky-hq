@@ -816,6 +816,55 @@ nav a:hover {
 
 .validation-warnings strong { color: #d97706; }
 
+/* ============================================
+   Reference Tables
+   ============================================ */
+
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 16px 0;
+}
+
+.breakdown-table.ref-table tr:last-child td {
+    font-weight: normal;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border);
+}
+
+.breakdown-table.ref-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.breakdown-table .highlight-row td {
+    background: #fef9ee;
+}
+
+.table-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.ref-nav {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.ref-nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ref-nav a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 600px) {
     .preset-row {
         gap: 6px;

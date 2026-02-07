@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sparky HQ - Free Electrical Tools for Electricians</title>
-    <meta name="description" content="Free NEC-based electrical calculators for electricians. Voltage drop, wire sizing, conduit fill, box fill, dwelling load, and generator sizing.">
-    <meta name="keywords" content="electrical calculator, conduit fill calculator, box fill calculator, voltage drop calculator, wire size calculator, residential load calculator, generator sizing calculator, NEC">
+    <meta name="description" content="Free NEC-based electrical calculators and reference tables for electricians. Voltage drop, wire sizing, conduit fill, box fill, dwelling load, generator sizing, bending calculator, ampacity tables, and more.">
+    <meta name="keywords" content="electrical calculator, conduit fill calculator, box fill calculator, voltage drop calculator, wire size calculator, residential load calculator, generator sizing calculator, conduit bending calculator, NEC reference tables, ampacity table, motor FLA, EGC sizing, NEC">
 
     <!-- Open Graph / Social -->
     <meta property="og:title" content="Sparky HQ - Free Electrical Tools for Electricians">
@@ -21,7 +21,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/style.css?v=11">
+    <link rel="stylesheet" href="/css/style.css?v=12">
 </head>
 <body>
     <header class="site-header">
@@ -29,6 +29,7 @@
             <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
             <nav>
                 <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
                 <a href="/about.html">About</a>
             </nav>
         </div>
@@ -118,6 +119,77 @@
                         <div class="card-body">
                             <p>Calculate bending multipliers, shrink, and distances for offsets, saddles, kicks, and 90-degree bends. EMT, IMC, and RMC.</p>
                             <span class="card-link">Use Tool &rarr;</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="tools-grid">
+            <div class="container">
+                <h2>Reference Tables</h2>
+                <div class="grid">
+                    <a href="/tables/motor-fla/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Motor FLA</h3><div class="nec-tag">NEC 430.248 / 430.250</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Full-load current for single-phase and three-phase motors. Use for conductor and overcurrent sizing.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/ampacity/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Conductor Ampacity</h3><div class="nec-tag">NEC 310.16</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Allowable ampacities at 60&deg;C, 75&deg;C, and 90&deg;C for copper and aluminum conductors.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/overcurrent/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Overcurrent Protection</h3><div class="nec-tag">NEC 240.4</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Max breaker/fuse size by conductor gauge. The table apprentices need for exams.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/raceway-fill/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Raceway Fill</h3><div class="nec-tag">NEC Ch.9 T.4</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>How many THHN/THWN wires fit in each conduit size. EMT, IMC, and RMC.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/egc-sizing/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>EGC Sizing</h3><div class="nec-tag">NEC 250.122</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Equipment grounding conductor sizing by overcurrent device rating. Copper and aluminum.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/torque-specs/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Torque Specs</h3><div class="nec-tag">Field Reference</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Torque values by lug type and wire size. Common values for mechanical and compression connectors.</p>
+                            <span class="card-link">View Table &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/tables/conductor-properties/" class="tool-card">
+                        <div class="card-icon">
+                            <div><h3>Conductor Properties</h3><div class="nec-tag">NEC Ch.9 T.8</div></div>
+                        </div>
+                        <div class="card-body">
+                            <p>Resistance, area, and diameter for all conductor sizes. The data behind voltage drop calculations.</p>
+                            <span class="card-link">View Table &rarr;</span>
                         </div>
                     </a>
                 </div>
