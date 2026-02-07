@@ -23,7 +23,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     window.THREE = THREE;
-    THREE.OrbitControls = OrbitControls;
+    window.OrbitControls = OrbitControls;
     </script>
 </head>
 <body>
@@ -994,7 +994,7 @@
 
     function init3DViewer() {
         if (viewer3d.initialized) return true;
-        if (typeof THREE === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+        if (typeof THREE === 'undefined' || typeof OrbitControls === 'undefined') {
             // Three.js not loaded — show fallback
             var fallback = document.getElementById('viewer-3d-fallback');
             if (fallback) { fallback.style.display = 'flex'; }
@@ -1016,7 +1016,7 @@
         viewer3d.renderer.setSize(w, h);
         viewer3d.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        viewer3d.controls = new THREE.OrbitControls(viewer3d.camera, canvas);
+        viewer3d.controls = new OrbitControls(viewer3d.camera, canvas);
         viewer3d.controls.enableDamping = true;
         viewer3d.controls.dampingFactor = 0.1;
 
