@@ -49,7 +49,7 @@
                         <button class="active" onclick="setMode('offset')">Offset</button>
                         <button onclick="setMode('3saddle')">3-Pt Saddle</button>
                         <button onclick="setMode('4saddle')">4-Pt Saddle</button>
-                        <button onclick="setMode('stub')">90&deg; Stub</button>
+                        <button onclick="setMode('stub')">90&deg;</button>
                         <button onclick="setMode('planner')">Plan a Stick</button>
                     </div>
 
@@ -113,7 +113,7 @@
                         </div>
 
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-                            <button class="btn btn-outline" onclick="showAddBendForm('stub90')" style="font-size:0.85rem;">+ 90&deg; Stub</button>
+                            <button class="btn btn-outline" onclick="showAddBendForm('stub90')" style="font-size:0.85rem;">+ 90&deg;</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('offset')" style="font-size:0.85rem;">+ Offset</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('saddle3')" style="font-size:0.85rem;">+ Saddle</button>
                             <button class="btn btn-outline" onclick="showAddBendForm('kick')" style="font-size:0.85rem;">+ Kick</button>
@@ -246,7 +246,7 @@
     function setMode(mode) {
         currentMode = mode;
         var btns = document.querySelectorAll('#mode-toggle button');
-        var labels = { 'offset': 'Offset', '3saddle': '3-Pt Saddle', '4saddle': '4-Pt Saddle', 'stub': '90\u00B0 Stub', 'planner': 'Plan a Stick' };
+        var labels = { 'offset': 'Offset', '3saddle': '3-Pt Saddle', '4saddle': '4-Pt Saddle', 'stub': '90\u00B0', 'planner': 'Plan a Stick' };
         for (var i = 0; i < btns.length; i++) {
             btns[i].classList.remove('active');
             if (btns[i].textContent.indexOf(labels[mode]) !== -1 || btns[i].textContent === labels[mode]) {
@@ -483,7 +483,7 @@
         var mark = stubLen - deduct;
 
         var html = '';
-        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">90\u00B0 Stub-Up Results</div>';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">90\u00B0 Results</div>';
         html += '<table class="breakdown-table">';
         html += '<tr><td>Conduit Size</td><td>' + sizeLabel + ' EMT</td></tr>';
         html += '<tr><td>Desired Stub Length</td><td>' + fmt(stubLen) + '"</td></tr>';
@@ -575,7 +575,7 @@
         var title = isEdit ? 'Edit ' : 'Add ';
 
         // "Measure from" toggle — shown when adding a new bend and other bends exist
-        var showRef = !isEdit && plannerState.bends.length > 0 && type !== 'stub90';
+        var showRef = !isEdit && plannerState.bends.length > 0;
         var lastMarkPos = showRef ? getLastBendMark() : 0;
         var refSelectHtml = '';
         if (showRef) {
@@ -586,19 +586,38 @@
             refSelectHtml += '</select></div>';
         }
 
+        // Pipe rotation — shown when other bends exist
+        var showRotation = plannerState.bends.length > 0;
+        var rotSelectHtml = '';
+        if (showRotation) {
+            var editRot = isEdit ? (existingBend.rotation || 0) : 0;
+            rotSelectHtml = '<div style="margin-bottom:8px;"><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Pipe Rotation</label>';
+            rotSelectHtml += '<select id="bf-rotation" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;">';
+            rotSelectHtml += '<option value="0"' + (editRot === 0 ? ' selected' : '') + '>0\u00B0 \u2014 Same plane as last bend</option>';
+            rotSelectHtml += '<option value="90"' + (editRot === 90 ? ' selected' : '') + '>90\u00B0 \u2014 Quarter turn</option>';
+            rotSelectHtml += '<option value="180"' + (editRot === 180 ? ' selected' : '') + '>180\u00B0 \u2014 Opposite</option>';
+            rotSelectHtml += '<option value="270"' + (editRot === 270 ? ' selected' : '') + '>270\u00B0 \u2014 Three-quarter turn</option>';
+            rotSelectHtml += '</select>';
+            rotSelectHtml += '<p class="field-note" style="margin:4px 0 0 0;">Rotate the pipe in the bender before this bend. 0\u00B0 = same plane as the previous bend.</p>';
+            rotSelectHtml += '</div>';
+        }
+
         if (type === 'stub90') {
-            title += '90\u00B0 Stub';
+            title += '90\u00B0';
             html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += rotSelectHtml;
+            html += refSelectHtml;
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
             html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Stub Length (in)</label>';
             html += '<input type="number" id="bf-stub-length" value="' + (isEdit ? existingBend.stubLength : 12) + '" min="1" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
-            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">Position from cut end (in)</label>';
-            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="e.g. 30" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
+            html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">' + (showRef ? 'Distance from last bend (in)' : 'Position from cut end (in)') + '</label>';
+            html += '<input type="number" id="bf-position" value="' + (isEdit ? existingBend.position : '') + '" placeholder="auto from stub length" min="0" step="0.25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;"></div>';
             html += '</div>';
-            html += '<p class="field-note" style="margin-bottom:10px;">Position is where the mark goes on the stick. For a stub, the mark = stub length minus deduct.</p>';
+            html += '<p class="field-note" style="margin-bottom:10px;">Stub length is the height after the bend. Position is where the mark goes (auto-calculated if blank).</p>';
         } else if (type === 'offset') {
             title += 'Offset';
             html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += rotSelectHtml;
             html += refSelectHtml;
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
             html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">' + (showRef ? 'Distance (in)' : 'Position (in from cut end)') + '</label>';
@@ -625,6 +644,7 @@
         } else if (type === 'saddle3') {
             title += '3-Point Saddle';
             html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += rotSelectHtml;
             html += refSelectHtml;
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
             html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">' + (showRef ? 'Center distance (in)' : 'Center Position (in)') + '</label>';
@@ -646,6 +666,7 @@
         } else if (type === 'kick') {
             title += 'Kick';
             html += '<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;">' + title + '</div>';
+            html += rotSelectHtml;
             html += refSelectHtml;
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
             html += '<div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:2px;">' + (showRef ? 'Distance (in)' : 'Position (in from cut end)') + '</label>';
@@ -697,31 +718,36 @@
             position += getLastBendMark();
         }
 
+        // Read pipe rotation
+        var rotEl = document.getElementById('bf-rotation');
+        var rotation = rotEl ? parseInt(rotEl.value) || 0 : 0;
+
         if (type === 'stub90') {
             var stubLength = parseFloat(document.getElementById('bf-stub-length').value);
             if (isNaN(stubLength) || stubLength <= 0) return;
             // If position not specified, auto-calculate from stub length
             if (isNaN(position) || posEl.value === '') {
                 position = stubLength - DEDUCT[plannerState.conduitSize];
+                if (refEl && refEl.value === 'last') position += getLastBendMark();
                 if (position < 0) position = 0;
             }
-            var bend = { id: editingBendId || plannerState.nextId++, type: 'stub90', position: position, stubLength: stubLength };
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'stub90', position: position, stubLength: stubLength, rotation: rotation };
         } else if (type === 'offset') {
             var height = parseFloat(document.getElementById('bf-height').value);
             var angle = parseFloat(document.getElementById('bf-angle').value);
             var direction = document.getElementById('bf-direction').value;
             if (isNaN(position) || isNaN(height) || height <= 0) return;
-            var bend = { id: editingBendId || plannerState.nextId++, type: 'offset', position: position, height: height, angle: angle, direction: direction };
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'offset', position: position, height: height, angle: angle, direction: direction, rotation: rotation };
         } else if (type === 'saddle3') {
             var height = parseFloat(document.getElementById('bf-height').value);
             var centerAngle = parseFloat(document.getElementById('bf-angle').value);
             if (isNaN(position) || isNaN(height) || height <= 0) return;
-            var bend = { id: editingBendId || plannerState.nextId++, type: 'saddle3', position: position, height: height, centerAngle: centerAngle };
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'saddle3', position: position, height: height, centerAngle: centerAngle, rotation: rotation };
         } else if (type === 'kick') {
             var angle = parseFloat(document.getElementById('bf-angle').value);
             var direction = document.getElementById('bf-direction').value;
             if (isNaN(position)) return;
-            var bend = { id: editingBendId || plannerState.nextId++, type: 'kick', position: position, angle: angle, direction: direction };
+            var bend = { id: editingBendId || plannerState.nextId++, type: 'kick', position: position, angle: angle, direction: direction, rotation: rotation };
         }
 
         if (editingBendId) {
@@ -911,14 +937,15 @@
         for (var i = 0; i < sorted.length; i++) {
             var b = sorted[i];
             var desc = '';
+            var rotNote = (b.rotation ? ' \u21BB' + b.rotation + '\u00B0' : '');
             if (b.type === 'stub90') {
-                desc = '90\u00B0 Stub \u2014 ' + fmt(b.stubLength) + '" stub';
+                desc = '90\u00B0 \u2014 ' + fmt(b.stubLength) + '"' + rotNote;
             } else if (b.type === 'offset') {
-                desc = 'Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0';
+                desc = 'Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0' + rotNote;
             } else if (b.type === 'saddle3') {
-                desc = '3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0';
+                desc = '3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0' + rotNote;
             } else if (b.type === 'kick') {
-                desc = 'Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction;
+                desc = 'Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + rotNote;
             }
 
             html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin:4px 0;background:var(--white);border:1px solid var(--border);border-radius:6px;">';
@@ -978,19 +1005,20 @@
             var b = br.bend;
             var r = br.result;
             html += '<div style="margin-top:12px;padding:10px 16px;background:var(--white);border:1px solid var(--border);border-radius:6px;">';
+            var rotInfo = b.rotation ? ' <span style="color:var(--accent);">\u21BB' + b.rotation + '\u00B0 rotation</span>' : '';
             if (b.type === 'stub90') {
-                html += '<div style="font-weight:700;font-size:0.92rem;">90\u00B0 Stub \u2014 ' + fmt(b.stubLength) + '"</div>';
+                html += '<div style="font-weight:700;font-size:0.92rem;">90\u00B0 \u2014 ' + fmt(b.stubLength) + '"' + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Deduct: ' + DEDUCT[conduitSize] + '" \u2192 Mark at ' + fmt(r.marks[0].pos) + '"</div>';
             } else if (b.type === 'offset') {
                 var dist = b.height * MULTIPLIERS[String(b.angle)];
-                html += '<div style="font-weight:700;font-size:0.92rem;">Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0</div>';
+                html += '<div style="font-weight:700;font-size:0.92rem;">Offset \u2014 ' + fmt(b.height) + '" ' + b.direction + ' @ ' + b.angle + '\u00B0' + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '" and ' + fmt(r.marks[1].pos) + '" (distance: ' + fmt(dist) + '", shrink: ' + fmt(r.shrink) + '")</div>';
             } else if (b.type === 'saddle3') {
                 var outerAngle = parseFloat(b.centerAngle) / 2;
-                html += '<div style="font-weight:700;font-size:0.92rem;">3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0</div>';
+                html += '<div style="font-weight:700;font-size:0.92rem;">3-Pt Saddle \u2014 ' + fmt(b.height) + '" @ ' + b.centerAngle + '\u00B0' + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Marks: ' + fmt(r.marks[0].pos) + '", ' + fmt(r.marks[1].pos) + '", ' + fmt(r.marks[2].pos) + '" (outer ' + outerAngle + '\u00B0, shrink: ' + fmt(r.shrink) + '")</div>';
             } else if (b.type === 'kick') {
-                html += '<div style="font-weight:700;font-size:0.92rem;">Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + '</div>';
+                html += '<div style="font-weight:700;font-size:0.92rem;">Kick \u2014 ' + b.angle + '\u00B0 ' + b.direction + rotInfo + '</div>';
                 html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">Mark at ' + fmt(r.marks[0].pos) + '"</div>';
             }
             html += '</div>';
@@ -1095,24 +1123,25 @@
         var markEvents = [];
         for (var i = 0; i < bends.length; i++) {
             var b = bends[i];
+            var rot = b.rotation || 0;
             if (b.type === 'stub90') {
                 var deduct = DEDUCT[conduitSize];
                 var mark = b.stubLength - deduct;
-                markEvents.push({ pos: mark, angle: 90, direction: 'up' });
+                markEvents.push({ pos: mark, angle: 90, direction: 'up', rotation: rot });
             } else if (b.type === 'offset') {
                 var mult = MULTIPLIERS[String(b.angle)];
                 var dist = b.height * mult;
-                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction });
-                markEvents.push({ pos: b.position + dist, angle: b.angle, direction: (b.direction === 'up' ? 'down' : 'up') });
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, rotation: rot });
+                markEvents.push({ pos: b.position + dist, angle: b.angle, direction: (b.direction === 'up' ? 'down' : 'up'), rotation: 0 });
             } else if (b.type === 'saddle3') {
                 var mult = MULTIPLIERS[String(b.centerAngle)];
                 var dist = b.height * mult;
                 var outerAngle = parseFloat(b.centerAngle) / 2;
-                markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up' });
-                markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down' });
-                markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up' });
+                markEvents.push({ pos: b.position - dist, angle: outerAngle, direction: 'up', rotation: rot });
+                markEvents.push({ pos: b.position, angle: b.centerAngle, direction: 'down', rotation: 0 });
+                markEvents.push({ pos: b.position + dist, angle: outerAngle, direction: 'up', rotation: 0 });
             } else if (b.type === 'kick') {
-                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction });
+                markEvents.push({ pos: b.position, angle: b.angle, direction: b.direction, rotation: rot });
             }
         }
         markEvents.sort(function(a, b) { return a.pos - b.pos; });
@@ -1135,6 +1164,13 @@
                 pos = pos.clone().add(dir.clone().multiplyScalar(straightAdvance));
                 points.push(pos.clone());
                 currentPos = arcStartPos;
+            }
+
+            // Apply pipe rotation (roll around pipe axis) before this bend
+            if (evt.rotation) {
+                var rollRad = evt.rotation * Math.PI / 180;
+                var rollQ = new THREE.Quaternion().setFromAxisAngle(dir, rollRad);
+                normal = normal.clone().applyQuaternion(rollQ).normalize();
             }
 
             // Rotation axis = side vector (perpendicular to both dir and normal)
