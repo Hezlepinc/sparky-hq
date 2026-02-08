@@ -2,23 +2,25 @@
 
 Future features beyond calculators — reference tables, field tools, and apprentice resources — organized by effort and value.
 
-**Current state:** 16 tools live (14 calculators + formula sheet + reference tables), 1 stubbed.
+**Current state:** 13 tools publicly enabled, 5 tools locked (Coming Soon), 1 stub (Circuit Design). 9 reference tables live. Formula sheet live.
 
 ---
 
-## Tier 1: Reference Tables
+## Tier 1: Reference Tables — DONE
 
-**Low effort, high value.** Static HTML pages — no JS needed, just well-formatted data in Sparky HQ's layout. Data is factual/scientific (not copyrightable); reference NEC section numbers but use original formatting.
+**All 9 reference tables are built and live.**
 
-| Table | NEC Reference | Notes |
-|-------|---------------|-------|
-| Motor FLA | 430.248 (1ph), 430.250 (3ph) | Pairs with wire size + VD calcs for motor circuit sizing |
-| Conductor Ampacity | 310.16 (60/75/90°C columns) | Cu + Al, all three temp columns side by side |
-| Overcurrent Protection | 240.4(D), 240.4(G) | Max breaker/fuse by wire gauge |
-| Raceway Fill Quick Chart | Ch.9 Table 4 | "How many #12 THHN fit in 3/4 EMT?" at a glance |
-| EGC Sizing | 250.122 | Already in calcs but useful as standalone reference |
-| Torque Specs | Manufacturer data | By lug type and wire size — gold for inspections |
-| Conductor Properties | Ch.9 Table 8 | Resistance, area (cmil), weight — one-stop reference |
+| Table | Path | NEC Reference | Status |
+|-------|------|---------------|--------|
+| Motor FLA | `/tables/motor-fla/` | 430.248, 430.250 | **DONE** |
+| Conductor Ampacity | `/tables/ampacity/` | 310.16 | **DONE** |
+| Overcurrent Protection | `/tables/overcurrent/` | 240.4(D), 240.6(A) | **DONE** |
+| Raceway Fill | `/tables/raceway-fill/` | Ch.9 Table 4 | **DONE** |
+| EGC Sizing | `/tables/egc-sizing/` | 250.122 | **DONE** |
+| GEC Sizing | `/tables/gec-sizing/` | 250.66 | **DONE** |
+| Torque Specs | `/tables/torque-specs/` | Manufacturer data | **DONE** |
+| Conductor Properties | `/tables/conductor-properties/` | Ch.9 Table 8 | **DONE** |
+| Conduit Bending Tables | `/tables/conduit-bending/` | Field Reference | **DONE** |
 
 ---
 
@@ -30,7 +32,7 @@ Future features beyond calculators — reference tables, field tools, and appren
 |------|-------------|
 | NEC Code Lookup by Topic | Searchable quick reference organized by task (e.g., "bathroom requirements" pulls up 210.11(C)(3), 210.52(D), GFCI rules) |
 | Inspection Checklists | Rough-in, service change, panel swap — printable/saveable |
-| Torque Spec Reference | Searchable by manufacturer and wire size |
+| Torque Spec Reference | Extend existing `/tables/torque-specs/` with searchable manufacturer-specific data |
 
 ---
 
@@ -49,12 +51,11 @@ Future features beyond calculators — reference tables, field tools, and appren
 
 ---
 
-## Tier 4: Remaining Calculators (Existing stubs)
+## Tier 4: Remaining Stubs
 
 | Calculator | Status |
 |------------|--------|
 | Circuit Design Calculator | Stub — multi-step circuit design from panel to outlet |
-| Conduit Bending Calculator | **Live** — offsets, saddles, 90s, + interactive stick planner |
 
 ---
 
@@ -166,20 +167,35 @@ Not yet. This is a Business/ domain idea that depends on Sparky HQ having consis
 
 ---
 
-## Site Structure Addition
-
-Add a "Tables" nav section alongside "Tools":
+## Site Structure — Current
 
 ```
 sparky-hq/
-├── tools/           ← Existing calculators
-├── tables/          ← NEW: Reference tables
-│   ├── index.html   ← Table listing page
+├── tools/                   ← 16 calculator tools
+│   ├── voltage-drop/
+│   ├── wire-size/
+│   ├── conduit-fill/
+│   ├── box-fill/
+│   ├── residential-load/
+│   ├── generator-sizing/
+│   ├── circuit-design/      ← Stub (Coming Soon)
+│   ├── ohms-law/
+│   ├── conduit-bending/
+│   ├── power-converter/
+│   ├── formula-sheet/
+│   ├── transformer-sizing/
+│   ├── ampacity-derating/
+│   ├── lighting-load/
+│   ├── service-entrance/
+│   └── panel-schedule/
+├── tables/                  ← 9 reference tables
 │   ├── motor-fla/
 │   ├── ampacity/
 │   ├── overcurrent/
 │   ├── raceway-fill/
 │   ├── egc-sizing/
+│   ├── gec-sizing/
 │   ├── torque-specs/
-│   └── conductor-properties/
+│   ├── conductor-properties/
+│   └── conduit-bending/
 ```

@@ -1,12 +1,12 @@
 # Sparky HQ
 
-Free electrical calculator tools for electricians. Built for speed, accuracy, and the job site.
+Free electrical calculator tools and NEC reference tables for electricians. Built for speed, accuracy, and the job site.
 
 **Live site:** [sparky-hq.com](https://sparky-hq.com)
 
 ---
 
-## Tools
+## Calculators (16 tools)
 
 ### Voltage Drop Calculator
 Calculate voltage drop, find maximum distance for a wire size, or determine the right conductor for your run.
@@ -30,7 +30,6 @@ Determine minimum conductor size based on ampacity with automatic voltage drop v
 - **EGC sizing:** Minimum + proportional per 250.122(B) when upsized
 - **Derating section:** Ambient temp + CCC adjustment
 - **Show Your Work:** Step-by-step ampacity → VD → upsize → EGC
-- **Cost note:** Suggests shorter route or higher voltage when upsized 2+ sizes
 
 ### Conduit Fill Calculator
 Check conduit fill compliance per NEC Chapter 9.
@@ -40,39 +39,105 @@ Check conduit fill compliance per NEC Chapter 9.
 - **Nipple exception:** Automatic 60% fill for conduit ≤24"
 - **Remaining capacity:** Shows room for additional conductors
 - **Derating trigger warning:** Alerts when >3 CCCs require ampacity adjustment per 310.15(C)(1)
-- **Approaching limit caution:** Orange warning at 85%+ of fill limit
 
 ### Box Fill Calculator
 Calculate box fill per NEC 314.16.
 
 - **Three modes:** Count by Cables (default), Count by Conductors, What Fits?
-- **Cable entry mode:** Auto-counts conductors from cable types (e.g., "2× 14/2 NM-B")
-- **Common scenario presets:** Single switch, single receptacle, switch+receptacle, junction 3 cables
+- **Cable entry mode:** Auto-counts conductors from cable types
+- **Common scenario presets:** Single switch, single receptacle, switch+receptacle, junction
 - **What Fits reverse mode:** Select a box, see max conductors/devices
-- **Pigtail reminder:** Pigtails originating inside the box are NOT counted
 
 ### Residential Load Calculator
 Dwelling unit load calculation per NEC Article 220.
 
 - **Two methods:** Standard (Part III) and Optional (Part IV)
-- **Method guidance:** Explains when each method applies (new construction vs existing 100A+)
-- **Typical nameplate hints:** Placeholder values for common appliances
-- **Compare Methods button:** Side-by-side Standard vs Optional results
-- **Service conductor sizing:** SE cable size per 310.16 at 75°C (copper + aluminum)
+- **Compare Methods:** Side-by-side Standard vs Optional results
+- **Service conductor sizing:** Per 310.16 at 75°C (copper + aluminum)
 - **GEC sizing:** Grounding electrode conductor per Table 250.66
-- **Upgrade guidance:** >200A options (320A parallel, 400A CT metering)
 
 ### Generator Sizing Calculator
 Size a standby generator for residential backup.
 
 - **A/C LRA input:** Dropdown by tonnage + manual override for starting surge
-- **Starting surge calculation:** Running + A/C surge + other loads = peak demand
 - **Generac model recommendations:** Checks both running AND surge capability
-- **NEC 445.12:** Main breaker sizing (115% of rated current)
-- **NEC 445.13:** Conductor sizing from generator to transfer switch
-- **Transfer switch note:** Sizing + neutral bonding warning for non-separately derived systems
+- **NEC 445.12/445.13:** Breaker sizing and conductor sizing
 
-### NEC References
+### Ohm's Law Calculator
+Enter any two of voltage, current, resistance, or power and get the rest instantly.
+
+- **Interactive SVG formula wheel** showing all 12 Ohm's Law formulas
+- **Live highlighting:** Wheel highlights the formula being used as you type
+
+### Conduit Bending Calculator
+Calculate bending multipliers, shrink, and distances for conduit bends.
+
+- **Bend types:** Offsets, saddles, kicks, 90-degree bends
+- **Conduit sizes:** EMT, IMC, RMC with size-specific deduct values
+- **Plan a Stick:** Interactive 3D stick planner with Three.js visualization
+
+### Power Converter
+Convert between kW, kVA, amps, HP, and watts.
+
+- **Supports:** Single-phase, three-phase, DC circuits
+- **Power factor input** for kW/kVA conversions
+
+### Electrical Formulas (Formula Sheet)
+Printable cheat sheet with all common electrical formulas.
+
+- **Sections:** Ohm's Law, single/three-phase power, motor, transformer, NEC quick rules
+- **Print-optimized:** Clean layout for field reference
+
+### Transformer Sizing Calculator
+Calculate kVA rating, primary and secondary full-load amps, and recommended standard sizes.
+
+### Ampacity Derating Calculator
+Apply temperature correction and conduit fill adjustment factors to NEC 310.16 base ampacity.
+
+- **Three derating factors:** Base ampacity, ambient temperature correction, CCC adjustment
+- **All three temperature columns:** 60°C, 75°C, 90°C
+
+### Lighting Circuit Calculator
+Enter square footage, get minimum general lighting circuits for a dwelling per NEC 220.12 and 210.11.
+
+- **Dedicated circuit reminders:** Small-appliance, laundry, bathroom per 210.11(C)
+
+### Service Entrance Sizing Calculator
+Determine minimum service size, conductor, and grounding electrode conductor for residential services.
+
+- **Service conductor sizing:** Per NEC 310.16 at 75°C
+- **GEC sizing:** Per NEC 250.66
+
+### Panel Schedule Creator
+Generate blank or filled-in panel schedules for print.
+
+- **Two modes:** Blank (printable) and Fill-In (interactive)
+- **Supports:** Single-phase and three-phase panels, 2–84 spaces
+- **Multi-pole breakers:** Tie button for 2-pole and 3-pole breakers
+- **Print-optimized:** Landscape layout with crisp borders
+
+### Circuit Design Calculator
+*Coming soon* — Complete circuit design from panel to last outlet.
+
+---
+
+## Reference Tables (9 tables)
+
+| Table | Path | NEC Reference |
+|-------|------|---------------|
+| Motor FLA | `/tables/motor-fla/` | NEC 430.248, 430.250 |
+| Conductor Ampacity | `/tables/ampacity/` | NEC 310.16 |
+| Overcurrent Protection | `/tables/overcurrent/` | NEC 240.4(D), 240.6(A) |
+| Raceway Fill | `/tables/raceway-fill/` | NEC Ch.9 Table 4 |
+| EGC Sizing | `/tables/egc-sizing/` | NEC 250.122 |
+| GEC Sizing | `/tables/gec-sizing/` | NEC 250.66 |
+| Torque Specs | `/tables/torque-specs/` | Manufacturer data |
+| Conductor Properties | `/tables/conductor-properties/` | NEC Ch.9 Table 8 |
+| Conduit Bending | `/tables/conduit-bending/` | Field Reference |
+
+---
+
+## NEC References
 
 | Feature | NEC Source |
 |---------|-----------|
@@ -89,14 +154,16 @@ Size a standby generator for residential backup.
 | Dwelling load calc | 220 (Parts III & IV) |
 | Generator breaker | 445.12 |
 | Generator conductor | 445.13 |
+| Lighting load | 220.12, 210.11 |
+| Service entrance | 230, 310.16, 250.66 |
+| Motor FLA | 430.248, 430.250 |
+| Overcurrent protection | 240.4(D), 240.6(A) |
 
 ### Methodology
 Voltage drop is calculated using NEC Chapter 9, Table 8 DC resistance values (stranded, uncoated conductors at 75°C):
 
 - **Single-phase / DC:** `VD = (2 x L x I x R) / 1000`
 - **Three-phase:** `VD = (1.732 x L x I x R) / 1000`
-
-This is the standard method used in NEC exam preparation and field calculations. It produces conservative results appropriate for residential and commercial branch circuit and feeder sizing.
 
 ---
 
@@ -105,7 +172,7 @@ This is the standard method used in NEC exam preparation and field calculations.
 - Static HTML, CSS, vanilla JavaScript
 - No frameworks, no build step, no dependencies
 - Hosted on GitHub Pages
-- PWA-ready with offline support
+- PWA-ready with offline support (service worker v30)
 
 ---
 
