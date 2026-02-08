@@ -114,6 +114,7 @@
                             <div style="margin-top:8px;padding:8px 10px;background:rgba(0,0,0,0.03);border-radius:6px;font-size:0.78rem;color:var(--text-light);text-align:center;">
                                 <strong style="color:var(--text);">NEC Fill Limits:</strong><br>
                                 1 wire: 53% &nbsp;|&nbsp; 2 wires: 31% &nbsp;|&nbsp; 3+ wires: 40%
+                                <div id="deratingFlag" style="display:none;margin-top:6px;padding:6px 8px;background:#fffbeb;border-radius:4px;color:#92400e;font-weight:600;line-height:1.4;"></div>
                             </div>
                         </div>
                     </div>
@@ -574,6 +575,22 @@
             remainText = 'No remaining capacity \u2014 conduit is at or over fill limit.';
         }
         document.getElementById('remainingText').textContent = remainText;
+
+        // Derating flag near fill limits
+        var deratingFlag = document.getElementById('deratingFlag');
+        if (totalWireCount > 3 && !isNipple) {
+            deratingFlag.innerHTML = '\u26A0 ' + totalWireCount + ' conductors \u2014 if more than 3 are current-carrying, ampacity derating required per NEC 310.15(C)(1)';
+            deratingFlag.style.display = '';
+            deratingFlag.style.background = '#fffbeb';
+            deratingFlag.style.color = '#92400e';
+        } else if (totalWireCount > 3 && isNipple) {
+            deratingFlag.innerHTML = '\u2713 Nipple \u226424" \u2014 derating exemption per NEC 310.15(C)(1)(a)';
+            deratingFlag.style.display = '';
+            deratingFlag.style.background = '#f0fdf4';
+            deratingFlag.style.color = '#166534';
+        } else {
+            deratingFlag.style.display = 'none';
+        }
 
         document.getElementById('result').classList.add('show');
     }
