@@ -2,7 +2,7 @@
 
 Future features beyond calculators — reference tables, field tools, and apprentice resources — organized by effort and value.
 
-**Current state:** 15 tools live (13 calculators + formula sheet + reference tables), 2 stubbed.
+**Current state:** 16 tools live (14 calculators + formula sheet + reference tables), 1 stubbed.
 
 ---
 
@@ -67,6 +67,92 @@ Future features beyond calculators — reference tables, field tools, and appren
 | Conduit Run Designer | Full run planner — chain multiple sticks together across a route with couplings, supports, and expansion fittings. Account for box pull points, support spacing (358.30 / 352.30), and total 360° bend limits between pull points. Output a cut list and bend sheet for the entire run. |
 | Conduit Rack Layout | Plan conduit racks (Unistrut/trapeze) for multiple pipes. Input pipe sizes and quantities, choose rack style, get bin spacing per NEC 300.4 / manufacturer specs. Visual cross-section showing pipe positions, strut sizing, and trapeze dimensions. |
 | Rack Bill of Materials | Extend rack layout to output a material list — strut lengths, clamps, beam clamps, threaded rod, channel nuts — ready to hand to a supply house. |
+
+---
+
+## Tier 6: Panel Schedule Labels — Replacement Stickers & Affiliate Revenue
+
+**Medium effort, revenue-generating.** Builds directly on the Panel Schedule Creator tool. Solves a real pain point: damaged, missing, or poorly filled panel schedule labels that are hard to get from manufacturers.
+
+### The Problem
+
+- Panel schedule labels (the stick-on cards inside panel doors) get damaged, faded, or lost constantly
+- Manufacturers (Square D, Eaton, Siemens) make replacements hard to order — often require contacting reps or buying in bulk
+- Many panels have hand-scrawled schedules that are unreadable during service calls or inspections
+- No good online tool exists that outputs a print-ready replacement label sized for specific panel models
+
+### The Opportunity
+
+Users already on Sparky HQ filling in panel schedules → offer them a way to get a physical adhesive label that fits their exact panel door.
+
+### Implementation Phases
+
+#### Phase 1: PDF Export Sized to Real Panels (Low effort)
+
+Add a "Download PDF" button to the Panel Schedule Creator that exports the schedule as a PDF sized to fit specific panel door label areas:
+
+| Manufacturer | Panel Series | Label Size (approx) |
+|-------------|-------------|---------------------|
+| Square D | QO (20-40 space) | 4.5" x 7.5" |
+| Square D | Homeline | 4" x 6.5" |
+| Eaton | BR | 4.5" x 7" |
+| Eaton | CH | 4.5" x 8" |
+| Siemens | PL/ES | 4.5" x 7" |
+
+User picks their panel model → PDF exports at the exact label dimensions → they print on adhesive label stock at home or at a shop.
+
+#### Phase 2: Affiliate — Sell the Label Stock (Low effort, passive income)
+
+Partner with label/adhesive suppliers so users can buy the right stock with one click:
+
+- **Avery** — Custom-sized adhesive sheets. Avery has an affiliate program.
+- **Brother P-touch** — For pre-printed labels. Brother has a partner program.
+- **Amazon Associates** — Link to specific adhesive full-sheet labels (Avery 5165, 8165) or laminating pouches for weather resistance. Easy affiliate signup.
+- **Specialty electrical suppliers** — Some already sell blank panel schedule stickers (check Platt, Graybar, CED)
+
+Button placement: right next to "Print" on the Panel Schedule tool — "Need adhesive label stock? →"
+
+#### Phase 3: Direct Sales — Pre-Cut Blank Labels (Higher effort, higher margin)
+
+Sell packs of pre-cut adhesive panel schedule blanks directly:
+
+- Buy full-sheet adhesive stock in bulk (Avery or equivalent)
+- Die-cut or laser-cut to fit the top 5 panel models
+- Sell 10-packs or 25-packs through a simple Shopify/Gumroad/Stripe storefront
+- Include a QR code printed on each blank that links to sparky-hq.com/tools/panel-schedule/ for the fill-in tool
+- Price point: $8-12 for a 10-pack (cost ~$1-2 for materials)
+
+#### Phase 4: Print-and-Ship Filled Schedules (Future, validates demand first)
+
+User fills in the panel schedule online → pays $3-5 → receives a pre-printed adhesive label by mail. Premium option: laminated/UV-resistant for outdoor panels.
+
+Only pursue this if Phase 2-3 show real demand.
+
+### Revenue Estimates (Conservative)
+
+| Phase | Revenue Model | Est. Monthly |
+|-------|--------------|-------------|
+| Phase 2 | Affiliate commission (4-8% on ~$15 avg order) | $20-100 |
+| Phase 3 | Direct label sales (10-pack @ $10, ~$8 margin) | $80-400 |
+| Phase 4 | Print-and-ship ($3-5/order) | Depends on volume |
+
+These are low numbers intentionally — this is passive income layered on top of a free tool that already drives traffic.
+
+### Prerequisites
+
+- [ ] Panel Schedule Creator tool is live and getting traffic (done)
+- [ ] Identify the 5 most common residential/commercial panel models and their exact label dimensions
+- [ ] Test print on adhesive stock to verify fit and readability
+- [ ] Set up Amazon Associates or Avery affiliate account
+- [ ] Add panel model selector to the tool's config form
+- [ ] Add "Download PDF" export sized to selected panel model
+
+### When to Start
+
+Not yet. This is a Business/ domain idea that depends on Sparky HQ having consistent organic traffic first. Revisit when:
+- The site has 500+ monthly visitors
+- Panel Schedule Creator is the most-used or second-most-used tool
+- A weekend is available for research (label sizing, affiliate signup)
 
 ---
 

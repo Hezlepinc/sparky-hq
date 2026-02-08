@@ -87,11 +87,12 @@ var ALL_TOOLS = [
     { path: '/tools/transformer-sizing/', name: 'Transformer Sizing' },
     { path: '/tools/ampacity-derating/', name: 'Ampacity Derating' },
     { path: '/tools/lighting-load/', name: 'Lighting Circuits' },
-    { path: '/tools/service-entrance/', name: 'Service Entrance' }
+    { path: '/tools/service-entrance/', name: 'Service Entrance' },
+    { path: '/tools/panel-schedule/', name: 'Panel Schedule' }
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/', '/tables/conduit-bending/', '/tables/gec-sizing/', '/tools/power-converter/', '/tools/formula-sheet/', '/tools/transformer-sizing/', '/tools/lighting-load/'];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/', '/tables/conduit-bending/', '/tables/gec-sizing/', '/tools/power-converter/', '/tools/formula-sheet/', '/tools/transformer-sizing/', '/tools/lighting-load/', '/tools/panel-schedule/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {

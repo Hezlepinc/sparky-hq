@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Schedule Creator - Free Printable | Sparky HQ</title>
+    <meta name="description" content="Free printable panel schedule for electricians. Generate blank or filled-in schedules for single-phase and three-phase panels. Print-ready layout.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/panel-schedule/">
+    <meta property="og:title" content="Panel Schedule Creator - Free Printable | Sparky HQ">
+    <meta property="og:description" content="Free printable panel schedule for electricians. Blank or filled-in, single-phase or three-phase.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/panel-schedule/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Panel Schedule Creator - Free Printable | Sparky HQ">
+    <meta name="twitter:description" content="Free printable panel schedule for electricians. Blank or filled-in, single-phase or three-phase.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=13">
+    <style>
+        /* ── Mode Toggle ── */
+        .mode-toggle { display:flex; gap:0; border:2px solid var(--accent); border-radius:8px; overflow:hidden; max-width:320px; margin:0 auto 24px; }
+        .mode-toggle button { flex:1; padding:10px 16px; border:none; background:transparent; font-size:0.95rem; font-weight:600; cursor:pointer; color:var(--text); transition:background 0.2s, color 0.2s; }
+        .mode-toggle button.active { background:var(--accent); color:#fff; }
+
+        /* ── Config Form ── */
+        .config-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; }
+        .config-grid .form-group label { font-size:0.85rem; font-weight:600; margin-bottom:4px; display:block; }
+        .config-grid .form-group input,
+        .config-grid .form-group select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.95rem; background:var(--bg); color:var(--text); }
+        .btn-generate { display:inline-flex; align-items:center; gap:8px; padding:10px 28px; font-size:1rem; font-weight:700; border:none; border-radius:8px; cursor:pointer; background:var(--accent); color:#fff; margin-top:4px; }
+        .btn-generate:hover { opacity:0.9; }
+        .btn-print { display:inline-flex; align-items:center; gap:8px; padding:10px 28px; font-size:1rem; font-weight:700; border:2px solid var(--accent); border-radius:8px; cursor:pointer; background:transparent; color:var(--accent); margin-top:4px; }
+        .btn-print:hover { background:var(--accent); color:#fff; }
+
+        /* ── Panel Schedule Table ── */
+        #schedule-output { margin-top:24px; }
+        .panel-header { margin-bottom:12px; font-size:0.9rem; line-height:1.7; }
+        .panel-header strong { font-weight:700; }
+        .panel-header .ph-row { display:flex; flex-wrap:wrap; gap:24px; }
+        .panel-header .ph-item { white-space:nowrap; }
+        .panel-header .ph-blank { display:inline-block; border-bottom:1px solid #333; min-width:120px; }
+
+        .schedule-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        .schedule-table th { background:#f5f0e6; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.3px; padding:6px 8px; border:1px solid #999; text-align:center; }
+        .schedule-table td { border:1px solid #999; padding:4px 6px; text-align:center; vertical-align:middle; }
+        .schedule-table .col-ckt { width:36px; font-weight:700; background:#fafafa; }
+        .schedule-table .col-desc { min-width:120px; text-align:left; }
+        .schedule-table .col-amps { width:52px; }
+        .schedule-table .col-wire { width:52px; }
+        .schedule-table .col-phase { width:44px; font-size:0.78rem; font-weight:600; color:#666; }
+        .schedule-table .col-bus { width:8px; background:#e8e4da; padding:0; }
+        .schedule-table .breaker-tie { background:#e8f4e8; }
+
+        /* Fill-in mode inputs inside table */
+        .schedule-table input,
+        .schedule-table select { border:1px solid #ccc; border-radius:3px; padding:2px 4px; font-size:0.82rem; width:100%; box-sizing:border-box; background:#fff; }
+        .schedule-table .col-desc input { text-align:left; }
+        .schedule-table .col-amps select,
+        .schedule-table .col-wire select { text-align:center; }
+
+        /* Tie button */
+        .btn-tie { font-size:0.65rem; padding:1px 5px; border:1px solid #aaa; border-radius:3px; background:#f5f5f5; cursor:pointer; white-space:nowrap; line-height:1.3; }
+        .btn-tie.tied { background:#4a9; color:#fff; border-color:#4a9; }
+
+        /* Summary row */
+        .summary-row td { background:#f5f0e6; font-weight:700; font-size:0.82rem; }
+
+        /* Blank mode: taller cells for handwriting */
+        .blank-mode .schedule-table td { height:28px; }
+        .blank-mode .schedule-table .col-desc { min-width:140px; }
+
+        /* ── Print Styles ── */
+        @media print {
+            @page { size:landscape; margin:0.4in; }
+            body { background:#fff !important; color:#000 !important; }
+            .site-header, .site-footer, .disclaimer-box,
+            .mode-toggle, #config-form, .calc-header,
+            .btn-share, .subtitle, .tip-box, .no-print { display:none !important; }
+            .calc-page { padding:0 !important; margin:0 !important; }
+            .container { max-width:100% !important; padding:0 !important; }
+            #schedule-output { margin-top:0; }
+            .panel-header { font-size:11pt; margin-bottom:8pt; }
+            .schedule-table { font-size:10pt; }
+            .schedule-table th { background:#eee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; padding:4pt 6pt; }
+            .schedule-table td { padding:3pt 5pt; border:1px solid #000; }
+            .schedule-table .col-bus { background:#ddd !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .schedule-table input,
+            .schedule-table select { border:none; padding:0; font-size:10pt; }
+            .blank-mode .schedule-table td { height:22pt; }
+            .summary-row td { background:#eee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .breaker-tie { background:#e8f4e8 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            /* Page break for large panels */
+            .schedule-table { page-break-inside:auto; }
+            .schedule-table tr { page-break-inside:avoid; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Panel Schedule Creator <span class="nec-ref">Panel Layout</span></h1>
+                <p class="subtitle">Generate blank or filled-in panel schedules for print. Single-phase and three-phase.</p>
+
+                <div class="mode-toggle no-print">
+                    <button id="btn-blank" class="active" onclick="setMode('blank')">Blank (Print)</button>
+                    <button id="btn-fillin" onclick="setMode('fillin')">Fill-In</button>
+                </div>
+
+                <div id="config-form" class="calc-form">
+                    <div class="config-grid">
+                        <div class="form-group">
+                            <label for="panel-name">Panel Name</label>
+                            <input type="text" id="panel-name" placeholder="e.g. Panel A, MDP" maxlength="40">
+                        </div>
+                        <div class="form-group">
+                            <label for="panel-location">Location</label>
+                            <input type="text" id="panel-location" placeholder="e.g. Garage, Mech Room" maxlength="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="main-amps">Main Breaker (A)</label>
+                            <select id="main-amps">
+                                <option value="100">100A</option>
+                                <option value="125">125A</option>
+                                <option value="150">150A</option>
+                                <option value="200" selected>200A</option>
+                                <option value="225">225A</option>
+                                <option value="400">400A</option>
+                                <option value="custom">Custom...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="custom-amps-group" style="display:none;">
+                            <label for="custom-amps">Custom Amps</label>
+                            <input type="number" id="custom-amps" placeholder="Amps" min="1" max="6000">
+                        </div>
+                        <div class="form-group">
+                            <label for="phase-select">Phase</label>
+                            <select id="phase-select" onchange="updateVoltageOptions()">
+                                <option value="1">Single-Phase</option>
+                                <option value="3">Three-Phase</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="voltage-select">Voltage</label>
+                            <select id="voltage-select">
+                                <option value="120/240V">120/240V</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="num-spaces">Number of Spaces</label>
+                            <input type="number" id="num-spaces" value="20" min="2" max="84" step="2">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <button class="btn-generate" onclick="generateSchedule()">Generate Schedule</button>
+                        <button class="btn-print no-print" onclick="window.print()" style="display:none;" id="btn-print">Print</button>
+                    </div>
+                </div>
+
+                <div id="schedule-output"></div>
+
+                <div class="tip-box no-print" style="margin-top:24px;">
+                    <strong>How to use</strong><br>
+                    <strong>Blank mode:</strong> Pick your panel config and hit Generate. Print a clean empty schedule to fill in by hand on the job.<br>
+                    <strong>Fill-In mode:</strong> Enter circuit descriptions, breaker sizes, and wire sizes interactively. Use the Tie button to create 2-pole or 3-pole breakers. Print the completed schedule.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+            <p style="font-size:0.75rem;color:#777;margin-top:6px;">NFPA 70, National Electrical Code, and NEC are registered trademarks of the National Fire Protection Association, Quincy, MA. Sparky HQ is not affiliated with or endorsed by NFPA.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  PANEL SCHEDULE CREATOR
+    // ══════════════════════════════════════
+
+    var currentMode = 'blank';
+    var scheduleData = []; // stores fill-in data
+
+    // ── Mode Toggle ──
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-blank').classList.toggle('active', mode === 'blank');
+        document.getElementById('btn-fillin').classList.toggle('active', mode === 'fillin');
+        // Re-generate if schedule is already showing
+        var output = document.getElementById('schedule-output');
+        if (output.innerHTML !== '') generateSchedule();
+    }
+
+    // ── Voltage options based on phase ──
+    function updateVoltageOptions() {
+        var phase = document.getElementById('phase-select').value;
+        var sel = document.getElementById('voltage-select');
+        sel.innerHTML = '';
+        if (phase === '1') {
+            sel.innerHTML = '<option value="120/240V">120/240V</option>';
+        } else {
+            sel.innerHTML = '<option value="120/208V">120/208V</option><option value="277/480V">277/480V</option>';
+        }
+    }
+
+    // ── Custom amps toggle ──
+    document.getElementById('main-amps').addEventListener('change', function() {
+        document.getElementById('custom-amps-group').style.display = this.value === 'custom' ? '' : 'none';
+    });
+
+    // ── Get main amps value ──
+    function getMainAmps() {
+        var sel = document.getElementById('main-amps');
+        if (sel.value === 'custom') {
+            return document.getElementById('custom-amps').value || '—';
+        }
+        return sel.value;
+    }
+
+    // ── Phase rotation for 3-phase ──
+    // Left column (odd circuits): row 0=A-B, row 1=B-C, row 2=C-A, repeating
+    // Right column (even circuits): row 0=B-C, row 1=C-A, row 2=A-B, repeating
+    var PHASE_LEFT  = ['A-B', 'B-C', 'C-A'];
+    var PHASE_RIGHT = ['B-C', 'C-A', 'A-B'];
+
+    // ── Generate Schedule ──
+    function generateSchedule() {
+        var name = document.getElementById('panel-name').value || '';
+        var location = document.getElementById('panel-location').value || '';
+        var mainAmps = getMainAmps();
+        var phase = document.getElementById('phase-select').value;
+        var voltage = document.getElementById('voltage-select').value;
+        var spaces = parseInt(document.getElementById('num-spaces').value) || 20;
+
+        // Enforce even number, clamp range
+        if (spaces < 2) spaces = 2;
+        if (spaces > 84) spaces = 84;
+        if (spaces % 2 !== 0) spaces = spaces + 1;
+        document.getElementById('num-spaces').value = spaces;
+
+        var rows = spaces / 2;
+        var is3ph = phase === '3';
+        var isBlank = currentMode === 'blank';
+
+        // Initialize schedule data if needed
+        if (scheduleData.length !== spaces) {
+            scheduleData = [];
+            for (var i = 0; i < spaces; i++) {
+                scheduleData.push({ desc: '', amps: '', wire: '', tied: false, tieStart: false, tieCount: 0 });
+            }
+        }
+
+        var html = '';
+
+        // ── Panel header ──
+        html += '<div class="panel-header">';
+        html += '<div class="ph-row">';
+        html += '<span class="ph-item"><strong>Panel:</strong> ' + (name ? esc(name) : (isBlank ? '<span class="ph-blank"></span>' : '—')) + '</span>';
+        html += '<span class="ph-item"><strong>Location:</strong> ' + (location ? esc(location) : (isBlank ? '<span class="ph-blank"></span>' : '—')) + '</span>';
+        html += '<span class="ph-item"><strong>Main:</strong> ' + esc(mainAmps) + 'A</span>';
+        html += '</div>';
+        html += '<div class="ph-row">';
+        html += '<span class="ph-item"><strong>Phase:</strong> ' + (is3ph ? '3\u03C6' : '1\u03C6') + '</span>';
+        html += '<span class="ph-item"><strong>Voltage:</strong> ' + esc(voltage) + '</span>';
+        html += '<span class="ph-item"><strong>Spaces:</strong> ' + spaces + '</span>';
+        html += '</div>';
+        html += '<div class="ph-row" style="margin-top:4px;">';
+        html += '<span class="ph-item"><strong>Date:</strong> ' + (isBlank ? '<span class="ph-blank"></span>' : new Date().toLocaleDateString()) + '</span>';
+        html += '<span class="ph-item"><strong>By:</strong> <span class="ph-blank"></span></span>';
+        html += '</div>';
+        html += '</div>';
+
+        // ── Table ──
+        html += '<div class="' + (isBlank ? 'blank-mode' : 'fillin-mode') + '">';
+        html += '<table class="schedule-table">';
+
+        // Header row
+        html += '<thead><tr>';
+        html += '<th class="col-ckt">Ckt</th>';
+        html += '<th class="col-desc">Description</th>';
+        html += '<th class="col-amps">Amps</th>';
+        html += '<th class="col-wire">Wire</th>';
+        if (is3ph) html += '<th class="col-phase">\u03C6</th>';
+        html += '<th class="col-bus"></th>';
+        if (is3ph) html += '<th class="col-phase">\u03C6</th>';
+        html += '<th class="col-wire">Wire</th>';
+        html += '<th class="col-amps">Amps</th>';
+        html += '<th class="col-desc">Description</th>';
+        html += '<th class="col-ckt">Ckt</th>';
+        html += '</tr></thead>';
+
+        html += '<tbody>';
+
+        // Build rows
+        for (var r = 0; r < rows; r++) {
+            var leftIdx = r * 2;       // circuit numbers: 1,3,5,...
+            var rightIdx = r * 2 + 1;  // circuit numbers: 2,4,6,...
+            var leftCkt = leftIdx + 1;
+            var rightCkt = rightIdx + 1;
+
+            // Check if this row is part of a tie (skip rendering merged rows)
+            var leftTied = isRowTied(leftIdx);
+            var rightTied = isRowTied(rightIdx);
+
+            html += '<tr>';
+
+            // ── Left side ──
+            if (leftTied && !scheduleData[leftIdx].tieStart) {
+                // This row is merged into a tie above — skip left cells
+                // (handled by rowspan on the tieStart row)
+            } else {
+                var leftRowspan = scheduleData[leftIdx].tieStart ? scheduleData[leftIdx].tieCount : 1;
+                var rsTxt = leftRowspan > 1 ? ' rowspan="' + leftRowspan + '"' : '';
+                var tieClass = leftRowspan > 1 ? ' breaker-tie' : '';
+
+                html += '<td class="col-ckt' + tieClass + '"' + rsTxt + '>' + leftCkt;
+                if (leftRowspan > 1) {
+                    var lastCkt = leftCkt + (leftRowspan - 1) * 2;
+                    html += '-' + lastCkt;
+                }
+                html += '</td>';
+                html += '<td class="col-desc' + tieClass + '"' + rsTxt + '>';
+                if (!isBlank) {
+                    html += '<input type="text" data-idx="' + leftIdx + '" data-field="desc" value="' + esc(scheduleData[leftIdx].desc) + '" onchange="updateData(this)" placeholder="">';
+                }
+                html += '</td>';
+                html += '<td class="col-amps' + tieClass + '"' + rsTxt + '>';
+                if (!isBlank) html += buildAmpsSelect(leftIdx);
+                html += '</td>';
+                html += '<td class="col-wire' + tieClass + '"' + rsTxt + '>';
+                if (!isBlank) html += buildWireSelect(leftIdx);
+                html += '</td>';
+            }
+
+            // ── Left phase (3-phase only) ──
+            if (is3ph) {
+                if (!(leftTied && !scheduleData[leftIdx].tieStart)) {
+                    var leftRowspan2 = scheduleData[leftIdx].tieStart ? scheduleData[leftIdx].tieCount : 1;
+                    var rsTxt2 = leftRowspan2 > 1 ? ' rowspan="' + leftRowspan2 + '"' : '';
+                    html += '<td class="col-phase"' + rsTxt2 + '>' + PHASE_LEFT[r % 3] + '</td>';
+                }
+            }
+
+            // ── Center bus bar ──
+            html += '<td class="col-bus"></td>';
+
+            // ── Right phase (3-phase only) ──
+            if (is3ph) {
+                if (!(rightTied && !scheduleData[rightIdx].tieStart)) {
+                    var rightRowspan2 = scheduleData[rightIdx].tieStart ? scheduleData[rightIdx].tieCount : 1;
+                    var rsTxt3 = rightRowspan2 > 1 ? ' rowspan="' + rightRowspan2 + '"' : '';
+                    html += '<td class="col-phase"' + rsTxt3 + '>' + PHASE_RIGHT[r % 3] + '</td>';
+                }
+            }
+
+            // ── Right side ──
+            if (rightTied && !scheduleData[rightIdx].tieStart) {
+                // merged into tie above
+            } else {
+                var rightRowspan = scheduleData[rightIdx].tieStart ? scheduleData[rightIdx].tieCount : 1;
+                var rsR = rightRowspan > 1 ? ' rowspan="' + rightRowspan + '"' : '';
+                var tieClassR = rightRowspan > 1 ? ' breaker-tie' : '';
+
+                html += '<td class="col-wire' + tieClassR + '"' + rsR + '>';
+                if (!isBlank) html += buildWireSelect(rightIdx);
+                html += '</td>';
+                html += '<td class="col-amps' + tieClassR + '"' + rsR + '>';
+                if (!isBlank) html += buildAmpsSelect(rightIdx);
+                html += '</td>';
+                html += '<td class="col-desc' + tieClassR + '"' + rsR + '>';
+                if (!isBlank) {
+                    html += '<input type="text" data-idx="' + rightIdx + '" data-field="desc" value="' + esc(scheduleData[rightIdx].desc) + '" onchange="updateData(this)" placeholder="">';
+                }
+                html += '</td>';
+                html += '<td class="col-ckt' + tieClassR + '"' + rsR + '>' + rightCkt;
+                if (rightRowspan > 1) {
+                    var lastCktR = rightCkt + (rightRowspan - 1) * 2;
+                    html += '-' + lastCktR;
+                }
+                html += '</td>';
+            }
+
+            html += '</tr>';
+        }
+
+        // ── Summary row (fill-in mode only) ──
+        if (!isBlank) {
+            var totalLoad = 0;
+            var usedSpaces = 0;
+            for (var i = 0; i < scheduleData.length; i++) {
+                if (scheduleData[i].amps && scheduleData[i].amps !== '') {
+                    var a = parseInt(scheduleData[i].amps);
+                    if (!isNaN(a)) {
+                        // Use line-to-neutral voltage for load estimation
+                        var vln = 120;
+                        if (voltage === '277/480V') vln = 277;
+                        totalLoad += a * vln;
+                    }
+                }
+                if (scheduleData[i].desc || scheduleData[i].amps) usedSpaces++;
+            }
+            var colCount = is3ph ? 11 : 9;
+            html += '<tr class="summary-row">';
+            html += '<td colspan="' + colCount + '" style="text-align:left;padding:8px;">';
+            html += 'Spaces used: ' + usedSpaces + ' / ' + spaces;
+            html += ' &nbsp;&nbsp;|&nbsp;&nbsp; Est. connected load: ' + (totalLoad / 1000).toFixed(1) + ' kVA';
+            html += '</td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table>';
+
+        // ── Tie controls (fill-in mode only) ──
+        if (!isBlank) {
+            html += '<div class="no-print" style="margin-top:16px;padding:12px 16px;background:var(--gray);border-radius:8px;font-size:0.85rem;">';
+            html += '<strong>Multi-pole breakers:</strong> Click a Tie button to merge a circuit with the one(s) below it on the same side of the panel.<br>';
+            html += '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">';
+            for (var i = 0; i < spaces; i++) {
+                // Only show tie buttons for circuits that could start a tie
+                // (not the last circuit on each side)
+                var side = i % 2 === 0 ? 'L' : 'R';
+                var cktNum = i + 1;
+                var canTie = true;
+                // Last circuit on each side can't start a tie
+                if (i % 2 === 0 && i >= spaces - 2) canTie = false;
+                if (i % 2 === 1 && i >= spaces - 1) canTie = false;
+                // Already part of someone else's tie (not the start)
+                if (isRowTied(i) && !scheduleData[i].tieStart) canTie = false;
+
+                if (canTie) {
+                    var isTied = scheduleData[i].tieStart;
+                    var poles = isTied ? scheduleData[i].tieCount : 1;
+                    html += '<button class="btn-tie' + (isTied ? ' tied' : '') + '" data-idx="' + i + '" onclick="toggleTie(' + i + ')">';
+                    html += 'Ckt ' + cktNum + (isTied ? ' (' + (poles) + 'P)' : '');
+                    html += '</button>';
+                }
+            }
+            html += '</div></div>';
+        }
+
+        html += '</div>';
+
+        document.getElementById('schedule-output').innerHTML = html;
+        document.getElementById('btn-print').style.display = '';
+    }
+
+    // ── Tie logic ──
+    function isRowTied(idx) {
+        // Check if this index is part of any tie group
+        if (scheduleData[idx].tieStart) return true;
+        // Check previous circuits on same side
+        var step = 2; // same side = every other index
+        var side = idx % 2;
+        for (var i = side; i < idx; i += step) {
+            if (scheduleData[i].tieStart) {
+                var end = i + (scheduleData[i].tieCount - 1) * step;
+                if (idx <= end && (idx - i) % step === 0) return true;
+            }
+        }
+        return false;
+    }
+
+    function toggleTie(idx) {
+        var phase = document.getElementById('phase-select').value;
+        var maxPoles = phase === '3' ? 3 : 2;
+        var step = 2; // same-side circuits are every other index
+        var spaces = scheduleData.length;
+
+        if (scheduleData[idx].tieStart) {
+            var currentPoles = scheduleData[idx].tieCount;
+            if (currentPoles < maxPoles) {
+                // Check if we can add another pole
+                var nextIdx = idx + currentPoles * step;
+                if (nextIdx < spaces) {
+                    scheduleData[idx].tieCount = currentPoles + 1;
+                    // Clear the merged circuit's data
+                    scheduleData[nextIdx].desc = '';
+                    scheduleData[nextIdx].amps = '';
+                    scheduleData[nextIdx].wire = '';
+                    generateSchedule();
+                    return;
+                }
+            }
+            // Already at max or can't extend — remove tie
+            scheduleData[idx].tieStart = false;
+            scheduleData[idx].tieCount = 0;
+        } else {
+            // Start a new 2-pole tie
+            var nextIdx = idx + step;
+            if (nextIdx < spaces && !isRowTied(nextIdx)) {
+                scheduleData[idx].tieStart = true;
+                scheduleData[idx].tieCount = 2;
+                // Clear the merged circuit
+                scheduleData[nextIdx].desc = '';
+                scheduleData[nextIdx].amps = '';
+                scheduleData[nextIdx].wire = '';
+            }
+        }
+        generateSchedule();
+    }
+
+    // ── Build dropdowns ──
+    function buildAmpsSelect(idx) {
+        var opts = ['', '15', '20', '25', '30', '40', '50', '60', '70', '100'];
+        var val = scheduleData[idx].amps || '';
+        var html = '<select data-idx="' + idx + '" data-field="amps" onchange="updateData(this)">';
+        for (var i = 0; i < opts.length; i++) {
+            html += '<option value="' + opts[i] + '"' + (val === opts[i] ? ' selected' : '') + '>' + (opts[i] || '\u2014') + '</option>';
+        }
+        html += '</select>';
+        return html;
+    }
+
+    function buildWireSelect(idx) {
+        var opts = ['', '14', '12', '10', '8', '6', '4', '3', '2', '1', '1/0', '2/0', '3/0', '4/0'];
+        var val = scheduleData[idx].wire || '';
+        var html = '<select data-idx="' + idx + '" data-field="wire" onchange="updateData(this)">';
+        for (var i = 0; i < opts.length; i++) {
+            html += '<option value="' + opts[i] + '"' + (val === opts[i] ? ' selected' : '') + '>' + (opts[i] || '\u2014') + '</option>';
+        }
+        html += '</select>';
+        return html;
+    }
+
+    // ── Update data from inputs ──
+    function updateData(el) {
+        var idx = parseInt(el.dataset.idx);
+        var field = el.dataset.field;
+        scheduleData[idx][field] = el.value;
+    }
+
+    // ── HTML escape ──
+    function esc(str) {
+        var d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>
