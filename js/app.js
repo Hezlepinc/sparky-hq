@@ -86,7 +86,7 @@ var ALL_TOOLS = [
     { path: '/tools/formula-sheet/',   name: 'Electrical Formulas' },
     { path: '/tools/transformer-sizing/', name: 'Transformer Sizing' },
     { path: '/tools/ampacity-derating/', name: 'Ampacity Derating' },
-    { path: '/tools/lighting-load/', name: 'Lighting Load' },
+    { path: '/tools/lighting-load/', name: 'Lighting Circuits' },
     { path: '/tools/service-entrance/', name: 'Service Entrance' }
 ];
 

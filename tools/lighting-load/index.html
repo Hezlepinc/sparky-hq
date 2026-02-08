@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lighting Load Calculator - NEC 220.12 | Sparky HQ</title>
-    <meta name="description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <title>Residential Lighting Circuit Calculator - NEC 220.12 | Sparky HQ</title>
+    <meta name="description" content="Free residential lighting circuit calculator. Enter square footage, get minimum lighting circuits per NEC 220.12 and 210.11. No ads, no signup.">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1c1c1c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="canonical" href="https://sparky-hq.com/tools/lighting-load/">
-    <meta property="og:title" content="Lighting Load Calculator - NEC 220.12 | Sparky HQ">
-    <meta property="og:description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <meta property="og:title" content="Residential Lighting Circuit Calculator - NEC 220.12 | Sparky HQ">
+    <meta property="og:description" content="Free residential lighting circuit calculator. Enter square footage, get minimum lighting circuits per NEC 220.12 and 210.11.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sparky-hq.com/tools/lighting-load/">
     <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Lighting Load Calculator - NEC 220.12 | Sparky HQ">
-    <meta name="twitter:description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <meta name="twitter:title" content="Residential Lighting Circuit Calculator - NEC 220.12 | Sparky HQ">
+    <meta name="twitter:description" content="Free residential lighting circuit calculator. Enter square footage, get minimum lighting circuits per NEC 220.12 and 210.11.">
     <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
     <link rel="stylesheet" href="/css/style.css?v=13">
     <script src="/js/validate.js" defer></script>
@@ -37,47 +37,14 @@
     <main>
         <section class="calc-page">
             <div class="container">
-                <h1>Lighting Load Calculator <span class="nec-ref">NEC 220.12</span></h1>
-                <p class="subtitle">Calculate general lighting load in VA and amps per NEC Table 220.12.</p>
+                <h1>Lighting Circuit Calculator <span class="nec-ref">NEC 220.12 &middot; 210.11</span></h1>
+                <p class="subtitle">Enter square footage to find minimum general lighting circuits for a dwelling unit.</p>
 
                 <div class="calc-form">
                     <div class="form-group">
-                        <label for="occupancy">Occupancy Type</label>
-                        <select id="occupancy">
-                            <option value="3">Dwelling Unit &mdash; 3 VA/sqft</option>
-                            <option value="3.5">Office &mdash; 3.5 VA/sqft</option>
-                            <option value="1.5">Retail &mdash; 1.5 VA/sqft</option>
-                            <option value="0.25">Warehouse &mdash; 0.25 VA/sqft</option>
-                            <option value="2" data-label="Restaurant">Restaurant &mdash; 2 VA/sqft</option>
-                            <option value="3" data-label="School">School &mdash; 3 VA/sqft</option>
-                            <option value="2" data-label="Hospital">Hospital &mdash; 2 VA/sqft</option>
-                            <option value="2" data-label="Hotel/Motel">Hotel/Motel &mdash; 2 VA/sqft</option>
-                            <option value="2" data-label="Industrial">Industrial &mdash; 2 VA/sqft</option>
-                            <option value="0.5">Parking Garage &mdash; 0.5 VA/sqft</option>
-                        </select>
-                    </div>
-
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
-                        <div class="form-group">
-                            <label for="sqft">Square Footage</label>
-                            <input type="number" id="sqft" placeholder="e.g. 2000" min="1" step="1">
-                        </div>
-                        <div class="form-group">
-                            <label for="voltage">Voltage</label>
-                            <select id="voltage">
-                                <option value="120">120V</option>
-                                <option value="208">208V</option>
-                                <option value="240">240V</option>
-                                <option value="277">277V</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="phase">Phase</label>
-                            <select id="phase">
-                                <option value="1">Single-Phase</option>
-                                <option value="3">Three-Phase</option>
-                            </select>
-                        </div>
+                        <label for="sqft">Dwelling Square Footage</label>
+                        <input type="number" id="sqft" placeholder="e.g. 2500" min="1" step="1">
+                        <p class="field-note">Total habitable area per NEC 220.12 &mdash; measured from outside dimensions, excluding open porches, garages, and unfinished spaces.</p>
                     </div>
 
                     <div class="apply-section">
@@ -93,8 +60,8 @@
                 <div class="result" id="result"></div>
 
                 <div class="tip-box" style="margin-top:24px;">
-                    <strong>NEC 220.12 Note</strong><br>
-                    These values are minimums for general lighting. Receptacle loads (220.14), HVAC, and equipment loads must be calculated separately and added.
+                    <strong>Remember</strong><br>
+                    These are general lighting circuits only. NEC 210.11(C) requires additional dedicated circuits: 2 small-appliance (kitchen/dining), 1 laundry, and 1 bathroom. Those are on top of what this tool calculates.
                 </div>
             </div>
         </section>
@@ -120,9 +87,6 @@
 
     function clearAll() {
         document.getElementById('sqft').value = '';
-        document.getElementById('occupancy').selectedIndex = 0;
-        document.getElementById('voltage').selectedIndex = 0;
-        document.getElementById('phase').selectedIndex = 0;
         SparkyValidate.clearMessages('validation-messages');
         var resultEl = document.getElementById('result');
         resultEl.classList.remove('show');
@@ -132,16 +96,12 @@
     function applyCalc() {
         var sqftVal = document.getElementById('sqft').value.trim();
         var sqft = sqftVal === '' ? null : parseFloat(sqftVal);
-        var rate = parseFloat(document.getElementById('occupancy').value);
-        var voltage = parseFloat(document.getElementById('voltage').value);
-        var phaseVal = parseInt(document.getElementById('phase').value);
-        var occupancyText = document.getElementById('occupancy').options[document.getElementById('occupancy').selectedIndex].text.split(' \u2014')[0];
 
         var rules = [];
         rules.push({ rule: 'required', value: sqft, label: 'Square footage' });
         if (sqft !== null) {
             rules.push({ rule: 'gt', value: sqft, min: 0, label: 'Square footage' });
-            rules.push({ rule: 'range', value: sqft, max: 500000, label: 'Square footage' });
+            rules.push({ rule: 'range', value: sqft, max: 50000, label: 'Square footage' });
         }
 
         var result = SparkyValidate.check(rules);
@@ -150,55 +110,48 @@
 
         SparkyValidate.logApply();
 
+        var rate = 3; // NEC 220.12: dwelling = 3 VA/sqft
+        var voltage = 120;
         var totalVA = sqft * rate;
-        var amps;
-        var phaseLabel;
-        var formulasUsed = [];
+        var amps = totalVA / voltage;
 
-        if (phaseVal === 3) {
-            amps = totalVA / (voltage * 1.732);
-            phaseLabel = 'Three-Phase';
-            formulasUsed.push('Total VA = ' + fmt(sqft) + ' sqft &times; ' + fmt(rate) + ' VA/sqft = ' + fmt(totalVA) + ' VA');
-            formulasUsed.push('Amps = VA / (V &times; 1.732) = ' + fmt(totalVA) + ' / (' + fmt(voltage) + ' &times; 1.732) = ' + fmt(amps) + ' A');
-        } else {
-            amps = totalVA / voltage;
-            phaseLabel = 'Single-Phase';
-            formulasUsed.push('Total VA = ' + fmt(sqft) + ' sqft &times; ' + fmt(rate) + ' VA/sqft = ' + fmt(totalVA) + ' VA');
-            formulasUsed.push('Amps = VA / V = ' + fmt(totalVA) + ' / ' + fmt(voltage) + ' = ' + fmt(amps) + ' A');
-        }
-
-        var html = '';
-        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">General Lighting Load &mdash; ' + occupancyText + '</div>';
-
-        html += '<table class="breakdown-table">';
-        html += '<tr><th>Parameter</th><th>Value</th></tr>';
-        html += '<tr><td>Occupancy Type</td><td>' + occupancyText + '</td></tr>';
-        html += '<tr><td>Lighting Load Rate</td><td>' + fmt(rate) + ' VA/sqft</td></tr>';
-        html += '<tr><td>Area</td><td>' + fmt(sqft) + ' sqft</td></tr>';
-        html += '<tr><td>Total VA</td><td>' + fmt(totalVA) + ' VA</td></tr>';
-        html += '<tr><td>Voltage</td><td>' + fmt(voltage) + ' V (' + phaseLabel + ')</td></tr>';
-        html += '<tr><td>Current</td><td>' + fmt(amps) + ' A</td></tr>';
-        html += '</table>';
-
-        // Circuit count breakdown
-        var va15 = voltage * 15; // VA capacity of a 15A circuit
-        var va20 = voltage * 20; // VA capacity of a 20A circuit
+        var va15 = voltage * 15; // 1,800 VA
+        var va20 = voltage * 20; // 2,400 VA
         var circuits15 = Math.ceil(totalVA / va15);
         var circuits20 = Math.ceil(totalVA / va20);
 
-        formulasUsed.push('15A circuit capacity = ' + fmt(voltage) + ' V &times; 15 A = ' + fmt(va15) + ' VA');
-        formulasUsed.push('Minimum 15A circuits = ' + fmt(totalVA) + ' / ' + fmt(va15) + ' = ' + (totalVA / va15).toFixed(2) + ' &rarr; ' + circuits15 + ' circuits');
-        formulasUsed.push('20A circuit capacity = ' + fmt(voltage) + ' V &times; 20 A = ' + fmt(va20) + ' VA');
-        formulasUsed.push('Minimum 20A circuits = ' + fmt(totalVA) + ' / ' + fmt(va20) + ' = ' + (totalVA / va20).toFixed(2) + ' &rarr; ' + circuits20 + ' circuits');
+        var formulasUsed = [];
+        formulasUsed.push('Total VA = ' + fmt(sqft) + ' sqft &times; 3 VA/sqft = ' + fmt(totalVA) + ' VA');
+        formulasUsed.push('Amps = ' + fmt(totalVA) + ' VA / 120 V = ' + fmt(amps) + ' A');
+        formulasUsed.push('15A circuits = ' + fmt(totalVA) + ' VA / 1,800 VA = ' + (totalVA / va15).toFixed(2) + ' &rarr; ' + circuits15 + ' circuits');
+        formulasUsed.push('20A circuits = ' + fmt(totalVA) + ' VA / 2,400 VA = ' + (totalVA / va20).toFixed(2) + ' &rarr; ' + circuits20 + ' circuits');
 
-        html += '<div style="margin-top:20px;"><strong style="font-size:0.95rem;">Minimum Branch Circuits for General Lighting (NEC 210.11(A))</strong></div>';
-        html += '<table class="breakdown-table" style="margin-top:8px;">';
-        html += '<tr><th>Circuit Rating</th><th>Capacity per Circuit</th><th>Minimum Circuits</th></tr>';
-        html += '<tr><td>15A</td><td>' + fmt(va15) + ' VA</td><td>' + circuits15 + '</td></tr>';
-        html += '<tr><td>20A</td><td>' + fmt(va20) + ' VA</td><td>' + circuits20 + '</td></tr>';
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Dwelling General Lighting &mdash; ' + fmt(sqft) + ' sqft</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr><th>Parameter</th><th>Value</th></tr>';
+        html += '<tr><td>Square Footage</td><td>' + fmt(sqft) + ' sqft</td></tr>';
+        html += '<tr><td>Lighting Load (3 VA/sqft)</td><td>' + fmt(totalVA) + ' VA</td></tr>';
+        html += '<tr><td>Current at 120V</td><td>' + fmt(amps) + ' A</td></tr>';
         html += '</table>';
 
-        html += '<div class="info-box" style="margin-top:12px;"><strong>NEC 210.11(A):</strong> The minimum number of branch circuits shall be determined from the total calculated load and the size of circuits used. These are general lighting circuits only &mdash; small-appliance (210.11(C)(1)), laundry (210.11(C)(2)), and bathroom (210.11(C)(3)) circuits are required in addition for dwelling units.</div>';
+        html += '<div style="margin-top:20px;"><strong style="font-size:0.95rem;">Minimum General Lighting Circuits (NEC 210.11(A))</strong></div>';
+        html += '<table class="breakdown-table" style="margin-top:8px;">';
+        html += '<tr><th>Circuit Rating</th><th>Capacity</th><th>Minimum Circuits</th></tr>';
+        html += '<tr><td>15A @ 120V</td><td>1,800 VA</td><td><strong>' + circuits15 + '</strong></td></tr>';
+        html += '<tr><td>20A @ 120V</td><td>2,400 VA</td><td><strong>' + circuits20 + '</strong></td></tr>';
+        html += '</table>';
+
+        // Required additional circuits reminder
+        html += '<div style="margin-top:20px;"><strong style="font-size:0.95rem;">Required Additional Circuits (NEC 210.11(C))</strong></div>';
+        html += '<table class="breakdown-table" style="margin-top:8px;">';
+        html += '<tr><th>Circuit</th><th>NEC Reference</th><th>Minimum</th></tr>';
+        html += '<tr><td>Small-Appliance (kitchen/dining)</td><td>210.11(C)(1)</td><td>2 circuits, 20A</td></tr>';
+        html += '<tr><td>Laundry</td><td>210.11(C)(2)</td><td>1 circuit, 20A</td></tr>';
+        html += '<tr><td>Bathroom</td><td>210.11(C)(3)</td><td>1 circuit, 20A</td></tr>';
+        html += '</table>';
+        html += '<div class="info-box" style="margin-top:12px;">These dedicated circuits are <strong>in addition to</strong> the general lighting circuits above. Equipment circuits (HVAC, water heater, dryer, range, etc.) are also separate.</div>';
 
         // Show Your Work
         html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
