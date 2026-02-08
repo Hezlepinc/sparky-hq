@@ -180,6 +180,26 @@
         html += '<tr><td>Current</td><td>' + fmt(amps) + ' A</td></tr>';
         html += '</table>';
 
+        // Circuit count breakdown
+        var va15 = voltage * 15; // VA capacity of a 15A circuit
+        var va20 = voltage * 20; // VA capacity of a 20A circuit
+        var circuits15 = Math.ceil(totalVA / va15);
+        var circuits20 = Math.ceil(totalVA / va20);
+
+        formulasUsed.push('15A circuit capacity = ' + fmt(voltage) + ' V &times; 15 A = ' + fmt(va15) + ' VA');
+        formulasUsed.push('Minimum 15A circuits = ' + fmt(totalVA) + ' / ' + fmt(va15) + ' = ' + (totalVA / va15).toFixed(2) + ' &rarr; ' + circuits15 + ' circuits');
+        formulasUsed.push('20A circuit capacity = ' + fmt(voltage) + ' V &times; 20 A = ' + fmt(va20) + ' VA');
+        formulasUsed.push('Minimum 20A circuits = ' + fmt(totalVA) + ' / ' + fmt(va20) + ' = ' + (totalVA / va20).toFixed(2) + ' &rarr; ' + circuits20 + ' circuits');
+
+        html += '<div style="margin-top:20px;"><strong style="font-size:0.95rem;">Minimum Branch Circuits for General Lighting (NEC 210.11(A))</strong></div>';
+        html += '<table class="breakdown-table" style="margin-top:8px;">';
+        html += '<tr><th>Circuit Rating</th><th>Capacity per Circuit</th><th>Minimum Circuits</th></tr>';
+        html += '<tr><td>15A</td><td>' + fmt(va15) + ' VA</td><td>' + circuits15 + '</td></tr>';
+        html += '<tr><td>20A</td><td>' + fmt(va20) + ' VA</td><td>' + circuits20 + '</td></tr>';
+        html += '</table>';
+
+        html += '<div class="info-box" style="margin-top:12px;"><strong>NEC 210.11(A):</strong> The minimum number of branch circuits shall be determined from the total calculated load and the size of circuits used. These are general lighting circuits only &mdash; small-appliance (210.11(C)(1)), laundry (210.11(C)(2)), and bathroom (210.11(C)(3)) circuits are required in addition for dwelling units.</div>';
+
         // Show Your Work
         html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
         html += '<details style="cursor:pointer;">';
