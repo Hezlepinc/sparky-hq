@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Entrance Sizing Calculator - NEC 230 | Sparky HQ</title>
+    <meta name="description" content="Free service entrance sizing calculator. Determine minimum service size, conductor, and grounding electrode conductor per NEC 230 and 310.16.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/service-entrance/">
+    <meta property="og:title" content="Service Entrance Sizing Calculator - NEC 230 | Sparky HQ">
+    <meta property="og:description" content="Free service entrance sizing calculator. Determine minimum service size, conductor, and GEC per NEC 230 and 310.16.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/service-entrance/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Service Entrance Sizing Calculator - NEC 230 | Sparky HQ">
+    <meta name="twitter:description" content="Free service entrance sizing calculator. Determine minimum service size, conductor, and GEC per NEC 230 and 310.16.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=13">
+    <script src="/js/validate.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Service Entrance Sizing <span class="nec-ref">NEC 230 &middot; 310.16</span></h1>
+                <p class="subtitle">Determine minimum service size, service entrance conductors, and grounding electrode conductor.</p>
+
+                <div class="calc-form">
+                    <div class="info-box">
+                        <strong>Input Options</strong><br>
+                        Enter your total calculated load as amps directly, or enter VA and voltage to calculate amps.
+                    </div>
+
+                    <div class="method-toggle" id="input-toggle">
+                        <button class="active" onclick="setInputMode('amps')">Enter Amps</button>
+                        <button onclick="setInputMode('va')">Enter VA + Voltage</button>
+                    </div>
+
+                    <div id="amps-input">
+                        <div class="form-group">
+                            <label for="load-amps">Total Calculated Load (Amps)</label>
+                            <input type="number" id="load-amps" placeholder="e.g. 150" min="1" step="any">
+                        </div>
+                    </div>
+
+                    <div id="va-input" style="display:none;">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                            <div class="form-group">
+                                <label for="load-va">Total Calculated Load (VA)</label>
+                                <input type="number" id="load-va" placeholder="e.g. 36000" min="1" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="voltage">Voltage</label>
+                                <select id="voltage">
+                                    <option value="240" selected>120/240V (Residential)</option>
+                                    <option value="208">120/208V</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group" style="margin-top:8px;">
+                        <label><input type="checkbox" id="continuous"> Continuous load (apply 125% factor per NEC 215.2)</label>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>Practical Note</strong><br>
+                    Most residential services are 200A. NEC 230.79 requires minimum 100A for single-family dwellings. Use the Dwelling Load Calculator for the total load that feeds into this tool.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    // ══════════════════════════════════════
+    //  SERVICE ENTRANCE SIZING
+    // ══════════════════════════════════════
+
+    // NEC 310.16 (75°C column) + NEC 250.66 GEC sizing
+    var SERVICE_SIZES = [
+        { amps: 100,  cu: '#4',          al: '#2',          gecCu: '#8',   gecAl: '#6'     },
+        { amps: 125,  cu: '#2',          al: '#1/0',        gecCu: '#8',   gecAl: '#6'     },
+        { amps: 150,  cu: '#1',          al: '#2/0',        gecCu: '#6',   gecAl: '#4'     },
+        { amps: 200,  cu: '#2/0',        al: '#4/0',        gecCu: '#4',   gecAl: '#2'     },
+        { amps: 225,  cu: '#3/0',        al: '250 kcmil',   gecCu: '#4',   gecAl: '#2'     },
+        { amps: 300,  cu: '250 kcmil',   al: '350 kcmil',   gecCu: '#2',   gecAl: '#1/0'   },
+        { amps: 400,  cu: '400 kcmil',   al: '600 kcmil',   gecCu: '#1/0', gecAl: '#3/0'   }
+    ];
+
+    var inputMode = 'amps';
+
+    function setInputMode(mode) {
+        inputMode = mode;
+        var btns = document.querySelectorAll('#input-toggle button');
+        btns[0].className = mode === 'amps' ? 'active' : '';
+        btns[1].className = mode === 'va' ? 'active' : '';
+        document.getElementById('amps-input').style.display = mode === 'amps' ? '' : 'none';
+        document.getElementById('va-input').style.display = mode === 'va' ? '' : 'none';
+    }
+
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        if (Math.abs(n) >= 1) return n.toFixed(2).replace(/\.?0+$/, '');
+        return n.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    function clearAll() {
+        document.getElementById('load-amps').value = '';
+        document.getElementById('load-va').value = '';
+        document.getElementById('voltage').selectedIndex = 0;
+        document.getElementById('continuous').checked = false;
+        setInputMode('amps');
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function getVal(id) {
+        var raw = document.getElementById(id).value.trim();
+        if (raw === '') return null;
+        var v = parseFloat(raw);
+        return isNaN(v) ? null : v;
+    }
+
+    function applyCalc() {
+        var rules = [];
+        var loadAmps;
+        var formulasUsed = [];
+        var voltageUsed = null;
+
+        if (inputMode === 'amps') {
+            var rawAmps = getVal('load-amps');
+            rules.push({ rule: 'required', value: rawAmps, label: 'Load amps' });
+            if (rawAmps !== null) {
+                rules.push({ rule: 'gt', value: rawAmps, min: 0, label: 'Load amps' });
+                rules.push({ rule: 'range', value: rawAmps, max: 1000, label: 'Load amps' });
+            }
+            loadAmps = rawAmps;
+        } else {
+            var va = getVal('load-va');
+            var voltage = parseFloat(document.getElementById('voltage').value);
+            voltageUsed = voltage;
+            rules.push({ rule: 'required', value: va, label: 'Load VA' });
+            if (va !== null) {
+                rules.push({ rule: 'gt', value: va, min: 0, label: 'Load VA' });
+                rules.push({ rule: 'range', value: va, max: 500000, label: 'Load VA' });
+            }
+            if (va !== null && va > 0) {
+                loadAmps = va / voltage;
+                formulasUsed.push('Load Amps = VA / V = ' + fmt(va) + ' / ' + fmt(voltage) + ' = ' + fmt(loadAmps) + ' A');
+            }
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+
+        var isContinuous = document.getElementById('continuous').checked;
+        var adjustedAmps = loadAmps;
+        if (isContinuous) {
+            adjustedAmps = loadAmps * 1.25;
+            formulasUsed.push('Continuous load factor: ' + fmt(loadAmps) + ' A &times; 125% = ' + fmt(adjustedAmps) + ' A');
+        }
+
+        // Find matching service size
+        var match = null;
+        for (var i = 0; i < SERVICE_SIZES.length; i++) {
+            if (SERVICE_SIZES[i].amps >= adjustedAmps) {
+                match = SERVICE_SIZES[i];
+                break;
+            }
+        }
+
+        var html = '';
+
+        if (!match) {
+            html += '<div class="warning-box"><strong>Load exceeds 400A</strong><br>This calculator covers standard residential/small commercial services up to 400A. Loads above 400A require engineered solutions — consult an engineer.</div>';
+            formulasUsed.push('Adjusted load: ' + fmt(adjustedAmps) + ' A exceeds maximum table value (400A)');
+        } else {
+            formulasUsed.push('Minimum service size: next standard size &ge; ' + fmt(adjustedAmps) + ' A = ' + match.amps + 'A');
+
+            html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">Service Entrance &mdash; ' + match.amps + 'A</div>';
+
+            html += '<table class="breakdown-table">';
+            html += '<tr><th>Parameter</th><th>Value</th></tr>';
+            html += '<tr><td>Calculated Load</td><td>' + fmt(loadAmps) + ' A' + (isContinuous ? ' (continuous)' : '') + '</td></tr>';
+            if (isContinuous) {
+                html += '<tr><td>Adjusted Load (125%)</td><td>' + fmt(adjustedAmps) + ' A</td></tr>';
+            }
+            html += '<tr><td>Service Size</td><td><strong>' + match.amps + 'A</strong></td></tr>';
+            html += '</table>';
+
+            html += '<div style="margin-top:16px;"><strong style="font-size:0.95rem;">Service Entrance Conductors (75&deg;C, NEC 310.16)</strong></div>';
+            html += '<table class="breakdown-table" style="margin-top:8px;">';
+            html += '<tr><th>Material</th><th>Minimum Size</th></tr>';
+            html += '<tr><td>Copper</td><td>' + match.cu + '</td></tr>';
+            html += '<tr><td>Aluminum</td><td>' + match.al + '</td></tr>';
+            html += '</table>';
+
+            html += '<div style="margin-top:16px;"><strong style="font-size:0.95rem;">Grounding Electrode Conductor (NEC 250.66)</strong></div>';
+            html += '<table class="breakdown-table" style="margin-top:8px;">';
+            html += '<tr><th>Material</th><th>Minimum Size</th></tr>';
+            html += '<tr><td>Copper</td><td>' + match.gecCu + '</td></tr>';
+            html += '<tr><td>Aluminum</td><td>' + match.gecAl + '</td></tr>';
+            html += '</table>';
+        }
+
+        // Show Your Work
+        if (formulasUsed.length > 0) {
+            html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+            html += '<details style="cursor:pointer;">';
+            html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+            html += '<div style="margin-top:12px;">';
+            for (var i = 0; i < formulasUsed.length; i++) {
+                html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">' + formulasUsed[i] + '</div>';
+            }
+            html += '</div></details></div>';
+        }
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 Future features beyond calculators — reference tables, field tools, and apprentice resources — organized by effort and value.
 
-**Current state:** 5 calculators live, 4 stubbed.
+**Current state:** 15 tools live (13 calculators + formula sheet + reference tables), 2 stubbed.
 
 ---
 
@@ -36,12 +36,16 @@ Future features beyond calculators — reference tables, field tools, and appren
 
 ## Tier 3: Apprentice / Exam Prep
 
-**Medium effort, niche value.**
+**Medium effort, niche value.** This is the next major feature area after current tools stabilize.
 
-| Tool | Description |
-|------|-------------|
-| Practice Questions | Journeyman/master exam style, based on NEC sections the tools already cover |
-| Formula Sheet | Printable single-page with all electrical formulas |
+| Tool | Status | Description |
+|------|--------|-------------|
+| Formula Sheet | **DONE** | Printable single-page with all electrical formulas |
+| Practice Questions | Planned | Topic-based quizzes: Ohm's Law, NEC 310, Article 430, motor circuits, grounding, overcurrent protection, etc. |
+| Timed Practice Mode | Planned | Simulate exam conditions — timed question sets with score tracking |
+| Score Tracking | Planned | Track quiz scores over time via localStorage — see weak areas, measure improvement |
+
+**Exam Prep Vision:** Build a free, offline-capable study tool that covers the core NEC topics tested on journeyman and master electrician exams. Topic-based quizzes let users drill specific areas. Timed practice mode simulates real exam pressure. Score history (localStorage) shows progress without requiring accounts. All questions reference NEC sections the site's calculators already cover, reinforcing practical understanding.
 
 ---
 

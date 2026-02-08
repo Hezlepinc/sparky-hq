@@ -85,11 +85,13 @@ var ALL_TOOLS = [
     { path: '/tools/power-converter/', name: 'Power Converter' },
     { path: '/tools/formula-sheet/',   name: 'Electrical Formulas' },
     { path: '/tools/transformer-sizing/', name: 'Transformer Sizing' },
-    { path: '/tools/ampacity-derating/', name: 'Ampacity Derating' }
+    { path: '/tools/ampacity-derating/', name: 'Ampacity Derating' },
+    { path: '/tools/lighting-load/', name: 'Lighting Load' },
+    { path: '/tools/service-entrance/', name: 'Service Entrance' }
 ];
 
 // Add a tool path here and push to make it public
-var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/', '/tables/conduit-bending/', '/tables/gec-sizing/', '/tools/power-converter/', '/tools/formula-sheet/', '/tools/transformer-sizing/'];
+var DEFAULT_ENABLED = ['/tools/voltage-drop/', '/tools/wire-size/', '/tools/conduit-fill/', '/tools/box-fill/', '/tools/ohms-law/', '/tools/conduit-bending/', '/tables/conduit-bending/', '/tables/gec-sizing/', '/tools/power-converter/', '/tools/formula-sheet/', '/tools/transformer-sizing/', '/tools/lighting-load/'];
 
 // Owner bypass: visit any page with ?key=sparky to unlock all tools in this browser
 (function() {
@@ -182,4 +184,54 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // ── Saved Calculations (restore on load, save on Apply) ──
+    var savePath = window.location.pathname;
+    if (!savePath.endsWith('/')) savePath += '/';
+    var saveKey = 'sparky_saved_' + savePath;
+
+    // Restore saved inputs
+    try {
+        var saved = localStorage.getItem(saveKey);
+        if (saved) {
+            var data = JSON.parse(saved);
+            var form = calcPage.querySelector('.calc-form');
+            if (form) {
+                var inputs = form.querySelectorAll('input, select');
+                inputs.forEach(function(el) {
+                    var id = el.id;
+                    if (id && data[id] !== undefined) {
+                        if (el.type === 'checkbox') {
+                            el.checked = data[id];
+                        } else {
+                            el.value = data[id];
+                        }
+                    }
+                });
+            }
+        }
+    } catch(e) {}
+
+    // Save inputs after Apply (200ms delay for validation)
+    var applyBtn = calcPage.querySelector('.apply-section .btn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function() {
+            setTimeout(function() {
+                var resultEl = document.getElementById('result');
+                if (!resultEl || !resultEl.classList.contains('show')) return;
+                var form = calcPage.querySelector('.calc-form');
+                if (!form) return;
+                var data = {};
+                var inputs = form.querySelectorAll('input, select');
+                inputs.forEach(function(el) {
+                    if (el.id) {
+                        data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+                    }
+                });
+                try {
+                    localStorage.setItem(saveKey, JSON.stringify(data));
+                } catch(e) {}
+            }, 200);
+        });
+    }
 });

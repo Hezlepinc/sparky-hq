@@ -916,3 +916,18 @@ nav a:hover {
         padding: 5px 10px;
     }
 }
+
+/* ============================================
+   Print-Friendly Results
+   ============================================ */
+
+@media print {
+    .site-header, .site-footer, .disclaimer-box,
+    #install-banner, .apply-section, .btn-share,
+    .calc-header button { display: none !important; }
+    .calc-page { padding: 0 !important; }
+    .result { border: 1px solid #ccc !important; }
+    .breakdown-table td, .breakdown-table th { border: 1px solid #ccc; }
+    body { background: #fff !important; color: #000 !important; }
+    .calc-form { box-shadow: none !important; border: 1px solid #ccc !important; }
+}

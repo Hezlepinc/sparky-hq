@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lighting Load Calculator - NEC 220.12 | Sparky HQ</title>
+    <meta name="description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1c1c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="canonical" href="https://sparky-hq.com/tools/lighting-load/">
+    <meta property="og:title" content="Lighting Load Calculator - NEC 220.12 | Sparky HQ">
+    <meta property="og:description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sparky-hq.com/tools/lighting-load/">
+    <meta property="og:image" content="https://sparky-hq.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lighting Load Calculator - NEC 220.12 | Sparky HQ">
+    <meta name="twitter:description" content="Free lighting load calculator per NEC 220.12. Calculate general lighting VA and amperage by occupancy type and square footage.">
+    <meta name="twitter:image" content="https://sparky-hq.com/assets/og-image.png">
+    <link rel="stylesheet" href="/css/style.css?v=13">
+    <script src="/js/validate.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo"><img src="/assets/logo.png" alt="Sparky HQ" height="50"></a>
+            <nav>
+                <a href="/tools/">Tools</a>
+                <a href="/tables/">Tables</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="calc-page">
+            <div class="container">
+                <h1>Lighting Load Calculator <span class="nec-ref">NEC 220.12</span></h1>
+                <p class="subtitle">Calculate general lighting load in VA and amps per NEC Table 220.12.</p>
+
+                <div class="calc-form">
+                    <div class="form-group">
+                        <label for="occupancy">Occupancy Type</label>
+                        <select id="occupancy">
+                            <option value="3">Dwelling Unit &mdash; 3 VA/sqft</option>
+                            <option value="3.5">Office &mdash; 3.5 VA/sqft</option>
+                            <option value="1.5">Retail &mdash; 1.5 VA/sqft</option>
+                            <option value="0.25">Warehouse &mdash; 0.25 VA/sqft</option>
+                            <option value="2" data-label="Restaurant">Restaurant &mdash; 2 VA/sqft</option>
+                            <option value="3" data-label="School">School &mdash; 3 VA/sqft</option>
+                            <option value="2" data-label="Hospital">Hospital &mdash; 2 VA/sqft</option>
+                            <option value="2" data-label="Hotel/Motel">Hotel/Motel &mdash; 2 VA/sqft</option>
+                            <option value="2" data-label="Industrial">Industrial &mdash; 2 VA/sqft</option>
+                            <option value="0.5">Parking Garage &mdash; 0.5 VA/sqft</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+                        <div class="form-group">
+                            <label for="sqft">Square Footage</label>
+                            <input type="number" id="sqft" placeholder="e.g. 2000" min="1" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="voltage">Voltage</label>
+                            <select id="voltage">
+                                <option value="120">120V</option>
+                                <option value="208">208V</option>
+                                <option value="240">240V</option>
+                                <option value="277">277V</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phase">Phase</label>
+                            <select id="phase">
+                                <option value="1">Single-Phase</option>
+                                <option value="3">Three-Phase</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="apply-section">
+                        <p class="apply-terms">By clicking Apply, you acknowledge that results are for reference only and must be verified by a qualified electrician.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn" onclick="applyCalc()">Apply</button>
+                            <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="validation-messages"></div>
+                <div class="result" id="result"></div>
+
+                <div class="tip-box" style="margin-top:24px;">
+                    <strong>NEC 220.12 Note</strong><br>
+                    These values are minimums for general lighting. Receptacle loads (220.14), HVAC, and equipment loads must be calculated separately and added.
+                </div>
+            </div>
+        </section>
+        <div class="disclaimer-box">
+            <p>For reference only. Verify all results with the current NEC and local amendments. See <a href="/terms.html">Terms of Use</a>.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Sparky HQ.</p>
+            <p>Tools are for reference only. Always verify with the current NEC and local amendments. <a href="/terms.html" style="color:#aaa;text-decoration:underline;">Terms of Use</a></p>
+        </div>
+    </footer>
+
+    <script>
+    function fmt(n) {
+        if (n === 0) return '0';
+        if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        if (Math.abs(n) >= 1) return n.toFixed(2).replace(/\.?0+$/, '');
+        return n.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    function clearAll() {
+        document.getElementById('sqft').value = '';
+        document.getElementById('occupancy').selectedIndex = 0;
+        document.getElementById('voltage').selectedIndex = 0;
+        document.getElementById('phase').selectedIndex = 0;
+        SparkyValidate.clearMessages('validation-messages');
+        var resultEl = document.getElementById('result');
+        resultEl.classList.remove('show');
+        resultEl.innerHTML = '';
+    }
+
+    function applyCalc() {
+        var sqftVal = document.getElementById('sqft').value.trim();
+        var sqft = sqftVal === '' ? null : parseFloat(sqftVal);
+        var rate = parseFloat(document.getElementById('occupancy').value);
+        var voltage = parseFloat(document.getElementById('voltage').value);
+        var phaseVal = parseInt(document.getElementById('phase').value);
+        var occupancyText = document.getElementById('occupancy').options[document.getElementById('occupancy').selectedIndex].text.split(' \u2014')[0];
+
+        var rules = [];
+        rules.push({ rule: 'required', value: sqft, label: 'Square footage' });
+        if (sqft !== null) {
+            rules.push({ rule: 'gt', value: sqft, min: 0, label: 'Square footage' });
+            rules.push({ rule: 'range', value: sqft, max: 500000, label: 'Square footage' });
+        }
+
+        var result = SparkyValidate.check(rules);
+        SparkyValidate.showMessages('validation-messages', result);
+        if (!result.valid) return;
+
+        SparkyValidate.logApply();
+
+        var totalVA = sqft * rate;
+        var amps;
+        var phaseLabel;
+        var formulasUsed = [];
+
+        if (phaseVal === 3) {
+            amps = totalVA / (voltage * 1.732);
+            phaseLabel = 'Three-Phase';
+            formulasUsed.push('Total VA = ' + fmt(sqft) + ' sqft &times; ' + fmt(rate) + ' VA/sqft = ' + fmt(totalVA) + ' VA');
+            formulasUsed.push('Amps = VA / (V &times; 1.732) = ' + fmt(totalVA) + ' / (' + fmt(voltage) + ' &times; 1.732) = ' + fmt(amps) + ' A');
+        } else {
+            amps = totalVA / voltage;
+            phaseLabel = 'Single-Phase';
+            formulasUsed.push('Total VA = ' + fmt(sqft) + ' sqft &times; ' + fmt(rate) + ' VA/sqft = ' + fmt(totalVA) + ' VA');
+            formulasUsed.push('Amps = VA / V = ' + fmt(totalVA) + ' / ' + fmt(voltage) + ' = ' + fmt(amps) + ' A');
+        }
+
+        var html = '';
+        html += '<div style="font-weight:700;font-size:1.1rem;margin-bottom:14px;padding:10px 16px;background:#f5f0e6;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--text);">General Lighting Load &mdash; ' + occupancyText + '</div>';
+
+        html += '<table class="breakdown-table">';
+        html += '<tr><th>Parameter</th><th>Value</th></tr>';
+        html += '<tr><td>Occupancy Type</td><td>' + occupancyText + '</td></tr>';
+        html += '<tr><td>Lighting Load Rate</td><td>' + fmt(rate) + ' VA/sqft</td></tr>';
+        html += '<tr><td>Area</td><td>' + fmt(sqft) + ' sqft</td></tr>';
+        html += '<tr><td>Total VA</td><td>' + fmt(totalVA) + ' VA</td></tr>';
+        html += '<tr><td>Voltage</td><td>' + fmt(voltage) + ' V (' + phaseLabel + ')</td></tr>';
+        html += '<tr><td>Current</td><td>' + fmt(amps) + ' A</td></tr>';
+        html += '</table>';
+
+        // Show Your Work
+        html += '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">';
+        html += '<details style="cursor:pointer;">';
+        html += '<summary style="font-weight:700;font-size:0.92rem;color:var(--accent);padding:10px 16px;user-select:none;background:var(--gray);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;">Show Your Work</summary>';
+        html += '<div style="margin-top:12px;">';
+        for (var i = 0; i < formulasUsed.length; i++) {
+            html += '<div style="background:var(--gray);border-radius:6px;padding:12px 16px;margin-bottom:8px;font-family:\'Courier New\',monospace;font-size:0.92rem;">' + formulasUsed[i] + '</div>';
+        }
+        html += '</div></details></div>';
+
+        var resultEl = document.getElementById('result');
+        resultEl.innerHTML = html;
+        resultEl.classList.add('show');
+    }
+    </script>
+    <script src="/js/app.js" defer></script>
+</body>
+</html>
